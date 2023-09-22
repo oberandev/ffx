@@ -10,6 +10,7 @@ node_modules
 
 # IDEs and editors
 /.idea
+.nova
 .project
 .classpath
 .c9/
@@ -37,3 +38,9 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# logs
+*.log*
+
+# env
+.envrc
