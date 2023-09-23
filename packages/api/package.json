@@ -1,0 +1,7 @@
+{
+  "name": "@ffx/api",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "./index.cjs",
+  "dependencies": {}
+}

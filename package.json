@@ -2,26 +2,39 @@
   "name": "@ffx/source",
   "version": "0.0.0",
   "license": "MIT",
+  "private": true,
   "scripts": {
     "prepare": "is-ci || husky install"
   },
-  "private": true,
-  "dependencies": {
-    "fp-ts": "^2.16.1",
-    "io-ts": "^2.2.20",
-    "ts-pattern": "^5.0.5"
-  },
   "devDependencies": {
+    "@nx/esbuild": "16.9.0",
+    "@nx/eslint-plugin": "16.9.0",
     "@nx/js": "16.9.0",
+    "@nx/linter": "16.9.0",
+    "@nx/vite": "16.9.0",
     "@nx/workspace": "^16.9.0",
     "@types/node": "^20.6.3",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "@vitest/coverage-c8": "~0.32.0",
+    "@vitest/ui": "~0.32.0",
+    "esbuild": "^0.17.17",
     "eslint": "^8.50.0",
+    "eslint-config-prettier": "8.1.0",
     "husky": "^8.0.0",
     "is-ci": "^3.0.1",
     "lint-staged": "^14.0.1",
     "nx": "16.9.0",
     "prettier": "^3.0.3",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "verdaccio": "^5.0.4",
+    "vite": "~4.3.9",
+    "vitest": "~0.32.0"
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.1",
+    "io-ts": "^2.2.20",
+    "ts-pattern": "^5.0.5"
   },
   "workspaces": [
     "packages/*"
@@ -31,5 +44,8 @@
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "nx": {
+    "includedScripts": []
   }
 }
