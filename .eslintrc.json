@@ -1,11 +1,14 @@
 {
   "root": true,
   "ignorePatterns": ["**/*"],
-  "plugins": ["@nx"],
+  "plugins": ["@nx", "import"],
   "overrides": [
     {
       "files": ["*.js", "*.ts"],
       "rules": {
+        "import/newline-after-import": "error",
+        "import/no-cycle": "error",
+        "import/no-relative-parent-imports": "error",
         "@nx/enforce-module-boundaries": [
           "error",
           {
@@ -24,7 +27,15 @@
     {
       "files": ["*.ts"],
       "extends": ["plugin:@nx/typescript"],
-      "rules": {}
+      "rules": {
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          {
+            "args": "after-used",
+            "argsIgnorePattern": "^_"
+          }
+        ]
+      }
     },
     {
       "files": ["*.js"],
