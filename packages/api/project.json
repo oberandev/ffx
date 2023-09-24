@@ -34,8 +34,15 @@
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "passWithNoTests": true,
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["json"],
         "reportsDirectory": "../../coverage/packages/api"
+      },
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
       }
     }
   },
