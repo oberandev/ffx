@@ -18,7 +18,7 @@
       }
     },
     "format:check": {
-      "command": "yarn prettier ./**/*.mts --check",
+      "command": "yarn prettier ./**/*.{mts,ts} --check",
       "dependsOn": []
     },
     "publish": {
