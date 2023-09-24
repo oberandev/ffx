@@ -9,7 +9,9 @@
     "lib": ["es2020", "dom"],
     "module": "esnext",
     "moduleResolution": "node",
-    "paths": {},
+    "paths": {
+      "@ffx/api": ["packages/api/src/index.ts"]
+    },
     "rootDir": ".",
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,

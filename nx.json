@@ -1,23 +1,45 @@
 {
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "lint", "test", "e2e"]
+      }
+    }
+  },
+  "pluginsConfig": {
+    "@nx/js": {
+      "analyzeSourceFiles": true
+    }
+  },
   "extends": "nx/presets/npm.json",
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "affected": {
     "defaultBase": "main"
   },
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx/tasks-runners/default",
-      "options": {
-        "cacheableOperations": [
-          "build",
-          "lint",
-          "test",
-          "e2e"
-        ]
-      }
+  "generators": {
+    "@nx/js:library": {
+      "bundler": "tsc",
+      "linter": "eslint",
+      "preset": "ts",
+      "strict": true,
+      "unitTestRunner": "vitest"
     }
   },
   "workspaceLayout": {
     "projectNameAndRootFormat": "as-provided"
+  },
+  "targetDefaults": {
+    "lint": {
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.js"
+      ]
+    },
+    "test": {
+      "inputs": ["default", "^default"]
+    }
   }
 }
