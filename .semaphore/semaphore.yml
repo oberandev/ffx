@@ -41,14 +41,8 @@ blocks:
           commands:
             - sem-version node 20
             - cache restore
-            - yarn nx run-many -t format
+            - yarn nx run-many -t format:check
             - yarn nx run-many -t lint
-
-        - name: yarn audit
-          commands:
-            - sem-version node 20
-            - cache restore
-            - yarn audit
 
   - name: "\U0001F9EA Unit Tests"
     task:

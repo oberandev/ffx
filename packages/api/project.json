@@ -15,6 +15,10 @@
         "tsConfig": "packages/api/tsconfig.lib.json"
       }
     },
+    "format:check": {
+      "command": "yarn prettier ./**/*.ts --check",
+      "dependsOn": []
+    },
     "publish": {
       "command": "node tools/scripts/publish.mjs api {args.ver} {args.tag}",
       "dependsOn": ["build"]
