@@ -1,0 +1,56 @@
+{
+  "name": "api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/api/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "packages/api/build"
+    },
+    "build:broken": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "assets": ["packages/api/*.md"],
+        "main": "packages/api/src/index.mts",
+        "outputPath": "dist/packages/api",
+        "tsConfig": "packages/api/tsconfig.lib.json"
+      }
+    },
+    "format:check": {
+      "command": "yarn prettier ./**/*.{mts,ts} --check",
+      "dependsOn": []
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs api {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/api/**/*.mts",
+          "packages/api/**/*.ts",
+          "packages/api/package.json"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["json"],
+        "reportsDirectory": "../../coverage/packages/api"
+      },
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
+    }
+  },
+  "tags": []
+}
