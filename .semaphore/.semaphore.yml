@@ -1,0 +1,71 @@
+version: v1.0
+
+name: ffx
+
+agent:
+  machine:
+    type: e2-standard-2
+    os_image: ubuntu2204
+
+auto_cancel:
+  queued:
+    when: "true"
+
+blocks:
+  - name: "\U0001F4E6 Install dependencies"
+    task:
+      env_vars:
+        - name: NODE_ENV
+          value: test
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: yarn install and cache
+          commands:
+            - sem-version node 20
+            - cache restore
+            - yarn install
+            - cache store
+
+  - name: "\U0001F50D Static Analysis"
+    task:
+      env_vars:
+        - name: NODE_ENV
+          value: test
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: format & lint
+          commands:
+            - sem-version node 20
+            - cache restore
+            - nx run-many -t format
+            - nx run-many -t lint
+
+        - name: yarn audit
+          commands:
+            - sem-version node 20
+            - cache restore
+            - yarn audit
+
+  - name: "\U0001F9EA Unit Tests"
+    task:
+      env_vars:
+        - name: NODE_ENV
+          value: test
+      secrets:
+        - name: codecov
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: vitest
+          commands:
+            - sem-version node 20
+            - cache restore
+            - curl -Os https://uploader.codecov.io/latest/linux/codecov
+            - chmod +x codecov
+            - nx run many -t test
+            - ./codecov
