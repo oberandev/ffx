@@ -1,10 +1,29 @@
 {
-  "name": "@ffx/api",
-  "version": "0.0.1",
+  "name": "@oberan/ffx-api",
+  "description": "Change me!!",
+  "version": "0.1.0",
+  "keywords": [
+    "change me"
+  ],
+  "author": "@oberndev",
+  "homepage": "https://github.com/oberandev/ffx#readme",
+  "bugs": {
+    "url": "https://github.com/oberandev/ffx/issues"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "type": "module",
+  "source": "src/index.ts",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oberandev/ffx.git",
+    "directory": "packages/api"
+  },
+  "license": "BSD-3-Clause",
   "dependencies": {
     "tslib": "^2.3.0"
-  },
-  "type": "commonjs",
-  "main": "./src/index.js",
-  "typings": "./src/index.d.ts"
+  }
 }
