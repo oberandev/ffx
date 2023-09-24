@@ -67,5 +67,5 @@ blocks:
             - cache restore
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
-            - yarn nx run many -t test
+            - yarn nx run-many -t test
             - ./codecov
