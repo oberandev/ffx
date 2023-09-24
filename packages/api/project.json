@@ -5,18 +5,20 @@
   "projectType": "library",
   "targets": {
     "build": {
+      "command": "packages/api/build"
+    },
+    "build:broken": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "assets": ["packages/api/*.md"],
-        "generateExportsField": true,
-        "main": "packages/api/src/index.ts",
+        "main": "packages/api/src/index.mts",
         "outputPath": "dist/packages/api",
         "tsConfig": "packages/api/tsconfig.lib.json"
       }
     },
     "format:check": {
-      "command": "yarn prettier ./**/*.ts --check",
+      "command": "yarn prettier ./**/*.mts --check",
       "dependsOn": []
     },
     "publish": {

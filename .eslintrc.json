@@ -4,7 +4,7 @@
   "plugins": ["@nx", "import"],
   "overrides": [
     {
-      "files": ["*.js", "*.ts"],
+      "files": ["*.mts", "*.ts"],
       "rules": {
         "import/newline-after-import": "error",
         "import/no-cycle": "error",
@@ -25,12 +25,12 @@
       }
     },
     {
-      "files": ["*.ts"],
+      "files": ["*.mts"],
       "extends": ["plugin:@nx/typescript"],
       "rules": {}
     },
     {
-      "files": ["*.js"],
+      "files": ["*.ts"],
       "extends": ["plugin:@nx/javascript"],
       "rules": {}
     }

@@ -10,7 +10,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "paths": {
-      "@ffx/api": ["packages/api/src/index.ts"]
+      "@ffx/api": ["packages/api/src/index.mts"]
     },
     "rootDir": ".",
     "skipDefaultLibCheck": true,

@@ -13,16 +13,20 @@
   "engines": {
     "node": ">= 18"
   },
-  "type": "commonjs",
-  "main": "./src/index.js",
-  "typings": "./src/index.d.ts",
+  "type": "module",
+  "module": "./src/index.mts",
+  "main": "./src/index.mts",
+  "typings": "./src/index.d.mts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./src/index.mts"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/oberandev/ffx.git",
     "directory": "packages/api"
   },
   "license": "BSD-3-Clause",
-  "dependencies": {
-    "tslib": "^2.3.0"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

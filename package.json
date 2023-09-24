@@ -42,7 +42,7 @@
     "**/*.json": [
       "prettier --write"
     ],
-    "**/*.{js,ts}": [
+    "**/*.{mts,ts}": [
       "eslint --fix",
       "prettier --write"
     ]
