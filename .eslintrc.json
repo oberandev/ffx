@@ -1,11 +1,14 @@
 {
   "root": true,
   "ignorePatterns": ["**/*"],
-  "plugins": ["@nx"],
+  "plugins": ["@nx", "import"],
   "overrides": [
     {
       "files": ["*.js", "*.ts"],
       "rules": {
+        "import/newline-after-import": "error",
+        "import/no-cycle": "error",
+        "import/no-relative-parent-imports": "error",
         "@nx/enforce-module-boundaries": [
           "error",
           {
