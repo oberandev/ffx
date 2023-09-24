@@ -41,8 +41,8 @@ blocks:
           commands:
             - sem-version node 20
             - cache restore
-            - nx run-many -t format
-            - nx run-many -t lint
+            - yarn nx run-many -t format
+            - yarn nx run-many -t lint
 
         - name: yarn audit
           commands:
@@ -67,5 +67,5 @@ blocks:
             - cache restore
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
-            - nx run many -t test
+            - yarn nx run many -t test
             - ./codecov
