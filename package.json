@@ -1,7 +1,7 @@
 {
   "name": "@ffx/source",
   "version": "0.0.0",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "private": true,
   "scripts": {
     "prepare": "is-ci || husky install"
