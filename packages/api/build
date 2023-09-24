@@ -3,7 +3,9 @@
 set -euo pipefail
 
 pkg=api
+pkgDir=packages/${pkg}
+outputDir=dist/out-tsc/packages
 
-yarn tsc -b packages/${pkg}/tsconfig.lib.json && \
-  cp packages/${pkg}/package.json packages/${pkg}/README.md packages/${pkg}/CHANGELOG.md dist/out-tsc/packages/${pkg}/
+yarn tsc -b ${pkgDir}/tsconfig.lib.json && \
+  cp ${pkgDir}/package.json ${pkgDir}/README.md ${pkgDir}/CHANGELOG.md ${outputDir}/${pkg}/
 
