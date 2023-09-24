@@ -4,6 +4,15 @@
   "affected": {
     "defaultBase": "main"
   },
+  "generators": {
+    "@nx/js:library": {
+      "bundler": "tsc",
+      "linter": "eslint",
+      "preset": "ts",
+      "strict": true,
+      "unitTestRunner": "vitest"
+    }
+  },
   "tasksRunnerOptions": {
     "default": {
       "runner": "nx/tasks-runners/default",
