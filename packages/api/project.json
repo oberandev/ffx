@@ -8,19 +8,10 @@
       "command": "packages/api/build"
     },
     "format:check": {
-      "command": "prettier ./**/*.{mts,ts} --check",
-      "dependsOn": []
+      "command": "prettier ./**/*.{mts,ts} --check"
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "packages/api/**/*.mts",
-          "packages/api/**/*.ts",
-          "packages/api/package.json"
-        ]
-      }
+      "command": "eslint packages/api/**/*.{mts,ts}"
     },
     "publish": {
       "command": "node tools/scripts/publish.mjs api {args.ver} {args.tag}",

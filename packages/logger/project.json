@@ -8,19 +8,10 @@
       "command": "packages/logger/build"
     },
     "format:check": {
-      "command": "prettier ./**/*.{mts,ts} --check",
-      "dependsOn": []
+      "command": "prettier ./**/*.{mts,ts} --check"
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "packages/logger/**/*.mts",
-          "packages/logger/**/*.ts",
-          "packages/logger/package.json"
-        ]
-      }
+      "command": "eslint packages/logger/**/*.{mts,ts}"
     },
     "test": {
       "executor": "@nx/vite:test",
