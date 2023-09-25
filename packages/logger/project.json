@@ -1,11 +1,11 @@
 {
-  "name": "api",
+  "name": "logger",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/api/src",
+  "sourceRoot": "packages/logger/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/api/build"
+      "command": "packages/logger/build"
     },
     "format:check": {
       "command": "yarn prettier ./**/*.{mts,ts} --check",
@@ -16,15 +16,11 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "packages/api/**/*.mts",
-          "packages/api/**/*.ts",
-          "packages/api/package.json"
+          "packages/logger/**/*.mts",
+          "packages/logger/**/*.ts",
+          "packages/logger/package.json"
         ]
       }
-    },
-    "publish": {
-      "command": "node tools/scripts/publish.mjs api {args.ver} {args.tag}",
-      "dependsOn": ["build"]
     },
     "test": {
       "executor": "@nx/vite:test",
@@ -33,7 +29,7 @@
         "coverage": true,
         "passWithNoTests": false,
         "reporters": ["json"],
-        "reportsDirectory": "../../coverage/packages/api"
+        "reportsDirectory": "../../coverage/packages/logger"
       },
       "configurations": {
         "watch": {
