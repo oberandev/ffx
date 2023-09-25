@@ -7,23 +7,9 @@
     "build": {
       "command": "packages/api/build"
     },
-    "build:broken": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "assets": ["packages/api/*.md"],
-        "main": "packages/api/src/index.mts",
-        "outputPath": "dist/packages/api",
-        "tsConfig": "packages/api/tsconfig.lib.json"
-      }
-    },
     "format:check": {
       "command": "yarn prettier ./**/*.{mts,ts} --check",
       "dependsOn": []
-    },
-    "publish": {
-      "command": "node tools/scripts/publish.mjs api {args.ver} {args.tag}",
-      "dependsOn": ["build"]
     },
     "lint": {
       "executor": "@nx/linter:eslint",
@@ -35,6 +21,10 @@
           "packages/api/package.json"
         ]
       }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs api {args.ver} {args.tag}",
+      "dependsOn": ["build"]
     },
     "test": {
       "executor": "@nx/vite:test",
