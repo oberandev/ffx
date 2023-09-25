@@ -3,15 +3,15 @@
   "ignorePatterns": ["!**/*"],
   "overrides": [
     {
-      "files": ["*.js", "*.ts"],
+      "files": ["*.mts", "*.ts"],
+      "rules": {}
+    },
+    {
+      "files": ["*.mts"],
       "rules": {}
     },
     {
       "files": ["*.ts"],
-      "rules": {}
-    },
-    {
-      "files": ["*.js"],
       "rules": {}
     },
     {

@@ -1,0 +1,42 @@
+{
+  "name": "logger",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/logger/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "packages/logger/build"
+    },
+    "format:check": {
+      "command": "yarn prettier ./**/*.{mts,ts} --check",
+      "dependsOn": []
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/logger/**/*.mts",
+          "packages/logger/**/*.ts",
+          "packages/logger/package.json"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["json"],
+        "reportsDirectory": "../../coverage/packages/logger"
+      },
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
+    }
+  },
+  "tags": []
+}

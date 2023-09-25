@@ -26,7 +26,5 @@
     "url": "https://github.com/oberandev/ffx.git",
     "directory": "packages/api"
   },
-  "license": "BSD-3-Clause",
-  "dependencies": {},
-  "devDependencies": {}
+  "license": "BSD-3-Clause"
 }
