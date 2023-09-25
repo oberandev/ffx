@@ -34,20 +34,24 @@ blocks:
 
   - name: "\U0001F50D Static Analysis"
     task:
+      prologue:
+        commands:
+          - pnpm install
       jobs:
         - name: prettier & eslint
           commands:
-            - pnpm install
             - pnpm nx run-many -t format:check
             - pnpm nx run-many -t lint
 
         - name: pnpm audit
           commands:
-            - pnpm install
-            - pnpm audit
+            - pnpm audit --prod
 
   - name: "\U0001F9EA Unit Tests"
     task:
+      prologue:
+        commands:
+          - pnpm install
       secrets:
         - name: codecov
       jobs:
@@ -55,6 +59,5 @@ blocks:
           commands:
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
-            - pnpm install
             - pnpm nx run-many -t test
             - ./codecov
