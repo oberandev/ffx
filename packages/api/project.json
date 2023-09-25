@@ -8,7 +8,7 @@
       "command": "packages/api/build"
     },
     "format:check": {
-      "command": "yarn prettier ./**/*.{mts,ts} --check",
+      "command": "prettier ./**/*.{mts,ts} --check",
       "dependsOn": []
     },
     "lint": {
