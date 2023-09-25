@@ -37,12 +37,13 @@ blocks:
       jobs:
         - name: prettier & eslint
           commands:
+            - pnpm install
             - pnpm nx run-many -t format:check
             - pnpm nx run-many -t lint
 
-      jobs:
         - name: pnpm audit
           commands:
+            - pnpm install
             - pnpm audit
 
   - name: "\U0001F9EA Unit Tests"
@@ -54,5 +55,6 @@ blocks:
           commands:
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
+            - pnpm install
             - pnpm nx run-many -t test
             - ./codecov
