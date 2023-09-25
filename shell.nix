@@ -6,7 +6,5 @@ in pkgs.mkShell {
     pkgs.git
     pkgs.nixfmt
     pkgs.nodejs_20
-    pkgs.yarn
-    pkgs.esbuild
   ];
 }
