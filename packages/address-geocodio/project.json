@@ -1,17 +1,21 @@
 {
-  "name": "logger",
+  "name": "address-geocodio",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/logger/src",
+  "sourceRoot": "packages/address-geocodio/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/logger/build"
+      "command": "packages/address-geocodio/build"
     },
     "format:check": {
       "command": "prettier ./**/*.{mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/logger/**/*.{js,mts,ts}"
+      "command": "eslint packages/address-geocodio/**/*.{js,mts,ts}"
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs address-geocodio {args.ver} {args.tag}",
+      "dependsOn": ["build"]
     },
     "test": {
       "executor": "@nx/vite:test",
@@ -20,7 +24,7 @@
         "coverage": true,
         "passWithNoTests": false,
         "reporters": ["json"],
-        "reportsDirectory": "../../coverage/packages/logger"
+        "reportsDirectory": "../../coverage/packages/address-geocodio"
       },
       "configurations": {
         "watch": {
