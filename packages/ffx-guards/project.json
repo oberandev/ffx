@@ -1,20 +1,20 @@
 {
-  "name": "@obera/ffx-orm",
+  "name": "ffx-guards",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/ffx-orm/src",
+  "sourceRoot": "packages/ffx-guards/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/ffx-orm/build"
+      "command": "packages/ffx-guards/build"
     },
     "format:check": {
-      "command": "prettier packages/ffx-orm/**/*.{js,mts,ts} --check"
+      "command": "prettier packages/ffx-guards/**/*.{js,mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/ffx-orm/**/*.{js,mts,ts}"
+      "command": "eslint packages/ffx-guards/**/*.{js,mts,ts}"
     },
     "publish": {
-      "command": "node tools/scripts/publish.mjs ffx-orm {args.ver} {args.tag}",
+      "command": "node tools/scripts/publish.mjs ffx-guards {args.ver} {args.tag}",
       "dependsOn": ["build"]
     },
     "test": {
@@ -22,7 +22,7 @@
       "outputs": ["{options.reportsDirectory}"],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/packages/ffx-orm"
+        "reportsDirectory": "../../coverage/packages/ffx-guards"
       }
     }
   },
