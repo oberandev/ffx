@@ -54,6 +54,7 @@ blocks:
           - pnpm install
       secrets:
         - name: codecov
+        - name: geocodio
       jobs:
         - name: vitest
           commands:
