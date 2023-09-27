@@ -105,7 +105,7 @@ describe("ffx-guards", () => {
     expect(G.isDate({})).toBe(false);
   });
 
-  it.only("isArray()", () => {
+  it("isArray()", () => {
     expect(G.isArray([])).toBe(true);
     expect(G.isArray([faker.number.int()])).toBe(true);
     expect(G.isArray(new Array())).toBe(true);
