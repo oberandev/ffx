@@ -25,6 +25,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/oberandev/ffx.git",
-    "directory": "packages/parser-address-geocodio"
+    "directory": "packages/ffx-parser-address-geocodio"
   }
 }

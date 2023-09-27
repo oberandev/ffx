@@ -12,22 +12,22 @@ module.exports = [
   ...baseConfig,
   {
     files: [
-      "packages/parser-address-geocodio/**/*.mts",
-      "packages/parser-address-geocodio/**/*.ts",
+      "packages/ffx-parser-address-geocodio/**/*.mts",
+      "packages/ffx-parser-address-geocodio/**/*.ts",
     ],
     rules: {},
   },
   {
-    files: ["packages/parser-address-geocodio/**/*.mts"],
+    files: ["packages/ffx-parser-address-geocodio/**/*.mts"],
     rules: {},
   },
   {
-    files: ["packages/parser-address-geocodio/**/*.ts"],
+    files: ["packages/ffx-parser-address-geocodio/**/*.ts"],
     rules: {},
   },
   ...compat.config({ parser: "jsonc-eslint-parser" }).map((config) => ({
     ...config,
-    files: ["packages/parser-address-geocodio/**/*.json"],
+    files: ["packages/ffx-parser-address-geocodio/**/*.json"],
     rules: {
       "@nx/dependency-checks": [
         "error",
