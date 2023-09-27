@@ -1,0 +1,27 @@
+{
+  "name": "ffx-orm",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ffx-orm/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "packages/ffx-orm/build"
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs ffx-orm {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "command": "eslint packages/ffx-orm/**/*.{js,mts,ts}"
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/packages/ffx-orm"
+      }
+    }
+  },
+  "tags": []
+}
