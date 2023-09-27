@@ -100,11 +100,13 @@ importers:
         specifier: ^0.34.0
         version: 0.34.5(@vitest/ui@0.34.5)
 
-  packages/api: {}
+  packages/ffx-api: {}
 
-  packages/logger: {}
+  packages/ffx-logger: {}
 
-  packages/parser-address-geocodio: {}
+  packages/ffx-orm: {}
+
+  packages/ffx-parser-address-geocodio: {}
 
 packages:
 
