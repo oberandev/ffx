@@ -1,6 +1,8 @@
 import { faker, fakerEN_US } from "@faker-js/faker";
 import { pipe } from "fp-ts/function";
 import * as E from "fp-ts/Either";
+import { setupServer } from "msw/node";
+import { rest } from "msw";
 
 import Geocodio, {
   AccuracyType,
@@ -110,126 +112,290 @@ const _mkBatchAddressResponse = (): BatchAddressResponse => {
 };
 
 describe("addressGeocodio", () => {
-  it("[Decoders] AddressComponents", () => {
-    const addressComponets = pipe(_mkAddressComponets(), AddressComponentsCodec.decode);
+  describe("[Decoders]", () => {
+    it("AddressComponents", () => {
+      const addressComponets = pipe(_mkAddressComponets(), AddressComponentsCodec.decode);
 
-    expect(E.isRight(addressComponets)).toBe(true);
-  });
+      expect(E.isRight(addressComponets)).toBe(true);
+    });
 
-  it("[Decoders] GeoCoords", () => {
-    const geoCoords = pipe(_mkGeoCoords(), GeoCoordsCodec.decode);
+    it("GeoCoords", () => {
+      const geoCoords = pipe(_mkGeoCoords(), GeoCoordsCodec.decode);
 
-    expect(E.isRight(geoCoords)).toBe(true);
-  });
+      expect(E.isRight(geoCoords)).toBe(true);
+    });
 
-  it("[Decoders] AccuracyType", () => {
-    const accuracyType = pipe(_mkAccuracyType(), AccuracyTypeCodec.decode);
+    it("AccuracyType", () => {
+      const accuracyType = pipe(_mkAccuracyType(), AccuracyTypeCodec.decode);
 
-    expect(E.isRight(accuracyType)).toBe(true);
-  });
+      expect(E.isRight(accuracyType)).toBe(true);
+    });
 
-  it("[Decoders] AddressSummary", () => {
-    const addressSummary = pipe(_mkAddressSummary(), AddressSummaryCodec.decode);
+    it("AddressSummary", () => {
+      const addressSummary = pipe(_mkAddressSummary(), AddressSummaryCodec.decode);
 
-    expect(E.isRight(addressSummary)).toBe(true);
-  });
+      expect(E.isRight(addressSummary)).toBe(true);
+    });
 
-  it("[Decoders] SingleAddressResponse", () => {
-    const singleAddressResponse = pipe(
-      _mkSingleAddressResponse(),
-      SingleAddressResponseCodec.decode,
-    );
+    it("SingleAddressResponse", () => {
+      const singleAddressResponse = pipe(
+        _mkSingleAddressResponse(),
+        SingleAddressResponseCodec.decode,
+      );
 
-    expect(E.isRight(singleAddressResponse)).toBe(true);
-  });
+      expect(E.isRight(singleAddressResponse)).toBe(true);
+    });
 
-  it.only("[Decoders] BatchAddressResponse", () => {
-    const batchAddressResponse = pipe(_mkBatchAddressResponse(), BatchAddressResponseCodec.decode);
+    it("BatchAddressResponse", () => {
+      const batchAddressResponse = pipe(
+        _mkBatchAddressResponse(),
+        BatchAddressResponseCodec.decode,
+      );
 
-    expect(E.isRight(batchAddressResponse)).toBe(true);
-  });
+      expect(E.isRight(batchAddressResponse)).toBe(true);
+    });
 
-  it("[Decoders] HttpMethod", () => {
-    const httpMethod = pipe(faker.helpers.arrayElement(["GET", "POST"]), HttpMethodCodec.decode);
+    it("HttpMethod", () => {
+      const httpMethod = pipe(faker.helpers.arrayElement(["GET", "POST"]), HttpMethodCodec.decode);
 
-    expect(E.isRight(httpMethod)).toBe(true);
-  });
-
-  it("single", async () => {
-    const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
-
-    const resp = await geocoder
-      .single("1109 N Highland St, Arlington, VA 22201")
-      .then((resp) => resp);
-
-    expect(resp).toStrictEqual({
-      _tag: "single_address",
-      result: {
-        address_components: {
-          number: "1109",
-          predirectional: "N",
-          street: "Highland",
-          suffix: "St",
-          formatted_street: "N Highland St",
-          city: "Arlington",
-          county: "Arlington County",
-          state: "VA",
-          zip: "22201",
-          country: "US",
-        },
-        formatted_address: "1109 N Highland St, Arlington, VA 22201",
-        location: {
-          lat: 38.886672,
-          lng: -77.094735,
-        },
-        accuracy: 1,
-        accuracy_type: "rooftop",
-        source: "Arlington",
-      },
+      expect(E.isRight(httpMethod)).toBe(true);
     });
   });
 
-  it("batch", async () => {
-    const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
+  describe("[Parsers]", () => {
+    it("single - should handle an authentication error (mock)", async () => {
+      // setup
+      const restHandlers = [
+        rest.get("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+          return res(
+            ctx.status(403),
+            ctx.json({
+              error:
+                "This API key does not have permission to access this feature. API key permissions can be changed in the Geocodio dashboard at https://dash.geocod.io/apikey",
+            }),
+          );
+        }),
+      ];
 
-    const resp = await geocoder
-      .batch(["1109 N Highland St, Arlington, VA 22201"])
-      .then((resp: unknown) => resp);
+      const server = setupServer(...restHandlers);
+      server.listen({ onUnhandledRequest: "error" });
 
-    expect(resp).toStrictEqual({
-      _tag: "address_collection",
-      results: [
-        {
-          query: "1109 N Highland St, Arlington, VA 22201",
-          response: [
-            {
-              address_components: {
-                number: "1109",
-                predirectional: "N",
-                street: "Highland",
-                suffix: "St",
-                formatted_street: "N Highland St",
-                city: "Arlington",
-                county: "Arlington County",
-                state: "VA",
-                zip: "22201",
-                country: "US",
-              },
-              formatted_address: "1109 N Highland St, Arlington, VA 22201",
-              location: {
-                lat: 38.886672,
-                lng: -77.094735,
-              },
-              accuracy: 1,
-              accuracy_type: "rooftop",
-              source: "Arlington",
-            },
-          ],
+      // test
+      const geocoder = new Geocodio("foobar");
+
+      const resp = await geocoder
+        .single("1109 N Highland St, Arlington, VA 22201")
+        .then((resp) => resp);
+
+      expect(resp._tag).toBe("http_error");
+
+      // teardown
+      server.close();
+      server.resetHandlers();
+    });
+
+    it("single - should handle a decode error (mock)", async () => {
+      // setup
+      const restHandlers = [
+        rest.get("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+          return res(ctx.status(200), ctx.json({}));
+        }),
+      ];
+
+      const server = setupServer(...restHandlers);
+      server.listen({ onUnhandledRequest: "error" });
+
+      // test
+      const geocoder = new Geocodio("foobar");
+
+      const resp = await geocoder
+        .single("1109 N Highland St, Arlington, VA 22201")
+        .then((resp) => resp);
+
+      expect(resp._tag).toBe("decoder_error");
+
+      // teardown
+      server.close();
+      server.resetHandlers();
+    });
+
+    it("single - should successfully parse a single address (mock)", async () => {
+      // setup
+      const restHandlers = [
+        rest.get("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+          return res(ctx.status(200), ctx.json(_mkSingleAddressResponse()));
+        }),
+      ];
+
+      const server = setupServer(...restHandlers);
+      server.listen({ onUnhandledRequest: "error" });
+
+      // test
+      const geocoder = new Geocodio("foobar");
+
+      const resp = await geocoder
+        .single("1109 N Highland St, Arlington, VA 22201")
+        .then((resp) => resp);
+
+      expect(resp._tag).toBe("single_address");
+
+      // teardown
+      server.close();
+      server.resetHandlers();
+    });
+
+    it("batch - should handle an authentication error (mock)", async () => {
+      // setup
+      const restHandlers = [
+        rest.post("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+          return res(
+            ctx.status(403),
+            ctx.json({
+              error:
+                "This API key does not have permission to access this feature. API key permissions can be changed in the Geocodio dashboard at https://dash.geocod.io/apikey",
+            }),
+          );
+        }),
+      ];
+
+      const server = setupServer(...restHandlers);
+      server.listen({ onUnhandledRequest: "error" });
+
+      // test
+      const geocoder = new Geocodio("foobar");
+
+      const resp = await geocoder
+        .batch(["1109 N Highland St, Arlington, VA 22201"])
+        .then((resp) => resp);
+
+      expect(resp._tag).toBe("http_error");
+
+      // teardown
+      server.close();
+      server.resetHandlers();
+    });
+
+    it("batch - should handle a decode error (mock)", async () => {
+      // setup
+      const restHandlers = [
+        rest.post("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+          return res(ctx.status(200), ctx.json({}));
+        }),
+      ];
+
+      const server = setupServer(...restHandlers);
+      server.listen({ onUnhandledRequest: "error" });
+
+      // test
+      const geocoder = new Geocodio("foobar");
+
+      const resp = await geocoder
+        .batch(["1109 N Highland St, Arlington, VA 22201"])
+        .then((resp) => resp);
+
+      expect(resp._tag).toBe("decoder_error");
+
+      // teardown
+      server.close();
+      server.resetHandlers();
+    });
+
+    it("batch - should successfully parse a batch of addresses (mock)", async () => {
+      // setup
+      const restHandlers = [
+        rest.post("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+          return res(ctx.status(200), ctx.json(_mkBatchAddressResponse()));
+        }),
+      ];
+
+      const server = setupServer(...restHandlers);
+      server.listen({ onUnhandledRequest: "error" });
+
+      // test
+      const geocoder = new Geocodio("foobar");
+
+      const resp = await geocoder
+        .batch(["1109 N Highland St, Arlington, VA 22201"])
+        .then((resp) => resp);
+
+      expect(resp._tag).toBe("address_collection");
+
+      // teardown
+      server.close();
+      server.resetHandlers();
+    });
+
+    it("single (e2e)", async () => {
+      const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
+
+      const resp = await geocoder
+        .single("525 University Ave, Toronto, ON, Canada", "CA")
+        .then((resp) => resp);
+
+      expect(resp).toStrictEqual({
+        _tag: "single_address",
+        result: {
+          address_components: {
+            number: "525",
+            street: "University",
+            suffix: "Ave",
+            formatted_street: "University Ave",
+            city: "Toronto",
+            state: "ON",
+            zip: "M5G",
+            country: "CA",
+          },
+          formatted_address: "525 University Ave, Toronto, ON M5G",
+          location: {
+            lat: 43.65625,
+            lng: -79.38822,
+          },
+          accuracy: 1,
+          accuracy_type: "rooftop",
+          source:
+            "Open Government Licence – Toronto Contains information licensed under the Open Government Licence – Toronto",
         },
-      ],
+      });
+    });
+
+    it("batch (e2e)", async () => {
+      const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
+
+      const resp = await geocoder
+        .batch(["525 University Ave, Toronto, ON, Canada"])
+        .then((resp) => resp);
+
+      expect(resp).toStrictEqual({
+        _tag: "address_collection",
+        results: [
+          {
+            query: "525 University Ave, Toronto, ON, Canada",
+            response: [
+              {
+                address_components: {
+                  number: "525",
+                  street: "University",
+                  suffix: "Ave",
+                  formatted_street: "University Ave",
+                  city: "Toronto",
+                  state: "ON",
+                  zip: "M5G",
+                  country: "CA",
+                },
+                formatted_address: "525 University Ave, Toronto, ON M5G",
+                location: {
+                  lat: 43.65625,
+                  lng: -79.38822,
+                },
+                accuracy: 1,
+                accuracy_type: "rooftop",
+                source:
+                  "Open Government Licence – Toronto Contains information licensed under the Open Government Licence – Toronto",
+              },
+            ],
+          },
+        ],
+      });
     });
   });
-
-  // it("handles http error", () => {});
-  // it("handles decode error", () => {});
 });
