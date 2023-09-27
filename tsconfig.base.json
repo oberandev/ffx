@@ -10,9 +10,9 @@
     "module": "esnext",
     "moduleResolution": "node",
     "paths": {
-      "@ffx/parser-address-geocodio": ["packages/parser-address-geocodio/src/index.mts"],
       "@ffx/api": ["packages/api/src/index.mts"],
-      "@ffx/logger": ["packages/logger/src/index.mts"]
+      "@ffx/logger": ["packages/logger/src/index.mts"],
+      "@ffx/parser-address-geocodio": ["packages/parser-address-geocodio/src/index.mts"]
     },
     "rootDir": ".",
     "skipDefaultLibCheck": true,
