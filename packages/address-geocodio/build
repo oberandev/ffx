@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -euo pipefail
+
+pkg=address-geocodio
+pkgDir=packages/${pkg}
+outputDir=dist/out-tsc/packages
+
+tsc -b ${pkgDir}/tsconfig.lib.json && \
+  cp ${pkgDir}/package.json ${pkgDir}/README.md ${pkgDir}/CHANGELOG.md ${outputDir}/${pkg}/
+
