@@ -111,7 +111,7 @@ const _mkBatchAddressResponse = (): BatchAddressResponse => {
   };
 };
 
-describe("addressGeocodio", () => {
+describe("address-geocodio", () => {
   describe("[Decoders]", () => {
     it("AddressComponents", () => {
       const addressComponets = pipe(_mkAddressComponets(), AddressComponentsCodec.decode);
@@ -183,15 +183,12 @@ describe("addressGeocodio", () => {
       // test
       const geocoder = new Geocodio("foobar");
 
-      const resp = await geocoder
-        .single("1109 N Highland St, Arlington, VA 22201")
-        .then((resp) => resp);
+      const resp = await geocoder.parseSingle("1109 N Highland St, Arlington, VA 22201");
 
       expect(resp._tag).toBe("http_error");
 
       // teardown
       server.close();
-      server.resetHandlers();
     });
 
     it("single - should handle a decode error (mock)", async () => {
@@ -208,15 +205,12 @@ describe("addressGeocodio", () => {
       // test
       const geocoder = new Geocodio("foobar");
 
-      const resp = await geocoder
-        .single("1109 N Highland St, Arlington, VA 22201")
-        .then((resp) => resp);
+      const resp = await geocoder.parseSingle("1109 N Highland St, Arlington, VA 22201");
 
       expect(resp._tag).toBe("decoder_error");
 
       // teardown
       server.close();
-      server.resetHandlers();
     });
 
     it("single - should successfully parse a single address (mock)", async () => {
@@ -233,15 +227,12 @@ describe("addressGeocodio", () => {
       // test
       const geocoder = new Geocodio("foobar");
 
-      const resp = await geocoder
-        .single("1109 N Highland St, Arlington, VA 22201")
-        .then((resp) => resp);
+      const resp = await geocoder.parseSingle("1109 N Highland St, Arlington, VA 22201");
 
       expect(resp._tag).toBe("single_address");
 
       // teardown
       server.close();
-      server.resetHandlers();
     });
 
     it("batch - should handle an authentication error (mock)", async () => {
@@ -264,15 +255,12 @@ describe("addressGeocodio", () => {
       // test
       const geocoder = new Geocodio("foobar");
 
-      const resp = await geocoder
-        .batch(["1109 N Highland St, Arlington, VA 22201"])
-        .then((resp) => resp);
+      const resp = await geocoder.parseBatch(["1109 N Highland St, Arlington, VA 22201"]);
 
       expect(resp._tag).toBe("http_error");
 
       // teardown
       server.close();
-      server.resetHandlers();
     });
 
     it("batch - should handle a decode error (mock)", async () => {
@@ -289,15 +277,12 @@ describe("addressGeocodio", () => {
       // test
       const geocoder = new Geocodio("foobar");
 
-      const resp = await geocoder
-        .batch(["1109 N Highland St, Arlington, VA 22201"])
-        .then((resp) => resp);
+      const resp = await geocoder.parseBatch(["1109 N Highland St, Arlington, VA 22201"]);
 
       expect(resp._tag).toBe("decoder_error");
 
       // teardown
       server.close();
-      server.resetHandlers();
     });
 
     it("batch - should successfully parse a batch of addresses (mock)", async () => {
@@ -314,23 +299,18 @@ describe("addressGeocodio", () => {
       // test
       const geocoder = new Geocodio("foobar");
 
-      const resp = await geocoder
-        .batch(["1109 N Highland St, Arlington, VA 22201"])
-        .then((resp) => resp);
+      const resp = await geocoder.parseBatch(["1109 N Highland St, Arlington, VA 22201"]);
 
       expect(resp._tag).toBe("address_collection");
 
       // teardown
       server.close();
-      server.resetHandlers();
     });
 
     it("single (e2e)", async () => {
       const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
 
-      const resp = await geocoder
-        .single("525 University Ave, Toronto, ON, Canada", "CA")
-        .then((resp) => resp);
+      const resp = await geocoder.parseSingle("525 University Ave, Toronto, ON, Canada", "CA");
 
       expect(resp).toStrictEqual({
         _tag: "single_address",
@@ -361,9 +341,7 @@ describe("addressGeocodio", () => {
     it("batch (e2e)", async () => {
       const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
 
-      const resp = await geocoder
-        .batch(["525 University Ave, Toronto, ON, Canada"])
-        .then((resp) => resp);
+      const resp = await geocoder.parseBatch(["525 University Ave, Toronto, ON, Canada"]);
 
       expect(resp).toStrictEqual({
         _tag: "address_collection",

@@ -145,13 +145,13 @@ export default class Geocodio {
    * const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
    *
    * await geocoder
-   *   .single("1109 N Highland St, Arlington, VA 22201")
+   *   .parseSingle("1109 N Highland St, Arlington, VA 22201")
    *   .then((resp) => console.log(resp));
    * ```
    *
    * @since 0.1.0
    */
-  single(
+  parseSingle(
     address: string,
     countryCode: CountryCode = "US",
   ): Promise<DecoderError | SingleAddress | HttpError> {
@@ -191,13 +191,13 @@ export default class Geocodio {
    * const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
    *
    * await geocoder
-   *   .batch(["1109 N Highland St, Arlington, VA 22201"])
+   *   .parseBatch(["1109 N Highland St, Arlington, VA 22201"])
    *   .then((resp) => console.log(resp));
    * ```
    *
    * @since 0.1.0
    */
-  batch(
+  parseBatch(
     addresses: ReadonlyArray<string>,
     limit: number = 2,
   ): Promise<DecoderError | AddressCollection | HttpError> {
