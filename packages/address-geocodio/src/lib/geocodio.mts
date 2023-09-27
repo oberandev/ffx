@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
+import * as RA from "fp-ts/ReadonlyArray";
 import * as t from "io-ts";
 import { failure } from "io-ts/PathReporter";
 
@@ -12,7 +13,7 @@ import pkgJson from "../../package.json";
 //  Runtime decoders
 // ===================
 
-export const ComponentsDecoder = t.partial({
+export const AddressComponentsCodec = t.partial({
   city: t.string,
   county: t.string,
   country: t.string,
@@ -27,12 +28,12 @@ export const ComponentsDecoder = t.partial({
   secondaryunit: t.string,
 });
 
-export const CoordinatesDecoder = t.type({
+export const GeoCoordsCodec = t.type({
   lat: t.number,
   lng: t.number,
 });
 
-export const AccuracyTypeDecoder = t.union([
+export const AccuracyTypeCodec = t.union([
   t.literal("county"),
   t.literal("intersection"),
   t.literal("nearest_rooftop_match"),
@@ -44,42 +45,58 @@ export const AccuracyTypeDecoder = t.union([
   t.literal("street_center"),
 ]);
 
-export const AddressDecoder = t.type({
+export const AddressSummaryCodec = t.type({
   accuracy: t.number,
-  accuracy_type: AccuracyTypeDecoder,
-  address_components: ComponentsDecoder,
+  accuracy_type: AccuracyTypeCodec,
+  address_components: AddressComponentsCodec,
   formatted_address: t.string,
-  location: CoordinatesDecoder,
+  location: GeoCoordsCodec,
   source: t.string,
 });
 
-export const SingleAddressResponseDecoder = t.type({
+export const SingleAddressResponseCodec = t.type({
   input: t.type({
-    address_components: ComponentsDecoder,
+    address_components: AddressComponentsCodec,
     formatted_address: t.string,
   }),
-  results: t.array(AddressDecoder),
+  results: t.array(AddressSummaryCodec),
 });
 
-export const BatchAddressResponseDecoder = t.type({
-  results: t.array(AddressDecoder),
+export const BatchAddressResponseCodec = t.type({
+  results: t.array(
+    t.type({
+      query: t.string,
+      response: SingleAddressResponseCodec,
+    }),
+  ),
 });
 
-const StatusCodeDecoder = t.union([t.literal("GET"), t.literal("POST")]);
+export const HttpMethodCodec = t.union([t.literal("GET"), t.literal("POST")]);
 
 // ===================
 //       Types
 // ===================
 
-export type AccuracyType = t.TypeOf<typeof AccuracyTypeDecoder>;
-export type Address = t.TypeOf<typeof AddressDecoder>;
-export type AddressComponents = t.TypeOf<typeof ComponentsDecoder>;
-export type GeoCoords = t.TypeOf<typeof CoordinatesDecoder>;
-export type SingleAddressResponse = t.TypeOf<typeof SingleAddressResponseDecoder>;
+export type AccuracyType = t.TypeOf<typeof AccuracyTypeCodec>;
+export type AddressSummary = t.TypeOf<typeof AddressSummaryCodec>;
+export type AddressComponents = t.TypeOf<typeof AddressComponentsCodec>;
+export type GeoCoords = t.TypeOf<typeof GeoCoordsCodec>;
+export type SingleAddressResponse = t.TypeOf<typeof SingleAddressResponseCodec>;
+export type BatchAddressResponse = t.TypeOf<typeof BatchAddressResponseCodec>;
 
 type SingleAddress = {
   _tag: "single_address";
-  result: Address;
+  result: AddressSummary;
+};
+
+type BatchAddress = {
+  query: string;
+  response: ReadonlyArray<AddressSummary>;
+};
+
+type AddressCollection = {
+  _tag: "address_collection";
+  results: ReadonlyArray<BatchAddress>;
 };
 
 type DecoderError = {
@@ -102,7 +119,11 @@ type CountryCode = "CA" | "US";
 //       Main
 // ===================
 
-export class Geocodio {
+/**
+ * @constructor
+ * @param apiKey
+ */
+export default class Geocodio {
   #apiKey: string;
 
   constructor(apiKey: string) {
@@ -112,14 +133,21 @@ export class Geocodio {
   /**
    * Parse a single address.
    *
-   * @example
-   * import { Geocodio } from "@oberan/ffx-address-geocodio";
+   * @param address - Address to parse.
+   * @param countryCode - Country for the API to use when attempting to parse the address.
+   * @see {@link https://www.geocod.io/docs/?shell#single-address} for reference.
+   *
+   * @example Simple usage
+   *
+   * ```ts
+   * import Geocodio from "@oberan/ffx-address-geocodio";
    *
    * const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
    *
    * await geocoder
    *   .single("1109 N Highland St, Arlington, VA 22201")
    *   .then((resp) => console.log(resp));
+   * ```
    *
    * @since 0.1.0
    */
@@ -132,7 +160,7 @@ export class Geocodio {
         () =>
           axios.get(`https://api.geocod.io/v1.7/geocode?q=${encodeURIComponent(address)}`, {
             headers: {
-              "User-Agent": `@oberan/ffx-address-geocodio/v${pkgJson.version}`,
+              "User-Agent": `${pkgJson.name}/v${pkgJson.version}`,
             },
             params: {
               api_key: this.#apiKey,
@@ -142,45 +170,56 @@ export class Geocodio {
         (reason: unknown) => reason as AxiosError,
       ),
       TE.chain((resp) => {
-        return TE.of(decodeSingleAddressResponse(resp.data));
+        return TE.of(_decodeSingleAddressResponse(resp.data));
       }),
-      TE.matchW((axiosError) => mkHttpError(axiosError), identity),
+      TE.matchW((axiosError) => _mkHttpError(axiosError), identity),
     )();
   }
 
   /**
-   * Parse multiple addresses at one time.
+   * Parse multiple addresses (up to 10K) at one time.
    *
-   * @example
-   * import { Geocodio } from "@oberan/ffx-address-geocodio";
+   * @param addresses - List of addresses to parse.
+   * @param limit - If set to 0, no limit will be applied.
+   * @see {@link https://www.geocod.io/docs/?shell#batch-geocoding} for reference.
+   *
+   * @example Simple usage
+   *
+   * ```ts
+   * import Geocodio from "@oberan/ffx-address-geocodio";
    *
    * const geocoder = new Geocodio(process.env["GEOCODIO_API_KEY"] ?? "");
    *
    * await geocoder
    *   .batch(["1109 N Highland St, Arlington, VA 22201"])
    *   .then((resp) => console.log(resp));
+   * ```
    *
    * @since 0.1.0
    */
-  batch(addresses: ReadonlyArray<string>) {
+  batch(
+    addresses: ReadonlyArray<string>,
+    limit: number = 2,
+  ): Promise<DecoderError | AddressCollection | HttpError> {
     return pipe(
       TE.tryCatch(
         () =>
           axios.post(`https://api.geocod.io/v1.7/geocode`, addresses, {
             headers: {
-              "User-Agent": `@oberan/ffx-address-geocodio/v${pkgJson.version}`,
+              "User-Agent": `${pkgJson.name}/v${pkgJson.version}`,
             },
             params: {
               api_key: this.#apiKey,
+              limit,
             },
           }),
         (reason: unknown) => reason as AxiosError,
       ),
       TE.chain((resp) => {
-        return TE.of(decodeBatchAddressResponse(resp.data));
+        return TE.of(_decodeBatchAddressResponse(resp.data));
       }),
-      TE.matchW((axiosError) => mkHttpError(axiosError), identity),
-    );
+      TE.matchW((axiosError) => _mkHttpError(axiosError), identity),
+    )();
   }
 }
 
@@ -188,48 +227,61 @@ export class Geocodio {
 //      Helpers
 // ===================
 
-export function decodeSingleAddressResponse(resp: unknown): DecoderError | SingleAddress {
+function _decodeSingleAddressResponse(resp: unknown): DecoderError | SingleAddress {
   return pipe(
-    SingleAddressResponseDecoder.decode(resp),
+    SingleAddressResponseCodec.decode(resp),
     E.matchW(
-      (decodeError) => mkDecoderError(failure(decodeError).join("\n")),
-      (addr) => mkSingleAddress(addr.results[0]),
+      (decodeError) => _mkDecoderError(failure(decodeError).join("\n")),
+      ({ results }) => _mkSingleAddress(results[0]),
     ),
   );
 }
 
-export function decodeBatchAddressResponse(
-  resp: unknown,
-): DecoderError | ReadonlyArray<SingleAddress> {
-  return [];
-  // return pipe(
-  //   BatchAddressResponseDecoder.decode(resp),
-  //   E.matchW(
-  //     (decodeError) => mkDecoderError(failure(decodeError).join("\n")),
-  //     (addr) => mkSingleAddress(addr.results),
-  //   ),
-  // );
+function _decodeBatchAddressResponse(resp: unknown): DecoderError | AddressCollection {
+  return pipe(
+    BatchAddressResponseCodec.decode(resp),
+    E.matchW(
+      (decodeError) => _mkDecoderError(failure(decodeError).join("\n")),
+      ({ results }) => {
+        return pipe(
+          results,
+          RA.map((result) => ({
+            query: result.query,
+            response: result.response.results,
+          })),
+          (rs) => _mkAddressCollection(rs),
+        );
+      },
+    ),
+  );
 }
 
-function mkSingleAddress(address: Address): SingleAddress {
+function _mkSingleAddress(address: AddressSummary): SingleAddress {
   return {
     _tag: "single_address",
     result: address,
   };
 }
 
-function mkDecoderError(reason: string): DecoderError {
+function _mkAddressCollection(addresses: ReadonlyArray<BatchAddress>): AddressCollection {
+  return {
+    _tag: "address_collection",
+    results: addresses,
+  };
+}
+
+function _mkDecoderError(reason: string): DecoderError {
   return {
     _tag: "decoder_error",
     reason,
   };
 }
 
-function mkHttpError(error: AxiosError): HttpError {
+function _mkHttpError(error: AxiosError): HttpError {
   return {
     _tag: "http_error",
     method: pipe(
-      StatusCodeDecoder.decode(error.request?.method),
+      HttpMethodCodec.decode(error.request?.method),
       E.getOrElseW(() => "Unsupported method"),
     ),
     reason: error.message,
@@ -243,7 +295,7 @@ function mkHttpError(error: AxiosError): HttpError {
     ),
     version: pipe(
       t.string.decode(error.config?.headers["User-Agent"]?.toString()),
-      E.getOrElse(() => "v0.0.0"),
+      E.getOrElse(() => "axios"),
     ),
   };
 }
