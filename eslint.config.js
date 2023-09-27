@@ -1,6 +1,7 @@
 const { FlatCompat } = require("@eslint/eslintrc");
 const nxEslintPlugin = require("@nx/eslint-plugin");
 const eslintPluginImport = require("eslint-plugin-import");
+const tsDocPlugin = require("eslint-plugin-tsdoc");
 const js = require("@eslint/js");
 
 const compat = new FlatCompat({
@@ -13,6 +14,7 @@ module.exports = [
     plugins: {
       "@nx": nxEslintPlugin,
       import: eslintPluginImport,
+      tsdoc: tsDocPlugin,
     },
   },
   {
@@ -34,6 +36,7 @@ module.exports = [
           ],
         },
       ],
+      "tsdoc/syntax": "warn",
     },
   },
   ...compat.config({ extends: ["plugin:@nx/typescript"] }).map((config) => ({
