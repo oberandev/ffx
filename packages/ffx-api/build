@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-pkg=api
+pkg=ffx-api
 pkgDir=packages/${pkg}
 outputDir=dist/out-tsc/packages
 

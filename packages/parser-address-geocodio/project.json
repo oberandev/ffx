@@ -8,7 +8,7 @@
       "command": "packages/parser-address-geocodio/build"
     },
     "format:check": {
-      "command": "prettier ./**/*.{mts,ts} --check"
+      "command": "prettier packages/parser-address-geocodio/**/*.{js,mts,ts} --check"
     },
     "lint": {
       "command": "eslint packages/parser-address-geocodio/**/*.{js,mts,ts}"

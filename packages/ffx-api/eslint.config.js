@@ -11,20 +11,20 @@ const compat = new FlatCompat({
 module.exports = [
   ...baseConfig,
   {
-    files: ["packages/api/**/*.mts", "packages/api/**/*.ts"],
+    files: ["packages/ffx-api/**/*.mts", "packages/ffx-api/**/*.ts"],
     rules: {},
   },
   {
-    files: ["packages/api/**/*.mts"],
+    files: ["packages/ffx-api/**/*.mts"],
     rules: {},
   },
   {
-    files: ["packages/api/**/*.ts"],
+    files: ["packages/ffx-api/**/*.ts"],
     rules: {},
   },
   ...compat.config({ parser: "jsonc-eslint-parser" }).map((config) => ({
     ...config,
-    files: ["packages/api/**/*.json"],
+    files: ["packages/ffx-api/**/*.json"],
     rules: {
       "@nx/dependency-checks": [
         "error",

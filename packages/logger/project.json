@@ -8,7 +8,7 @@
       "command": "packages/logger/build"
     },
     "format:check": {
-      "command": "prettier ./**/*.{mts,ts} --check"
+      "command": "prettier packages/logger/**/*.{js,mts,ts} --check"
     },
     "lint": {
       "command": "eslint packages/logger/**/*.{js,mts,ts}"
