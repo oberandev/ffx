@@ -11,7 +11,7 @@
       "command": "prettier ./**/*.{mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/logger/**/*.{mts,ts}"
+      "command": "eslint packages/logger/**/*.{js,mts,ts}"
     },
     "test": {
       "executor": "@nx/vite:test",
@@ -19,7 +19,7 @@
       "options": {
         "coverage": true,
         "passWithNoTests": false,
-        "reporters": ["json"],
+        "reporters": ["default"],
         "reportsDirectory": "../../coverage/packages/logger"
       },
       "configurations": {
