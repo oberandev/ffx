@@ -1,1 +1,3 @@
 use nix
+
+export GEOCODIO_API_KEY=change_me

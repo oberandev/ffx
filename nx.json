@@ -24,6 +24,9 @@
       "preset": "ts",
       "strict": true,
       "unitTestRunner": "vitest"
+    },
+    "@nx/workspace:move": {
+      "projectNameAndRootFormat": "as-provided"
     }
   },
   "workspaceLayout": {
