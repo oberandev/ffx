@@ -1,17 +1,17 @@
 {
-  "name": "logger",
+  "name": "ffx-logger",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/logger/src",
+  "sourceRoot": "packages/ffx-logger/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/logger/build"
+      "command": "packages/ffx-logger/build"
     },
     "format:check": {
-      "command": "prettier ./**/*.{mts,ts} --check"
+      "command": "prettier packages/ffx-logger/**/*.{js,mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/logger/**/*.{js,mts,ts}"
+      "command": "eslint packages/ffx-logger/**/*.{js,mts,ts}"
     },
     "test": {
       "executor": "@nx/vite:test",
@@ -20,7 +20,7 @@
         "coverage": true,
         "passWithNoTests": false,
         "reporters": ["default"],
-        "reportsDirectory": "../../coverage/packages/logger"
+        "reportsDirectory": "../../coverage/packages/ffx-logger"
       },
       "configurations": {
         "watch": {

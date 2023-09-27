@@ -1,5 +1,5 @@
 {
-  "name": "@oberan/ffx-parser-address-geocodio",
+  "name": "@oberan/ffx-logger",
   "description": "Change me!!",
   "version": "0.1.0",
   "license": "BSD-3-Clause",
@@ -15,7 +15,6 @@
     "node": ">= 18"
   },
   "type": "module",
-  "module": "./src/index.mts",
   "main": "./src/index.mts",
   "typings": "./src/index.d.mts",
   "exports": {
@@ -25,6 +24,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/oberandev/ffx.git",
-    "directory": "packages/parser-address-geocodio"
+    "directory": "packages/ffx-logger"
   }
 }

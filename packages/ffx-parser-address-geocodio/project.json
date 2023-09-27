@@ -1,20 +1,20 @@
 {
-  "name": "parser-address-geocodio",
+  "name": "ffx-parser-address-geocodio",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/parser-address-geocodio/src",
+  "sourceRoot": "packages/ffx-parser-address-geocodio/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/parser-address-geocodio/build"
+      "command": "packages/ffx-parser-address-geocodio/build"
     },
     "format:check": {
-      "command": "prettier ./**/*.{mts,ts} --check"
+      "command": "prettier packages/ffx-parser-address-geocodio/**/*.{js,mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/parser-address-geocodio/**/*.{js,mts,ts}"
+      "command": "eslint packages/ffx-parser-address-geocodio/**/*.{js,mts,ts}"
     },
     "publish": {
-      "command": "node tools/scripts/publish.mjs parser-address-geocodio {args.ver} {args.tag}",
+      "command": "node tools/scripts/publish.mjs ffx-parser-address-geocodio {args.ver} {args.tag}",
       "dependsOn": ["build"]
     },
     "test": {
@@ -24,7 +24,7 @@
         "coverage": true,
         "passWithNoTests": false,
         "reporters": ["default"],
-        "reportsDirectory": "../../coverage/packages/parser-address-geocodio"
+        "reportsDirectory": "../../coverage/packages/ffx-parser-address-geocodio"
       },
       "configurations": {
         "watch": {
