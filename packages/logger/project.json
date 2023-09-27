@@ -19,7 +19,7 @@
       "options": {
         "coverage": true,
         "passWithNoTests": false,
-        "reporters": ["json"],
+        "reporters": ["default"],
         "reportsDirectory": "../../coverage/packages/logger"
       },
       "configurations": {

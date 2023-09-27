@@ -11,20 +11,23 @@ const compat = new FlatCompat({
 module.exports = [
   ...baseConfig,
   {
-    files: ["packages/address-geocodio/**/*.mts", "packages/address-geocodio/**/*.ts"],
+    files: [
+      "packages/parser-address-geocodio/**/*.mts",
+      "packages/parser-address-geocodio/**/*.ts",
+    ],
     rules: {},
   },
   {
-    files: ["packages/address-geocodio/**/*.mts"],
+    files: ["packages/parser-address-geocodio/**/*.mts"],
     rules: {},
   },
   {
-    files: ["packages/address-geocodio/**/*.ts"],
+    files: ["packages/parser-address-geocodio/**/*.ts"],
     rules: {},
   },
   ...compat.config({ parser: "jsonc-eslint-parser" }).map((config) => ({
     ...config,
-    files: ["packages/address-geocodio/**/*.json"],
+    files: ["packages/parser-address-geocodio/**/*.json"],
     rules: {
       "@nx/dependency-checks": [
         "error",

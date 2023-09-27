@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-pkg=address-geocodio
+pkg=parser-address-geocodio
 pkgDir=packages/${pkg}
 outputDir=dist/out-tsc/packages
 

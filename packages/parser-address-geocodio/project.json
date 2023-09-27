@@ -1,20 +1,20 @@
 {
-  "name": "address-geocodio",
+  "name": "parser-address-geocodio",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/address-geocodio/src",
+  "sourceRoot": "packages/parser-address-geocodio/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/address-geocodio/build"
+      "command": "packages/parser-address-geocodio/build"
     },
     "format:check": {
       "command": "prettier ./**/*.{mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/address-geocodio/**/*.{js,mts,ts}"
+      "command": "eslint packages/parser-address-geocodio/**/*.{js,mts,ts}"
     },
     "publish": {
-      "command": "node tools/scripts/publish.mjs address-geocodio {args.ver} {args.tag}",
+      "command": "node tools/scripts/publish.mjs parser-address-geocodio {args.ver} {args.tag}",
       "dependsOn": ["build"]
     },
     "test": {
@@ -23,8 +23,8 @@
       "options": {
         "coverage": true,
         "passWithNoTests": false,
-        "reporters": ["json"],
-        "reportsDirectory": "../../coverage/packages/address-geocodio"
+        "reporters": ["default"],
+        "reportsDirectory": "../../coverage/packages/parser-address-geocodio"
       },
       "configurations": {
         "watch": {

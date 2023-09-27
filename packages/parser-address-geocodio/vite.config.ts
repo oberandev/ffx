@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 
 export default defineConfig({
-  cacheDir: "../../node_modules/.vite/address-geocodio",
+  cacheDir: "../../node_modules/.vite/parser-address-geocodio",
 
   plugins: [nxViteTsPaths()],
 
