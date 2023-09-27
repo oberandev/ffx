@@ -25,9 +25,5 @@
     "type": "git",
     "url": "https://github.com/oberandev/ffx.git",
     "directory": "packages/logger"
-  },
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "fp-ts": "^2.16.1"
   }
 }
