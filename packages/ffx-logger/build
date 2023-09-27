@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-pkg=logger
+pkg=ffx-logger
 pkgDir=packages/${pkg}
 outputDir=dist/out-tsc/packages
 

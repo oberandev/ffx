@@ -24,6 +24,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/oberandev/ffx.git",
-    "directory": "packages/logger"
+    "directory": "packages/ffx-logger"
   }
 }
