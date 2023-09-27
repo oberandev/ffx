@@ -1,20 +1,20 @@
 {
-  "name": "api",
+  "name": "ffx-api",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/api/src",
+  "sourceRoot": "packages/ffx-api/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/api/build"
+      "command": "packages/ffx-api/build"
     },
     "format:check": {
-      "command": "prettier ./**/*.{mts,ts} --check"
+      "command": "prettier packages/ffx-api/**/*.{js,mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/api/**/*.{js,mts,ts}"
+      "command": "eslint packages/ffx-api/**/*.{js,mts,ts}"
     },
     "publish": {
-      "command": "node tools/scripts/publish.mjs api {args.ver} {args.tag}",
+      "command": "node tools/scripts/publish.mjs ffx-api {args.ver} {args.tag}",
       "dependsOn": ["build"]
     },
     "test": {
@@ -24,7 +24,7 @@
         "coverage": true,
         "passWithNoTests": false,
         "reporters": ["default"],
-        "reportsDirectory": "../../coverage/packages/api"
+        "reportsDirectory": "../../coverage/packages/ffx-api"
       },
       "configurations": {
         "watch": {
