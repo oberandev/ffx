@@ -20,9 +20,22 @@ module.exports = [
   {
     files: ["**/*.mts", "**/*.ts"],
     rules: {
+      "import/first": "error",
       "import/newline-after-import": "error",
       "import/no-cycle": "error",
       "import/no-relative-parent-imports": "error",
+      "import/no-self-import": "error",
+      "import/order": [
+        "error",
+        {
+          groups: [["builtin", "external", "internal"], ["sibling", "parent"], ["index"]],
+          "newlines-between": "always",
+          alphabetize: {
+            order: "asc",
+            caseInsensitive: true,
+          },
+        },
+      ],
       "@nx/enforce-module-boundaries": [
         "error",
         {
