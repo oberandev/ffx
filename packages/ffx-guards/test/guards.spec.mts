@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import * as G from "./guards.mjs";
+import * as G from "../src/lib/guards.mjs";
 
 describe("ffx-guards", () => {
   it("isNull()", () => {

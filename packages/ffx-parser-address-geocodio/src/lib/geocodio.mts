@@ -119,10 +119,6 @@ type CountryCode = "CA" | "US";
 //       Main
 // ===================
 
-/**
- * @constructor
- * @param apiKey
- */
 export default class Geocodio {
   #apiKey: string;
 
@@ -133,11 +129,9 @@ export default class Geocodio {
   /**
    * Parse a single address.
    *
-   * @param address - Address to parse.
-   * @param countryCode - Country for the API to use when attempting to parse the address.
    * @see {@link https://www.geocod.io/docs/?shell#single-address} for reference.
    *
-   * @example Simple usage
+   * @example
    *
    * ```ts
    * import Geocodio from "@oberan/ffx-address-geocodio";
@@ -179,11 +173,9 @@ export default class Geocodio {
   /**
    * Parse multiple addresses (up to 10K) at one time.
    *
-   * @param addresses - List of addresses to parse.
-   * @param limit - If set to 0, no limit will be applied.
    * @see {@link https://www.geocod.io/docs/?shell#batch-geocoding} for reference.
    *
-   * @example Simple usage
+   * @example
    *
    * ```ts
    * import Geocodio from "@oberan/ffx-address-geocodio";
