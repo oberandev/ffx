@@ -16,9 +16,7 @@ type Falsy = null | undefined | false | "" | 0;
  * Helper function to determine if a value is `null`.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isNull(x)) {
@@ -36,9 +34,7 @@ export const isNull = (x: unknown): x is null => x === null;
  * Helper function to determine if a value is `undefined`.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isUndefined(x)) {
@@ -56,9 +52,7 @@ export const isUndefined = (x: unknown): x is undefined => x === undefined;
  * Helper function to determine if a value is `null`, `undefined` or an empty string.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isNil(x)) {
@@ -77,9 +71,7 @@ export const isNil = (x: unknown): x is Nil =>
  * Helper function to determine if a value is NOT `null` or `undefined`.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isNotNil(x)) {
@@ -97,9 +89,7 @@ export const isNotNil = <T,>(x: T | Nil): x is T => !isNil(x);
  * Helper function to determine if a value is falsy.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isFalsy(x)) {
@@ -118,9 +108,7 @@ export const isFalsy = (x: unknown): x is Falsy =>
  * Helper function to determine if a value is truthy.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isTruthy(x)) {
@@ -138,9 +126,7 @@ export const isTruthy = (x: unknown): x is true => !isFalsy(x);
  * Helper function to determine if a value is a string.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isString(x)) {
@@ -158,9 +144,7 @@ export const isString = (x: unknown): x is string => typeof x === "string";
  * Helper function to determine if a value is a number.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isNumber(x)) {
@@ -178,9 +162,7 @@ export const isNumber = (x: unknown): x is number => typeof x === "number";
  * Helper function to determine if a value is a date.
  * Useful in if/else statements or ternaries.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isDate(x)) {
@@ -201,9 +183,7 @@ export const isDate = (x: unknown): x is Date => x instanceof Date;
  * Note: Does not verify that each value in the array is of type T
  * since the type system does not exist at _runtime_.
  *
- * @param {*} x - Any object/value
- *
- * @example Simple usage
+ * @example
  *
  * ```ts
  * if (isArray<string>(x)) {
