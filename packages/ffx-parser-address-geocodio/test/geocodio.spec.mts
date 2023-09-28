@@ -1,8 +1,8 @@
 import { faker, fakerEN_US } from "@faker-js/faker";
-import { pipe } from "fp-ts/function";
 import * as E from "fp-ts/Either";
-import { setupServer } from "msw/node";
+import { pipe } from "fp-ts/function";
 import { rest } from "msw";
+import { setupServer } from "msw/node";
 
 import Geocodio, {
   AccuracyType,
@@ -18,7 +18,7 @@ import Geocodio, {
   HttpMethodCodec,
   SingleAddressResponse,
   SingleAddressResponseCodec,
-} from "./geocodio.mjs";
+} from "../src/lib/geocodio.mjs";
 
 const _mkAccuracyType = (): AccuracyType => {
   return faker.helpers.arrayElement([

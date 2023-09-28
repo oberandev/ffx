@@ -1,4 +1,4 @@
-import { api } from "./api.mjs";
+import { api } from "../src/lib/api.mjs";
 
 describe("api", () => {
   it("should work", () => {

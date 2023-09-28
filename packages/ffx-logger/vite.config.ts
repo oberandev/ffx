@@ -1,6 +1,6 @@
 /// <reference types='vitest' />
-import { defineConfig } from "vite";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   cacheDir: "../../node_modules/.vite/ffx-logger",
@@ -21,6 +21,6 @@ export default defineConfig({
     },
     environment: "node",
     globals: true,
-    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}"],
+    include: ["test/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}"],
   },
 });

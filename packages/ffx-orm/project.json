@@ -1,5 +1,5 @@
 {
-  "name": "@obera/ffx-orm",
+  "name": "ffx-orm",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/ffx-orm/src",
   "projectType": "library",

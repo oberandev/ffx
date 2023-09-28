@@ -21,7 +21,9 @@
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "passWithNoTests": true,
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["default"],
         "reportsDirectory": "../../coverage/packages/ffx-guards"
       }
     }

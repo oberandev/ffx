@@ -11,6 +11,8 @@ interface Logger {
  * Custom logger for plugins useful for debugging.
  *
  * @example
+ *
+ * ```ts
  * import mklogger from "@obearn/ffx-logger";
  *
  * import pkgJson from "./package.json";
@@ -19,6 +21,7 @@ interface Logger {
  * const logger = mkLogger(pkgJson.name);
  *
  * logger.info("Hello World!");
+ * ```
  *
  * @since 0.1.0
  */
