@@ -1,5 +1,5 @@
 {
-  "name": "@obera/ffx-orm",
+  "name": "ffx-orm",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/ffx-orm/src",
   "projectType": "library",
@@ -21,7 +21,9 @@
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "passWithNoTests": true,
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["default"],
         "reportsDirectory": "../../coverage/packages/ffx-orm"
       }
     }
