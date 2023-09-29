@@ -11,7 +11,10 @@
       "command": "prettier packages/ffx-orm/**/*.{js,mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/ffx-orm/**/*.{js,mts,ts}"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint packages/ffx-orm"
+      }
     },
     "publish": {
       "command": "node tools/scripts/publish.mjs ffx-orm {args.ver} {args.tag}",
@@ -21,7 +24,9 @@
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
       "options": {
-        "passWithNoTests": true,
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["default"],
         "reportsDirectory": "../../coverage/packages/ffx-orm"
       }
     }

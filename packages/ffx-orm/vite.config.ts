@@ -21,6 +21,6 @@ export default defineConfig({
     },
     environment: "node",
     globals: true,
-    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}"],
+    include: ["test/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}"],
   },
 });
