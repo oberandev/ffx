@@ -1,0 +1,38 @@
+{
+  "name": "ffx-cli",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ffx-cli/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "format": ["esm"],
+        "generatePackageJson": false,
+        "main": "packages/ffx-cli/src/index.mts",
+        "outputPath": "dist/packages/ffx-cli",
+        "tsConfig": "packages/ffx-cli/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint packages/ffx-cli"
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs ffx-cli {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/packages/ffx-cli"
+      }
+    }
+  },
+  "tags": []
+}
