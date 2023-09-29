@@ -24,14 +24,6 @@
     "publish": {
       "command": "node tools/scripts/publish.mjs ffx-cli {args.ver} {args.tag}",
       "dependsOn": ["build"]
-    },
-    "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
-      "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/packages/ffx-cli"
-      }
     }
   },
   "tags": []

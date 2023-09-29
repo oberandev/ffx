@@ -1,11 +1,21 @@
 import * as p from "@clack/prompts";
 import chalk from "chalk";
-import * as Str from "fp-ts/string";
+import * as E from "fp-ts/lib/Either.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as RTE from "fp-ts/lib/ReaderTaskEither.js";
+import * as Str from "fp-ts/lib/string.js";
+
+import {
+  ProjectCodec,
+  copyOverTemplate,
+  createProjectDirectory,
+  createPackageJson,
+} from "./lib/helpers.mjs";
 
 async function main() {
   console.clear();
 
-  p.intro(`${chalk.bgCyan(chalk.black(" ffx-cli "))}`);
+  p.intro(`${chalk.bgCyan(chalk.black(" @oberan/ffx-cli "))}`);
 
   const project = await p.group(
     {
@@ -22,7 +32,7 @@ async function main() {
           },
         });
       },
-      type: ({ results }) => {
+      template: ({ results }) => {
         return p.select({
           message: `Pick a project type for ${chalk.blue.bold(results.name)}.`,
           initialValue: "ts",
@@ -31,18 +41,6 @@ async function main() {
             { value: "ts", label: "TypeScript" },
             { value: "js", label: "JavaScript", hint: "oh no" },
           ],
-        });
-      },
-      tools: () => {
-        return p.multiselect({
-          message: "Select additional tools.",
-          initialValues: ["prettier", "eslint"],
-          options: [
-            { value: "prettier", label: "Prettier", hint: "recommended" },
-            { value: "eslint", label: "ESLint", hint: "recommended" },
-            { value: "husky", label: "Husky", hint: "recommended" },
-          ],
-          required: false,
         });
       },
       unitTestRunner: () => {
@@ -56,7 +54,7 @@ async function main() {
           ],
         });
       },
-      packageManager: () => {
+      pkgManager: () => {
         return p.select({
           message: "What package manager should we use?",
           initialValue: "pnpm",
@@ -80,12 +78,6 @@ async function main() {
           ],
         });
       },
-      install: () => {
-        return p.confirm({
-          message: "Install dependencies?",
-          initialValue: true,
-        });
-      },
     },
     {
       onCancel: () => {
@@ -95,11 +87,34 @@ async function main() {
     },
   );
 
-  let nextSteps = `cd ${project.name}        \n${project.install ? "" : "pnpm install\n"}pnpm dev`;
+  pipe(
+    ProjectCodec.decode(project),
+    E.match(
+      (decodeError) => console.error(JSON.stringify(decodeError)),
+      (proj) => {
+        const taskPipeline = pipe(
+          createProjectDirectory(),
+          // RTE.chain(() => copyOverTemplate()),
+          RTE.chain(() => createPackageJson()),
+          RTE.match(
+            (err) => console.log(err),
+            () => {
+              const nextSteps = `cd ${proj.name}`;
+              p.note(nextSteps, "Next steps.");
 
-  p.note(nextSteps, "Next steps.");
+              p.outro(
+                `Problems? ${chalk.underline(
+                  chalk.cyan("https://github.com/oberandev/ffx/issues"),
+                )}`,
+              );
+            },
+          ),
+        )(proj);
 
-  p.outro(`Problems? ${chalk.underline(chalk.cyan("https://github.com/oberandev/ffx/issues"))}`);
+        taskPipeline();
+      },
+    ),
+  );
 }
 
 main().catch(console.error);
