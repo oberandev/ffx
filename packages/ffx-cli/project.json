@@ -8,11 +8,15 @@
       "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "assets": ["{projectRoot}/*.md", "{workspaceRoot}/LICENSE"],
+        "esbuildOptions": {
+          "banner": { "js": "#!/usr/bin/env node" }
+        },
         "format": ["esm"],
         "generatePackageJson": false,
-        "main": "packages/ffx-cli/src/index.mts",
+        "main": "{projectRoot}/src/index.mts",
         "outputPath": "dist/packages/ffx-cli",
-        "tsConfig": "packages/ffx-cli/tsconfig.lib.json"
+        "tsConfig": "{projectRoot}/tsconfig.lib.json"
       }
     },
     "lint": {

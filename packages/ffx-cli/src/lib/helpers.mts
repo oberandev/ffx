@@ -1,5 +1,7 @@
 import { $ } from "execa";
+import * as E from "fp-ts/lib/Either.js";
 import { constVoid, pipe } from "fp-ts/lib/function.js";
+import * as J from "fp-ts/lib/Json.js";
 import * as RTE from "fp-ts/lib/ReaderTaskEither.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as t from "io-ts";
@@ -54,7 +56,7 @@ export function createPackageJson(): RTE.ReaderTaskEither<Project, string, void>
     RTE.chainTaskEitherK((project) => {
       return TE.tryCatch(
         () => {
-          const packageJson = {
+          const packageJson: J.Json = {
             name: project.name,
             version: "0.0.0",
             private: true,
@@ -82,9 +84,20 @@ export function createPackageJson(): RTE.ReaderTaskEither<Project, string, void>
             },
           };
 
-          return fs.writeFile(
-            "./unicorns/package.json",
-            JSON.stringify(packageJson, null, 2) + os.EOL,
+          return pipe(
+            J.stringify(JSON.stringify(packageJson, null, 2) + os.EOL),
+            E.match(
+              (err: unknown) => {
+                if (err instanceof Error) {
+                  return Promise.reject(err.message);
+                } else {
+                  return Promise.reject("Unknown error stringifying JSON");
+                }
+              },
+              (stringified) => {
+                return fs.writeFile(`./${project.name}/package.json`, stringified);
+              },
+            ),
           );
         },
         (err: unknown) => JSON.stringify(err),

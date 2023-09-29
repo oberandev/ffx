@@ -10,6 +10,7 @@ import {
   copyOverTemplate,
   createProjectDirectory,
   createPackageJson,
+  installDependencies,
 } from "./lib/helpers.mjs";
 
 async function main() {
@@ -96,6 +97,7 @@ async function main() {
           createProjectDirectory(),
           // RTE.chain(() => copyOverTemplate()),
           RTE.chain(() => createPackageJson()),
+          RTE.chain(() => installDependencies()),
           RTE.match(
             (err) => console.log(err),
             () => {
