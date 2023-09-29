@@ -11,7 +11,10 @@
       "command": "prettier packages/ffx-api/**/*.{js,mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/ffx-api/**/*.{js,mts,ts}"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint packages/ffx-api"
+      }
     },
     "publish": {
       "command": "node tools/scripts/publish.mjs ffx-api {args.ver} {args.tag}",
