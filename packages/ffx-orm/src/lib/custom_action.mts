@@ -1,5 +1,5 @@
-import { pipe } from "fp-ts/function";
 import * as Eq from "fp-ts/Eq";
+import { pipe } from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as Str from "fp-ts/string";
 

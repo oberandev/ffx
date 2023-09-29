@@ -1,6 +1,6 @@
-import { pipe } from "fp-ts/function";
 import * as E from "fp-ts/Either";
 import * as Eq from "fp-ts/Eq";
+import { pipe } from "fp-ts/function";
 import * as J from "fp-ts/Json";
 import * as O from "fp-ts/Option";
 import * as RA from "fp-ts/ReadonlyArray";
