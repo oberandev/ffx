@@ -16,9 +16,7 @@ import {
 import pkgJson from "../package.json"; // eslint-disable-line import/no-relative-parent-imports
 
 async function initPrompter() {
-  console.clear();
-
-  p.intro(`${chalk.bgCyan(chalk.black(" @oberan/ffx-cli "))}`);
+  p.intro(`${chalk.bgCyan(chalk.black(" ffx "))}`);
 
   const project = await p.group(
     {
