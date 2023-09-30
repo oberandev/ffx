@@ -1,5 +1,6 @@
 import * as p from "@clack/prompts";
 import chalk from "chalk";
+import { Command } from "commander";
 import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as RTE from "fp-ts/lib/ReaderTaskEither.js";
@@ -12,8 +13,9 @@ import {
   createPackageJson,
   installDependencies,
 } from "./lib/helpers.mjs";
+import pkgJson from "../package.json"; // eslint-disable-line import/no-relative-parent-imports
 
-async function main() {
+async function initPrompter() {
   console.clear();
 
   p.intro(`${chalk.bgCyan(chalk.black(" @oberan/ffx-cli "))}`);
@@ -119,4 +121,24 @@ async function main() {
   );
 }
 
-main().catch(console.error);
+function main() {
+  const program = new Command();
+
+  program.name("ffx").description("CLI to do magic").version(pkgJson.version);
+
+  program
+    .command("init")
+    .description("Use the prompter to initialize a ffx project")
+    .action(() => initPrompter().catch(console.error));
+
+  program
+    .command("publish")
+    .description("Publish your code")
+    .requiredOption("-f, --file <FILE_PATH>", "file path to bundler output")
+    .option("-d, --debug", "display some debugging")
+    .action(() => console.log("Not yet implemented"));
+
+  program.parse();
+}
+
+main();
