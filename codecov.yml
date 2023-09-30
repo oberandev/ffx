@@ -10,7 +10,14 @@ coverage:
   status:
     project:
       default:
-        informational: true
+        target: 80%
+        threshold: 1%
+        paths:
+          - "packages/"
+        branches:
+          - main
     patch:
       default:
-        informational: true
+        target: 80%
+        paths:
+          - "packages/"
