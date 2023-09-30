@@ -7,8 +7,11 @@
   },
   "private": true,
   "dependencies": {
+    "@clack/prompts": "^0.7.0",
     "axios": "^1.5.1",
     "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "execa": "^8.0.1",
     "fp-ts": "^2.16.1",
     "io-ts": "^2.2.20",
     "ts-pattern": "^5.0.5"
@@ -17,15 +20,17 @@
     "@eslint/eslintrc": "^2.1.1",
     "@faker-js/faker": "^8.1.0",
     "@microsoft/tsdoc-config": "^0.16.2",
+    "@nx/esbuild": "16.9.1",
     "@nx/eslint-plugin": "16.9.1",
     "@nx/js": "16.9.1",
     "@nx/vite": "16.9.1",
     "@nx/workspace": "16.9.1",
-    "@types/node": "^20.7.1",
+    "@types/node": "^20.8.0",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
-    "@vitest/coverage-v8": "^0.34.0",
-    "@vitest/ui": "^0.34.0",
+    "@vitest/coverage-v8": "^0.34.6",
+    "@vitest/ui": "^0.34.6",
+    "esbuild": "^0.19.0",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.28.1",
@@ -39,7 +44,7 @@
     "typescript": "^5.2.2",
     "verdaccio": "^5.0.4",
     "vite": "^4.4.0",
-    "vitest": "^0.34.0"
+    "vitest": "^0.34.6"
   },
   "lint-staged": {
     "**/*.json": [
