@@ -1,7 +1,17 @@
 codecov:
   bot: "codecov"
   require_ci_to_pass: true
+
 comment:
   layout: "diff, flags, files"
   behavior: default
   require_changes: false
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
