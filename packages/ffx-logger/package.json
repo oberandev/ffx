@@ -3,6 +3,7 @@
   "description": "Change me!!",
   "version": "0.1.0",
   "license": "BSD-3-Clause",
+  "private": true,
   "keywords": [
     "change me"
   ],
