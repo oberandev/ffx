@@ -57,7 +57,7 @@ const eqDbConstraint: Eq.Eq<DbConstraint> = pipe(
   Eq.contramap((dbContstraint) => dbContstraint.type),
 );
 
-export interface ReferenceField {
+export interface LinkedField {
   readonly constraints?: ReadonlyArray<DbConstraint>;
   readonly description?: string;
   readonly key: string;
@@ -73,23 +73,23 @@ interface Builder {
   readonly withReadonly: () => Builder;
   readonly withRequired: () => Builder;
   readonly withUnique: (args?: UniqueConstraintArgs) => Builder;
-  readonly done: () => ReferenceField;
+  readonly done: () => LinkedField;
 }
 
 /**
- * Builder class for a `ReferenceField`.
+ * Builder class for a `LinkedField`.
  *
  * @example
  *
  * ```ts
- * import { ReferenceFieldBuilder } from "@oberan/ffx-orm";
+ * import { LinkedFieldBuilder } from "@oberan/ffx-orm";
  *
- * const referenceField = new ReferenceFieldBuilder("foo_bar", "Foo Bar").done();
+ * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar").done();
  * ```
  *
  * @since 0.1.0
  */
-export class ReferenceFieldBuilder implements Builder {
+export class LinkedFieldBuilder implements Builder {
   #constraints: ReadonlyArray<DbConstraint> = [];
   #description: O.Option<string> = O.none;
   readonly #displayName: string;
@@ -108,16 +108,16 @@ export class ReferenceFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { ReferenceFieldBuilder } from "@oberan/ffx-orm";
+   * import { LinkedFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const referenceField = new ReferenceFieldBuilder("foo_bar", "Foo Bar")
+   * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
    *   .withDescription("some description")
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withDescription(description: string): ReferenceFieldBuilder {
+  withDescription(description: string): LinkedFieldBuilder {
     this.#description = O.some(description);
 
     return this;
@@ -129,16 +129,16 @@ export class ReferenceFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { ReferenceFieldBuilder } from "@oberan/ffx-orm";
+   * import { LinkedFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const referenceField = new ReferenceFieldBuilder("foo_bar", "Foo Bar")
+   * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
    *   .withMetadata({ foo: "bar" })
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withMetadata(json: J.Json): ReferenceFieldBuilder {
+  withMetadata(json: J.Json): LinkedFieldBuilder {
     this.#metadata = O.some(json);
 
     return this;
@@ -150,16 +150,16 @@ export class ReferenceFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { ReferenceFieldBuilder } from "@oberan/ffx-orm";
+   * import { LinkedFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const referenceField = new ReferenceFieldBuilder("foo_bar", "Foo Bar")
+   * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
    *   .withReadonly()
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withReadonly(): ReferenceFieldBuilder {
+  withReadonly(): LinkedFieldBuilder {
     this.#isReadOnly = true;
 
     return this;
@@ -171,16 +171,16 @@ export class ReferenceFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { ReferenceFieldBuilder } from "@oberan/ffx-orm";
+   * import { LinkedFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const referenceField = new ReferenceFieldBuilder("foo_bar", "Foo Bar")
+   * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
    *   .withRequired()
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withRequired(): ReferenceFieldBuilder {
+  withRequired(): LinkedFieldBuilder {
     this.#constraints = pipe(
       this.#constraints,
       RA.append(_mkRequiredConstraint()),
@@ -196,16 +196,16 @@ export class ReferenceFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { ReferenceFieldBuilder } from "@oberan/ffx-orm";
+   * import { LinkedFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const referenceField = new ReferenceFieldBuilder("foo_bar", "Foo Bar")
+   * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
    *   .withUnique()
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withUnique(args?: UniqueConstraintArgs): ReferenceFieldBuilder {
+  withUnique(args?: UniqueConstraintArgs): LinkedFieldBuilder {
     this.#constraints = pipe(
       this.#constraints,
       RA.append(_mkUniqueConstraint(args)),
@@ -220,7 +220,7 @@ export class ReferenceFieldBuilder implements Builder {
    *
    * @since 0.1.0
    */
-  done(): ReferenceField {
+  done(): LinkedField {
     return {
       constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints,
       description: pipe(
