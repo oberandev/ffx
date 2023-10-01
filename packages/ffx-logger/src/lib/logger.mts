@@ -1,10 +1,12 @@
 import chalk from "chalk";
-import * as IO from "fp-ts/IO";
+import * as IO from "fp-ts/lib/IO.js";
 
 interface Logger {
-  fatal: (msg: string) => IO.IO<void>;
-  info: (msg: string) => IO.IO<void>;
-  warn: (msg: string) => IO.IO<void>;
+  readonly debug: (msg: string) => IO.IO<void>;
+  readonly fatal: (msg: string) => IO.IO<void>;
+  readonly info: (msg: string) => IO.IO<void>;
+  readonly trace: (msg: string) => IO.IO<void>;
+  readonly warn: (msg: string) => IO.IO<void>;
 }
 
 /**

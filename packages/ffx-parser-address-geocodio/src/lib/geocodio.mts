@@ -1,8 +1,8 @@
 import axios, { AxiosError } from "axios";
-import { identity, pipe } from "fp-ts/function";
-import * as E from "fp-ts/Either";
-import * as TE from "fp-ts/TaskEither";
-import * as RA from "fp-ts/ReadonlyArray";
+import * as E from "fp-ts/lib/Either.js";
+import { identity, pipe } from "fp-ts/lib/function.js";
+import * as RA from "fp-ts/lib/ReadonlyArray.js";
+import * as TE from "fp-ts/lib/TaskEither.js";
 import * as t from "io-ts";
 import { failure } from "io-ts/PathReporter";
 
