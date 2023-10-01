@@ -1,10 +1,12 @@
 import chalk from "chalk";
-import * as IO from "fp-ts/IO";
+import * as IO from "fp-ts/lib/IO.js";
 
 interface Logger {
-  fatal: (msg: string) => IO.IO<void>;
-  info: (msg: string) => IO.IO<void>;
-  warn: (msg: string) => IO.IO<void>;
+  readonly debug: (msg: string) => IO.IO<void>;
+  readonly fatal: (msg: string) => IO.IO<void>;
+  readonly info: (msg: string) => IO.IO<void>;
+  readonly trace: (msg: string) => IO.IO<void>;
+  readonly warn: (msg: string) => IO.IO<void>;
 }
 
 /**
@@ -13,7 +15,7 @@ interface Logger {
  * @example
  *
  * ```ts
- * import mklogger from "@obearn/ffx-logger";
+ * import mkLogger from "@obearn/ffx-logger";
  *
  * import pkgJson from "./package.json";
  * // note: you'll need `"resolveJsonModule": true` in your `tsconfig.json`
@@ -27,14 +29,55 @@ interface Logger {
  */
 function mkLogger(pluginName: string): Logger {
   return {
+    debug: (msg: string) => {
+      return IO.of(
+        console.debug(
+          `${chalk.inverse(` ${pluginName} | ${new Date().toISOString()} `)} ${chalk.blue(
+            "[DEBUG]",
+          )}`,
+          msg,
+        ),
+      );
+    },
     fatal: (msg: string) => {
-      return IO.of(console.error(chalk.red(`[${pluginName}]:[FATAL]`, msg)));
+      return IO.of(
+        console.error(
+          `${chalk.inverse(` ${pluginName} | ${new Date().toISOString()} `)} ${chalk.red(
+            "[FATAL]",
+          )}`,
+          msg,
+        ),
+      );
     },
     info: (msg: string) => {
-      return IO.of(console.info(chalk.grey(`[${pluginName}]:[INFO]`, msg)));
+      return IO.of(
+        console.info(
+          `${chalk.inverse(` ${pluginName} | ${new Date().toISOString()} `)} ${chalk.green(
+            "[INFO]",
+          )}`,
+          msg,
+        ),
+      );
+    },
+    trace: (msg: string) => {
+      return IO.of(
+        console.info(
+          `${chalk.inverse(` ${pluginName} | ${new Date().toISOString()} `)} ${chalk.magenta(
+            "[TRACE]",
+          )}`,
+          msg,
+        ),
+      );
     },
     warn: (msg: string) => {
-      return IO.of(console.warn(chalk.yellow(`[${pluginName}]:[WARN]`, msg)));
+      return IO.of(
+        console.warn(
+          `${chalk.inverse(` ${pluginName} | ${new Date().toISOString()} `)} ${chalk.yellow(
+            "[WARN]",
+          )}`,
+          msg,
+        ),
+      );
     },
   };
 }

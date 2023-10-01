@@ -4,7 +4,15 @@ import mkLogger from "../src/lib/logger.mjs";
 describe("logger", () => {
   const logger = mkLogger(pkgJson.name);
 
-  it("should handle fatal messages", () => {
+  it("should handle a debug message", () => {
+    const spy = vi.spyOn(logger, "debug");
+
+    logger.debug("foo");
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should handle a fatal message", () => {
     const spy = vi.spyOn(logger, "fatal");
 
     logger.fatal("foo");
@@ -12,7 +20,7 @@ describe("logger", () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it("should handle info messages", () => {
+  it("should handle a info message", () => {
     const spy = vi.spyOn(logger, "info");
 
     logger.info("foo");
@@ -20,7 +28,15 @@ describe("logger", () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it("should handle warn messages", () => {
+  it("should handle a trace message", () => {
+    const spy = vi.spyOn(logger, "trace");
+
+    logger.trace("foo");
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should handle a warn message", () => {
     const spy = vi.spyOn(logger, "warn");
 
     logger.warn("foo");
