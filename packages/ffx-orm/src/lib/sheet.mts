@@ -8,7 +8,7 @@ import * as Str from "fp-ts/lib/string.js";
 
 import { BooleanField } from "./boolean_field.mjs";
 import { CustomAction, eqCustomAction } from "./custom_action.mjs";
-import { EnumField } from "./enum_field.mjs";
+import { OptionField } from "./enum_field.mjs";
 import { LinkedField } from "./linked_field.mjs";
 import { NumberField } from "./number_field.mjs";
 import { TextField } from "./text_field.mjs";
@@ -17,7 +17,7 @@ export type Permission = "*" | "add" | "delete" | "edit" | "import";
 
 const eqPermission: Eq.Eq<Permission> = Str.Eq;
 
-type Field = BooleanField | EnumField | NumberField | LinkedField | TextField;
+type Field = BooleanField | OptionField | NumberField | LinkedField | TextField;
 
 export const eqField: Eq.Eq<Field> = {
   equals: (x, y) => {

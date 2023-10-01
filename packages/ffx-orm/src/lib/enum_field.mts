@@ -57,7 +57,7 @@ const eqDbConstraint: Eq.Eq<DbConstraint> = pipe(
   Eq.contramap((dbContstraint) => dbContstraint.type),
 );
 
-export interface EnumField {
+export interface OptionField {
   readonly constraints?: ReadonlyArray<DbConstraint>;
   readonly description?: string;
   readonly key: string;
@@ -73,23 +73,23 @@ interface Builder {
   readonly withReadonly: () => Builder;
   readonly withRequired: () => Builder;
   readonly withUnique: (args?: UniqueConstraintArgs) => Builder;
-  readonly done: () => EnumField;
+  readonly done: () => OptionField;
 }
 
 /**
- * Builder class for a `EnumField`.
+ * Builder class for a `OptionField`.
  *
  * @example
  *
  * ```ts
- * import { EnumFieldBuilder } from "@oberan/ffx-orm";
+ * import { OptionFieldBuilder } from "@oberan/ffx-orm";
  *
- * const enumField = new EnumFieldBuilder("foo_bar", "Foo Bar").done();
+ * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar").done();
  * ```
  *
  * @since 0.1.0
  */
-export class EnumFieldBuilder implements Builder {
+export class OptionFieldBuilder implements Builder {
   #constraints: ReadonlyArray<DbConstraint> = [];
   #description: O.Option<string> = O.none;
   readonly #displayName: string;
@@ -108,16 +108,16 @@ export class EnumFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { EnumFieldBuilder } from "@oberan/ffx-orm";
+   * import { OptionFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const enumField = new EnumFieldBuilder("foo_bar", "Foo Bar")
+   * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar")
    *   .withDescription("some description")
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withDescription(description: string): EnumFieldBuilder {
+  withDescription(description: string): OptionFieldBuilder {
     this.#description = O.some(description);
 
     return this;
@@ -129,16 +129,16 @@ export class EnumFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { EnumFieldBuilder } from "@oberan/ffx-orm";
+   * import { OptionFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const enumField = new EnumFieldBuilder("foo_bar", "Foo Bar")
+   * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar")
    *   .withMetadata({ foo: "bar" })
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withMetadata(json: J.Json): EnumFieldBuilder {
+  withMetadata(json: J.Json): OptionFieldBuilder {
     this.#metadata = O.some(json);
 
     return this;
@@ -150,16 +150,16 @@ export class EnumFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { EnumFieldBuilder } from "@oberan/ffx-orm";
+   * import { OptionFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const enumField = new EnumFieldBuilder("foo_bar", "Foo Bar")
+   * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar")
    *   .withReadonly()
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withReadonly(): EnumFieldBuilder {
+  withReadonly(): OptionFieldBuilder {
     this.#isReadOnly = true;
 
     return this;
@@ -171,16 +171,16 @@ export class EnumFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { EnumFieldBuilder } from "@oberan/ffx-orm";
+   * import { OptionFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const enumField = new EnumFieldBuilder("foo_bar", "Foo Bar")
+   * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar")
    *   .withRequired()
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withRequired(): EnumFieldBuilder {
+  withRequired(): OptionFieldBuilder {
     this.#constraints = pipe(
       this.#constraints,
       RA.append(_mkRequiredConstraint()),
@@ -196,16 +196,16 @@ export class EnumFieldBuilder implements Builder {
    * @example
    *
    * ```ts
-   * import { EnumFieldBuilder } from "@oberan/ffx-orm";
+   * import { OptionFieldBuilder } from "@oberan/ffx-orm";
    *
-   * const enumField = new EnumFieldBuilder("foo_bar", "Foo Bar")
+   * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar")
    *   .withUnique()
    *   .done();
    * ```
    *
    * @since 0.1.0
    */
-  withUnique(args?: UniqueConstraintArgs): EnumFieldBuilder {
+  withUnique(args?: UniqueConstraintArgs): OptionFieldBuilder {
     this.#constraints = pipe(
       this.#constraints,
       RA.append(_mkUniqueConstraint(args)),
@@ -220,7 +220,7 @@ export class EnumFieldBuilder implements Builder {
    *
    * @since 0.1.0
    */
-  done(): EnumField {
+  done(): OptionField {
     return {
       constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints,
       description: pipe(
