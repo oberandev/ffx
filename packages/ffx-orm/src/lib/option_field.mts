@@ -7,6 +7,8 @@ import * as Str from "fp-ts/lib/string.js";
 
 type DbConstraint = RequiredConstraint | UniqueConstraint;
 
+type DbConstraints = ReadonlyArray<DbConstraint>;
+
 interface RequiredConstraint {
   readonly type: "required";
 }
@@ -58,7 +60,13 @@ const eqDbConstraint: Eq.Eq<DbConstraint> = pipe(
 );
 
 export interface OptionField {
-  readonly constraints?: ReadonlyArray<DbConstraint>;
+  readonly config: Readonly<{
+    options: ReadonlyArray<{
+      readonly label: string;
+      readonly value: string;
+    }>;
+  }>;
+  readonly constraints?: DbConstraints;
   readonly description?: string;
   readonly key: string;
   readonly label?: string;
@@ -67,7 +75,20 @@ export interface OptionField {
   readonly type: "enum";
 }
 
+interface Choice {
+  readonly displayValue: string;
+  readonly internalKey: string;
+}
+
+export type Choices = ReadonlyArray<Choice>;
+
+const eqChoice: Eq.Eq<Choice> = pipe(
+  Str.Eq,
+  Eq.contramap((choice) => choice.internalKey),
+);
+
 interface Builder {
+  readonly withChoices: (choices: Choices) => Builder;
   readonly withDescription: (description: string) => Builder;
   readonly withMetadata: (json: J.Json) => Builder;
   readonly withReadonly: () => Builder;
@@ -84,13 +105,16 @@ interface Builder {
  * ```ts
  * import { OptionFieldBuilder } from "@oberan/ffx-orm";
  *
- * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar").done();
+ * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar")
+ *   .withChoices([{ internalKey: "foo_bar", displayValue: "Foo Bar" }])
+ *   .done();
  * ```
  *
  * @since 0.1.0
  */
 export class OptionFieldBuilder implements Builder {
-  #constraints: ReadonlyArray<DbConstraint> = [];
+  #choices: Choices = [];
+  #constraints: DbConstraints = [];
   #description: O.Option<string> = O.none;
   readonly #displayName: string;
   readonly #internaKey: string;
@@ -100,6 +124,27 @@ export class OptionFieldBuilder implements Builder {
   constructor(internaKey: string, displayName: string) {
     this.#displayName = displayName;
     this.#internaKey = internaKey;
+  }
+
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { OptionFieldBuilder } from "@oberan/ffx-orm";
+   *
+   * const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar")
+   *   .withChoices([{ internalKey: "foo_bar", displayValue: "Foo Bar" }])
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
+  withChoices(choices: Choices): OptionFieldBuilder {
+    this.#choices = pipe(choices, RA.uniq(eqChoice));
+
+    return this;
   }
 
   /**
@@ -222,6 +267,15 @@ export class OptionFieldBuilder implements Builder {
    */
   done(): OptionField {
     return {
+      config: {
+        options: pipe(
+          this.#choices,
+          RA.map((choice) => ({
+            label: choice.displayValue,
+            value: choice.internalKey,
+          })),
+        ),
+      },
       constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints,
       description: pipe(
         this.#description,

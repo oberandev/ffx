@@ -1,6 +1,6 @@
 import * as J from "fp-ts/lib/Json.js";
 
-import { OptionFieldBuilder } from "../src/lib/option_field.mjs";
+import { Choices, OptionFieldBuilder } from "../src/lib/option_field.mjs";
 
 describe("OptionField", () => {
   describe("[Builders]", () => {
@@ -15,6 +15,14 @@ describe("OptionField", () => {
       expect(optionField.readonly).toBe(false);
       expect(optionField.type).toEqual("enum");
     });
+  });
+
+  it("should handle withChoices()", () => {
+    const choices: Choices = [{ internalKey: "foo_bar", displayValue: "Foo Bar" }];
+
+    const optionField = new OptionFieldBuilder("foo_bar", "Foo Bar").withChoices(choices).done();
+
+    expect(optionField.config.options).toStrictEqual([{ label: "Foo Bar", value: "foo_bar" }]);
   });
 
   it("should handle withDescription()", () => {
