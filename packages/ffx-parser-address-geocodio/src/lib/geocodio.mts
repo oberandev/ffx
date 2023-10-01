@@ -120,7 +120,7 @@ type CountryCode = "CA" | "US";
 // ===================
 
 export default class Geocodio {
-  #apiKey: string;
+  readonly #apiKey: string;
 
   constructor(apiKey: string) {
     this.#apiKey = apiKey;
