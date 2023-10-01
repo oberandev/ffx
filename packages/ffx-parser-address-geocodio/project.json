@@ -11,7 +11,10 @@
       "command": "prettier packages/ffx-parser-address-geocodio/**/*.{js,mts,ts} --check"
     },
     "lint": {
-      "command": "eslint packages/ffx-parser-address-geocodio/**/*.{js,mts,ts}"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint packages/ffx-parser-address-geocodio"
+      }
     },
     "publish": {
       "command": "node tools/scripts/publish.mjs ffx-parser-address-geocodio {args.ver} {args.tag}",

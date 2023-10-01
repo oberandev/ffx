@@ -22,6 +22,7 @@
 - We strongly encourage the [parse, don't validate](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/) approach
 - Guide you towards the [_pit of success_](https://blog.codinghorror.com/falling-into-the-pit-of-success/) rather than the _pit of dispair_
 - All packages export only pure ES Modules
+- Code is thoroughly documented with JSDoc for better DX
 - Code never _throws_ errors; errors are instead returned as data
 - Competing ideas in a community are not a bad thing!
 
