@@ -11,15 +11,23 @@ const compat = new FlatCompat({
 module.exports = [
   ...baseConfig,
   {
-    files: ["packages/ffx-logger/**/*.mts", "packages/ffx-logger/**/*.ts"],
+    files: ["packages/ffx-logger/**/*.{js,ts,mjs,mts}"],
     rules: {},
   },
   {
-    files: ["packages/ffx-logger/**/*.mts"],
+    files: ["packages/ffx-logger/**/*.js"],
     rules: {},
   },
   {
     files: ["packages/ffx-logger/**/*.ts"],
+    rules: {},
+  },
+  {
+    files: ["packages/ffx-logger/**/*.mjs"],
+    rules: {},
+  },
+  {
+    files: ["packages/ffx-logger/**/*.mts"],
     rules: {},
   },
   ...compat.config({ parser: "jsonc-eslint-parser" }).map((config) => ({
