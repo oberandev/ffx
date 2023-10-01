@@ -1,10 +1,9 @@
-import * as E from "fp-ts/Either";
-import * as Eq from "fp-ts/Eq";
-import { pipe } from "fp-ts/function";
-import * as J from "fp-ts/Json";
-import * as O from "fp-ts/Option";
-import * as RA from "fp-ts/ReadonlyArray";
-import * as Str from "fp-ts/string";
+import * as Eq from "fp-ts/lib/Eq.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as J from "fp-ts/lib/Json.js";
+import * as O from "fp-ts/lib/Option.js";
+import * as RA from "fp-ts/lib/ReadonlyArray.js";
+import * as Str from "fp-ts/lib/string.js";
 
 type DbConstraint = RequiredConstraint | UniqueConstraint;
 
@@ -69,16 +68,24 @@ export interface TextField {
 }
 
 interface Builder {
-  withDescription: (description: string) => Builder;
-  withMetadata: (json: J.Json) => Builder;
-  withReadonly: () => Builder;
-  withRequired: () => Builder;
-  withUnique: (args?: UniqueConstraintArgs) => Builder;
-  done: () => TextField;
+  readonly withDescription: (description: string) => Builder;
+  readonly withMetadata: (json: J.Json) => Builder;
+  readonly withReadonly: () => Builder;
+  readonly withRequired: () => Builder;
+  readonly withUnique: (args?: UniqueConstraintArgs) => Builder;
+  readonly done: () => TextField;
 }
 
 /**
  * Builder class for a `TextField`.
+ *
+ * @example
+ *
+ * ```ts
+ * import { TextFieldBuilder } from "@oberan/ffx-orm";
+ *
+ * const textField = new TextFieldBuilder("foo_bar", "Foo Bar").done();
+ * ```
  *
  * @since 0.1.0
  */
@@ -101,6 +108,8 @@ export class TextFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { TextFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const email = new TextFieldBuilder("email", "Email")
    *   .withDescription("Company email address")
    *   .done();
@@ -120,6 +129,8 @@ export class TextFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { TextFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const email = new TextFieldBuilder("email", "Email")
    *   .withMetadata({ foo: "bar" })
    *   .done();
@@ -139,6 +150,8 @@ export class TextFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { TextFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const email = new TextFieldBuilder("email", "Email")
    *   .withReadonly()
    *   .done();
@@ -158,6 +171,8 @@ export class TextFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { TextFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const email = new TextFieldBuilder("email", "Email")
    *   .withRequired()
    *   .done();
@@ -181,6 +196,8 @@ export class TextFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { TextFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const email = new TextFieldBuilder("email", "Email")
    *   .withUnique()
    *   .done();
@@ -205,19 +222,19 @@ export class TextFieldBuilder implements Builder {
    */
   done(): TextField {
     return {
-      type: "string",
-      key: this.#internaKey,
+      constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints,
       description: pipe(
         this.#description,
         O.getOrElseW(() => undefined),
       ),
+      key: this.#internaKey,
       label: this.#displayName,
-      readonly: this.#isReadOnly,
       metadata: pipe(
         this.#metadata,
         O.getOrElseW(() => undefined),
       ),
-      constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints, // API doesn't like an empty array
+      readonly: this.#isReadOnly,
+      type: "string",
     };
   }
 }

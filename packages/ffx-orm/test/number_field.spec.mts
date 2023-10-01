@@ -7,12 +7,13 @@ describe("NumberField", () => {
     it("should handle calling builder with defaults", () => {
       const numberField = new NumberFieldBuilder("foo_bar", "Foo Bar").done();
 
+      expect(numberField.constraints).toEqual(undefined);
+      expect(numberField.description).toEqual(undefined);
       expect(numberField.key).toEqual("foo_bar");
       expect(numberField.label).toEqual("Foo Bar");
-      expect(numberField.type).toEqual("number");
-      expect(numberField.constraints).toEqual(undefined);
-      expect(numberField.readonly).toBe(false);
       expect(numberField.metadata).toEqual(undefined);
+      expect(numberField.readonly).toBe(false);
+      expect(numberField.type).toEqual("number");
     });
 
     it("should handle withDescription()", () => {
@@ -32,7 +33,7 @@ describe("NumberField", () => {
         .withMetadata(metadata)
         .done();
 
-      expect(numberField.metadata).toEqual(metadata);
+      expect(numberField.metadata).toStrictEqual(metadata);
     });
 
     it("should handle withReadonly()", () => {

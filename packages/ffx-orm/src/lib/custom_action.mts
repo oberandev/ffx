@@ -1,11 +1,9 @@
-import * as Eq from "fp-ts/Eq";
-import { pipe } from "fp-ts/function";
-import * as O from "fp-ts/Option";
-import * as Str from "fp-ts/string";
+import * as Eq from "fp-ts/lib/Eq.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as O from "fp-ts/lib/Option.js";
+import * as Str from "fp-ts/lib/string.js";
 
 type CusotmActionMode = "background" | "foreground";
-
-const eqMode: Eq.Eq<CusotmActionMode> = Str.Eq;
 
 export interface CustomAction {
   readonly confirm?: boolean;
@@ -19,17 +17,35 @@ export interface CustomAction {
   readonly tooltip?: string;
 }
 
+export const eqCustomAction: Eq.Eq<CustomAction> = pipe(
+  Str.Eq,
+  Eq.contramap((customAction) => customAction.operation),
+);
+
 interface Builder {
-  withConfirmation: () => Builder;
-  withDescription: (description: string) => Builder;
-  withMode: (mode: CusotmActionMode) => Builder;
-  withNoInvalidRecords: () => Builder;
-  withPrimary: () => Builder;
-  withRecordSelection: () => Builder;
-  withTooltip: (toolip: string) => Builder;
-  done: () => CustomAction;
+  readonly withConfirmation: () => Builder;
+  readonly withDescription: (description: string) => Builder;
+  readonly withMode: (mode: CusotmActionMode) => Builder;
+  readonly withNoInvalidRecords: () => Builder;
+  readonly withPrimary: () => Builder;
+  readonly withRecordSelection: () => Builder;
+  readonly withTooltip: (toolip: string) => Builder;
+  readonly done: () => CustomAction;
 }
 
+/**
+ * Builder class for a `CustomAction`.
+ *
+ * @example
+ *
+ * ```ts
+ * import { CustomActionBuilder } from "@oberan/ffx-orm";
+ *
+ * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar").done();
+ * ```
+ *
+ * @since 0.1.0
+ */
 export class CustomActionBuilder implements Builder {
   #description: O.Option<string> = O.none;
   readonly #displayName: string;
@@ -41,53 +57,163 @@ export class CustomActionBuilder implements Builder {
   #noInvalidRecords: boolean = false;
   #tooltip: O.Option<string> = O.none;
 
-  constructor(displayName: string, interalKey: string) {
+  constructor(interalKey: string, displayName: string) {
     this.#displayName = displayName;
     this.#internalKey = interalKey;
   }
 
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar")
+   *   .withConfirmation()
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
   withConfirmation(): Builder {
     this.#isConfirmationRequired = true;
 
     return this;
   }
 
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar")
+   *   .withDescription("some description")
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
   withDescription(description: string): Builder {
     this.#description = O.some(description);
 
     return this;
   }
 
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar")
+   *   .withConfirmation()
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
   withMode(mode: CusotmActionMode): Builder {
     this.#mode = mode;
 
     return this;
   }
 
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar")
+   *   .withNoInvalidRecords()
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
   withNoInvalidRecords(): Builder {
     this.#noInvalidRecords = true;
 
     return this;
   }
 
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar")
+   *   .withPrimary()
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
   withPrimary(): Builder {
     this.#isPrimary = true;
 
     return this;
   }
 
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar")
+   *   .withRecordSelection()
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
   withRecordSelection(): Builder {
     this.#isRecordSelectionRequired = true;
 
     return this;
   }
 
+  /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar")
+   *   .withTooltip("some helpful tooltip message")
+   *   .done();
+   * ```
+   *
+   * @since 0.1.0
+   */
   withTooltip(toolip: string): Builder {
     this.#tooltip = O.some(toolip);
 
     return this;
   }
 
+  /**
+   * Calls the internal builder to produce JSON required by Flatfile.
+   *
+   * @since 0.1.0
+   */
   done(): CustomAction {
     return {
       confirm: this.#isConfirmationRequired,

@@ -1,10 +1,9 @@
-import * as E from "fp-ts/Either";
-import * as Eq from "fp-ts/Eq";
-import { pipe } from "fp-ts/function";
-import * as J from "fp-ts/Json";
-import * as O from "fp-ts/Option";
-import * as RA from "fp-ts/ReadonlyArray";
-import * as Str from "fp-ts/string";
+import * as Eq from "fp-ts/lib/Eq.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as J from "fp-ts/lib/Json.js";
+import * as O from "fp-ts/lib/Option.js";
+import * as RA from "fp-ts/lib/ReadonlyArray.js";
+import * as Str from "fp-ts/lib/string.js";
 
 type DbConstraint = RequiredConstraint | UniqueConstraint;
 
@@ -63,16 +62,24 @@ export interface NumberField {
 }
 
 interface Builder {
-  withDescription: (description: string) => Builder;
-  withMetadata: (json: J.Json) => Builder;
-  withReadonly: () => Builder;
-  withRequired: () => Builder;
-  withUnique: (args?: UniqueConstraintArgs) => Builder;
-  done: () => NumberField;
+  readonly withDescription: (description: string) => Builder;
+  readonly withMetadata: (json: J.Json) => Builder;
+  readonly withReadonly: () => Builder;
+  readonly withRequired: () => Builder;
+  readonly withUnique: (args?: UniqueConstraintArgs) => Builder;
+  readonly done: () => NumberField;
 }
 
 /**
- * ASDF.
+ * Builder class for a `NumberField`.
+ *
+ * @example
+ *
+ * ```ts
+ * import { NumberFieldBuilder } from "@oberan/ffx-orm";
+ *
+ * const numberField = new NumberFieldBuilder("foo_bar", "Foo Bar").done();
+ * ```
  *
  * @since 0.1.0
  */
@@ -95,6 +102,8 @@ export class NumberFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { NumberFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const salary = new NumberFieldBuilder("salary", "Salary")
    *   .withDescription("Annual Salary")
    *   .done();
@@ -114,6 +123,8 @@ export class NumberFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { NumberFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const salary = new NumberFieldBuilder("salary", "Salary")
    *   .withMetadata({ foo: "bar" })
    *   .done();
@@ -133,6 +144,8 @@ export class NumberFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { NumberFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const salary = new NumberFieldBuilder("salary", "Salary")
    *   .withReadonly()
    *   .done();
@@ -152,6 +165,8 @@ export class NumberFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { NumberFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const salary = new NumberFieldBuilder("salary", "Salary")
    *   .withRequired()
    *   .done();
@@ -175,6 +190,8 @@ export class NumberFieldBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { NumberFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const salary = new NumberFieldBuilder("salary", "Salary")
    *   .withUnique()
    *   .done();
@@ -199,19 +216,19 @@ export class NumberFieldBuilder implements Builder {
    */
   done(): NumberField {
     return {
-      type: "number",
+      constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints,
       description: pipe(
         this.#description,
         O.getOrElseW(() => undefined),
       ),
       key: this.#internaKey,
       label: this.#displayName,
-      readonly: this.#isReadOnly,
       metadata: pipe(
         this.#metadata,
         O.getOrElseW(() => undefined),
       ),
-      constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints, // API doesn't like an empty array
+      readonly: this.#isReadOnly,
+      type: "number",
     };
   }
 }

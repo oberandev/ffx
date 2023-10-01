@@ -1,4 +1,4 @@
-import * as J from "fp-ts/Json";
+import * as J from "fp-ts/lib/Json.js";
 
 import { TextFieldBuilder } from "../src/lib/text_field.mjs";
 
@@ -7,12 +7,13 @@ describe("TextField", () => {
     it("should handle calling builder with defaults", () => {
       const textField = new TextFieldBuilder("foo_bar", "Foo Bar").done();
 
+      expect(textField.constraints).toEqual(undefined);
+      expect(textField.description).toEqual(undefined);
       expect(textField.key).toEqual("foo_bar");
       expect(textField.label).toEqual("Foo Bar");
-      expect(textField.type).toEqual("string");
-      expect(textField.constraints).toEqual(undefined);
-      expect(textField.readonly).toBe(false);
       expect(textField.metadata).toEqual(undefined);
+      expect(textField.readonly).toBe(false);
+      expect(textField.type).toEqual("string");
     });
 
     it("should handle withDescription()", () => {
@@ -30,7 +31,7 @@ describe("TextField", () => {
 
       const textField = new TextFieldBuilder("foo_bar", "Foo Bar").withMetadata(metadata).done();
 
-      expect(textField.metadata).toEqual(metadata);
+      expect(textField.metadata).toStrictEqual(metadata);
     });
 
     it("should handle withReadonly()", () => {

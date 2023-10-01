@@ -1,29 +1,29 @@
-import * as E from "fp-ts/Either";
-import * as Eq from "fp-ts/Eq";
-import { pipe } from "fp-ts/function";
-import * as J from "fp-ts/Json";
-import * as O from "fp-ts/Option";
-import * as RA from "fp-ts/ReadonlyArray";
-import * as RNEA from "fp-ts/ReadonlyNonEmptyArray";
-import * as Str from "fp-ts/string";
+import * as Eq from "fp-ts/lib/Eq.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as J from "fp-ts/lib/Json.js";
+import * as O from "fp-ts/lib/Option.js";
+import * as RA from "fp-ts/lib/ReadonlyArray.js";
+import * as RNEA from "fp-ts/lib/ReadonlyNonEmptyArray.js";
+import * as Str from "fp-ts/lib/string.js";
 
 import { BooleanField } from "./boolean_field.mjs";
-import { CustomAction } from "./custom_action.mjs";
+import { CustomAction, eqCustomAction } from "./custom_action.mjs";
 import { EnumField } from "./enum_field.mjs";
 import { NumberField } from "./number_field.mjs";
 import { ReferenceField } from "./reference_field.mjs";
 import { TextField } from "./text_field.mjs";
 
-type Permission = "*" | "add" | "delete" | "edit" | "import";
+export type Permission = "*" | "add" | "delete" | "edit" | "import";
 
 const eqPermission: Eq.Eq<Permission> = Str.Eq;
 
 type Field = BooleanField | EnumField | NumberField | ReferenceField | TextField;
 
-const eqField: Eq.Eq<Field> = pipe(
-  Str.Eq,
-  Eq.contramap((field) => field.type),
-);
+export const eqField: Eq.Eq<Field> = {
+  equals: (x, y) => {
+    return Str.Eq.equals(`${x.type}::${x.key}`, `${y.type}::${y.key}`);
+  },
+};
 
 export interface Sheet {
   readonly access?: RNEA.ReadonlyNonEmptyArray<Permission>;
@@ -34,22 +34,35 @@ export interface Sheet {
   readonly metadata?: J.Json;
   readonly name: string;
   readonly readonly?: boolean;
-  readonly slug?: string;
+  readonly slug: string;
 }
 
+export const eqSheet: Eq.Eq<Sheet> = pipe(
+  Str.Eq,
+  Eq.contramap((sheet) => sheet.slug),
+);
+
 interface Builder {
-  withAdditionalFieldsAllowed: () => Builder;
-  withCustomAction: (action: CustomAction) => Builder;
-  withDescription: (description: string) => Builder;
-  withField: (field: Field) => Builder;
-  withMetadata: (json: J.Json) => Builder;
-  withPermissions: (permissions: ReadonlyArray<Permission>) => Builder;
-  withReadonly: () => Builder;
-  done: () => Sheet;
+  readonly withAdditionalFieldsAllowed: () => Builder;
+  readonly withCustomAction: (action: CustomAction) => Builder;
+  readonly withDescription: (description: string) => Builder;
+  readonly withField: (field: Field) => Builder;
+  readonly withMetadata: (json: J.Json) => Builder;
+  readonly withPermissions: (permissions: ReadonlyArray<Permission>) => Builder;
+  readonly withReadonly: () => Builder;
+  readonly done: () => Sheet;
 }
 
 /**
  * Builder class for a `Sheet`.
+ *
+ * @example
+ *
+ * ```ts
+ * import { SheetBuilder } from "@oberan/ffx-orm";
+ *
+ * const sheet = new SheetBuilder("foo_bar", "Foo Bar").done();
+ * ```
  *
  * @since 0.1.0
  */
@@ -75,6 +88,8 @@ export class SheetBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { SheetBuilder } from "@oberan/ffx-orm";
+   *
    * const sheet = new SheetBuilder("leads", "Leads")
    *   .withAdditionalFieldsAllowed()
    *   .done();
@@ -89,11 +104,28 @@ export class SheetBuilder implements Builder {
   }
 
   /**
+   * Asdf.
+   *
+   * @example
+   *
+   * ```ts
+   * import { CustomActionBuilder, SheetBuilder } from "@oberan/ffx-orm";
+   *
+   * const customAction = new CustomActionBuilder("foo_bar", "Foo Bar").done();
+   *
+   * const sheet = new SheetBuilder("leads", "Leads")
+   *   .withCustomAction(customAction)
+   *   .done();
+   * ```
    *
    * @since 0.1.0
    */
   withCustomAction(customAction: CustomAction): SheetBuilder {
-    this.#customActions = pipe(this.#customActions, RA.append(customAction));
+    this.#customActions = pipe(
+      this.#customActions,
+      RA.append(customAction),
+      RA.uniq(eqCustomAction),
+    );
 
     return this;
   }
@@ -104,6 +136,8 @@ export class SheetBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { SheetBuilder } from "@oberan/ffx-orm";
+   *
    * const sheet = new SheetBuilder("leads", "Leads")
    *   .withDescription("New leads from winter campaign")
    *   .done();
@@ -123,6 +157,8 @@ export class SheetBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { SheetBuilder, TextFieldBuilder } from "@oberan/ffx-orm";
+   *
    * const email = new TextFieldBuilder("email", "Email")
    *   .withDescription("Company email address")
    *   .done();
@@ -135,7 +171,7 @@ export class SheetBuilder implements Builder {
    * @since 0.1.0
    */
   withField(field: Field): SheetBuilder {
-    this.#fields = pipe(this.#fields, RA.append(field));
+    this.#fields = pipe(this.#fields, RA.append(field), RA.uniq(eqField));
 
     return this;
   }
@@ -146,6 +182,8 @@ export class SheetBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { SheetBuilder } from "@oberan/ffx-orm";
+   *
    * const sheet = new SheetBuilder("leads", "Leads")
    *   .withMetadata({ foo: "bar" })
    *   .done();
@@ -165,6 +203,8 @@ export class SheetBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { SheetBuilder } from "@oberan/ffx-orm";
+   *
    * const sheet = new SheetBuilder("leads", "Leads")
    *   .withPermissions(["edit", "import"])
    *   .done();
@@ -173,7 +213,15 @@ export class SheetBuilder implements Builder {
    * @since 0.1.0
    */
   withPermissions(permissions: ReadonlyArray<Permission>): SheetBuilder {
-    this.#permissions = pipe(permissions, RA.uniq(eqPermission));
+    if (permissions.length > 1 && permissions.includes("*")) {
+      this.#permissions = pipe(
+        permissions,
+        RA.filter((perm) => perm !== "*"),
+        RA.uniq(eqPermission),
+      );
+    } else {
+      this.#permissions = pipe(permissions, RA.uniq(eqPermission));
+    }
 
     return this;
   }
@@ -184,6 +232,8 @@ export class SheetBuilder implements Builder {
    * @example
    *
    * ```ts
+   * import { SheetBuilder } from "@oberan/ffx-orm";
+   *
    * const sheet = new SheetBuilder("leads", "Leads")
    *   .withReadonly()
    *   .done();
@@ -209,13 +259,13 @@ export class SheetBuilder implements Builder {
         RNEA.fromReadonlyArray,
         O.getOrElse(() => RNEA.of("*" as Permission)),
       ),
-      actions: this.#customActions,
+      actions: RA.isEmpty(this.#customActions) ? undefined : this.#customActions,
       allowAdditionalFields: this.#allowAdditionalFields,
       description: pipe(
         this.#description,
         O.getOrElseW(() => undefined),
       ),
-      fields: pipe(this.#fields),
+      fields: this.#fields,
       metadata: pipe(
         this.#metadata,
         O.getOrElseW(() => undefined),
@@ -227,8 +277,8 @@ export class SheetBuilder implements Builder {
   }
 }
 
-export const validate = (sheet: Sheet): E.Either<string, Sheet> => {
-  // error when fields is a NonEmptyArray
+// export const validate = (sheet: Sheet): E.Either<string, Sheet> => {
+//   // error when fields is a NonEmptyArray
 
-  return E.right(sheet);
-};
+//   return E.right(sheet);
+// };
