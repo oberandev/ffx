@@ -1,7 +1,23 @@
 codecov:
-  bot: "codecov"
   require_ci_to_pass: true
+
 comment:
   layout: "diff, flags, files"
   behavior: default
   require_changes: false
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+        paths:
+          - "packages/"
+        branches:
+          - main
+    patch:
+      default:
+        target: 80%
+        paths:
+          - "packages/"
