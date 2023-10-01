@@ -1,6 +1,6 @@
 import * as J from "fp-ts/lib/Json.js";
 
-import { OptionFieldBuilder } from "../src/lib/enum_field.mjs";
+import { OptionFieldBuilder } from "../src/lib/option_field.mjs";
 
 describe("OptionField", () => {
   describe("[Builders]", () => {

@@ -8,9 +8,9 @@ import * as Str from "fp-ts/lib/string.js";
 
 import { BooleanField } from "./boolean_field.mjs";
 import { CustomAction, eqCustomAction } from "./custom_action.mjs";
-import { OptionField } from "./enum_field.mjs";
 import { LinkedField } from "./linked_field.mjs";
 import { NumberField } from "./number_field.mjs";
+import { OptionField } from "./option_field.mjs";
 import { TextField } from "./text_field.mjs";
 
 export type Permission = "*" | "add" | "delete" | "edit" | "import";
