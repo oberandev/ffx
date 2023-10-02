@@ -60,5 +60,5 @@ blocks:
           commands:
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
-            - pnpm nx affected -t test
+            - pnpm nx run-many -t test
             - ./codecov
