@@ -6,7 +6,7 @@ type Nil = null | undefined;
 
 export type Nullable<T> = T | null;
 
-type Falsy = null | undefined | false | "" | 0;
+type Falsy = null | undefined | false | 0;
 
 // ===================
 //       Guards
@@ -64,8 +64,7 @@ export const isUndefined = (x: unknown): x is undefined => x === undefined;
  *
  * @since 0.1.0
  */
-export const isNil = (x: unknown): x is Nil =>
-  isNull(x) || isUndefined(x) || (isString(x) && x === "");
+export const isNil = (x: unknown): x is Nil => isNull(x) || isUndefined(x);
 
 /**
  * Helper function to determine if a value is NOT `null` or `undefined`.

@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import * as fc from "fast-check";
 
 import * as G from "../src/lib/guards.mjs";
 
@@ -6,103 +7,113 @@ describe("ffx-guards", () => {
   it("isNull()", () => {
     expect(G.isNull(null)).toBe(true);
 
-    expect(G.isNull(false)).toBe(false);
-    expect(G.isNull(faker.lorem.words(2))).toBe(false);
-    expect(G.isNull(faker.number.int())).toBe(false);
     expect(G.isNull(undefined)).toBe(false);
-    expect(G.isNull(faker.date.past())).toBe(false);
-    expect(G.isNull({})).toBe(false);
+    fc.assert(fc.property(fc.boolean(), (bool) => !G.isNull(bool)));
+    fc.assert(fc.property(fc.date(), (date) => !G.isNull(date)));
+    fc.assert(fc.property(fc.float(), (float) => !G.isNull(float)));
+    fc.assert(fc.property(fc.integer(), (int) => !G.isNull(int)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isNull(obj)));
+    fc.assert(fc.property(fc.string(), (str) => !G.isNull(str)));
   });
 
   it("isUndefined()", () => {
     expect(G.isUndefined(undefined)).toBe(true);
 
-    expect(G.isUndefined(false)).toBe(false);
-    expect(G.isUndefined(faker.lorem.words(2))).toBe(false);
-    expect(G.isUndefined(1)).toBe(false);
     expect(G.isUndefined(null)).toBe(false);
-    expect(G.isUndefined(faker.date.past())).toBe(false);
-    expect(G.isUndefined({})).toBe(false);
+    fc.assert(fc.property(fc.boolean(), (bool) => !G.isUndefined(bool)));
+    fc.assert(fc.property(fc.date(), (date) => !G.isUndefined(date)));
+    fc.assert(fc.property(fc.float(), (float) => !G.isUndefined(float)));
+    fc.assert(fc.property(fc.integer(), (int) => !G.isUndefined(int)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isUndefined(obj)));
+    fc.assert(fc.property(fc.string(), (str) => !G.isUndefined(str)));
   });
 
   it("isNil()", () => {
     expect(G.isNil(undefined)).toBe(true);
     expect(G.isNil(null)).toBe(true);
-    expect(G.isNil("")).toBe(true);
 
-    expect(G.isNil(false)).toBe(false);
-    expect(G.isNil(1)).toBe(false);
-    expect(G.isNil(faker.date.past())).toBe(false);
-    expect(G.isNil({})).toBe(false);
+    fc.assert(fc.property(fc.boolean(), (bool) => !G.isNil(bool)));
+    fc.assert(fc.property(fc.date(), (date) => !G.isNil(date)));
+    fc.assert(fc.property(fc.float(), (float) => !G.isNil(float)));
+    fc.assert(fc.property(fc.integer(), (int) => !G.isNil(int)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isNil(obj)));
+    fc.assert(fc.property(fc.string(), (str) => !G.isNil(str)));
   });
 
   it("isNotNil()", () => {
-    expect(G.isNotNil(false)).toBe(true);
-    expect(G.isNotNil(1)).toBe(true);
-    expect(G.isNotNil(faker.date.past())).toBe(true);
-    expect(G.isNotNil({})).toBe(true);
+    fc.assert(fc.property(fc.boolean(), (bool) => G.isNotNil(bool)));
+    fc.assert(fc.property(fc.date(), (date) => G.isNotNil(date)));
+    fc.assert(fc.property(fc.float(), (float) => G.isNotNil(float)));
+    fc.assert(fc.property(fc.integer(), (int) => G.isNotNil(int)));
+    fc.assert(fc.property(fc.object(), (obj) => G.isNotNil(obj)));
+    fc.assert(fc.property(fc.string(), (str) => G.isNotNil(str)));
 
-    expect(G.isNotNil(undefined)).toBe(false);
     expect(G.isNotNil(null)).toBe(false);
-    expect(G.isNotNil("")).toBe(false);
+    expect(G.isNotNil(undefined)).toBe(false);
   });
 
   it("isFalsy()", () => {
     expect(G.isFalsy(null)).toBe(true);
-    expect(G.isFalsy(false)).toBe(true);
-    expect(G.isFalsy("")).toBe(true);
     expect(G.isFalsy(undefined)).toBe(true);
+    expect(G.isFalsy(false)).toBe(true);
     expect(G.isFalsy(0)).toBe(true);
     expect(G.isFalsy(NaN)).toBe(true);
 
-    expect(G.isFalsy(faker.number.int())).toBe(false);
-    expect(G.isFalsy(faker.date.past())).toBe(false);
-    expect(G.isFalsy({})).toBe(false);
+    expect(G.isFalsy(true)).toBe(false);
+    expect(G.isFalsy(1)).toBe(false);
+    fc.assert(fc.property(fc.date(), (date) => !G.isFalsy(date)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isFalsy(obj)));
+    fc.assert(fc.property(fc.string(), (str) => !G.isFalsy(str)));
   });
 
   it("isTruthy()", () => {
-    expect(G.isTruthy(faker.number.int())).toBe(true);
-    expect(G.isTruthy(faker.date.past())).toBe(true);
-    expect(G.isTruthy({})).toBe(true);
+    expect(G.isTruthy(true)).toBe(true);
+    expect(G.isTruthy(1)).toBe(true);
+    fc.assert(fc.property(fc.date(), (date) => G.isTruthy(date)));
+    fc.assert(fc.property(fc.object(), (obj) => G.isTruthy(obj)));
+    fc.assert(fc.property(fc.string(), (str) => G.isTruthy(str)));
 
+    expect(G.isTruthy(0)).toBe(false);
     expect(G.isTruthy(null)).toBe(false);
     expect(G.isTruthy(false)).toBe(false);
-    expect(G.isTruthy("")).toBe(false);
     expect(G.isTruthy(undefined)).toBe(false);
+    expect(G.isTruthy(NaN)).toBe(false);
   });
 
   it("isString()", () => {
-    expect(G.isString(faker.lorem.words(2))).toBe(true);
+    fc.assert(fc.property(fc.string(), (str) => G.isString(str)));
 
     expect(G.isString(null)).toBe(false);
-    expect(G.isString(false)).toBe(false);
-    expect(G.isString(faker.number.int())).toBe(false);
     expect(G.isString(undefined)).toBe(false);
-    expect(G.isString(faker.date.past())).toBe(false);
-    expect(G.isString({})).toBe(false);
+    fc.assert(fc.property(fc.boolean(), (bool) => !G.isString(bool)));
+    fc.assert(fc.property(fc.date(), (date) => !G.isString(date)));
+    fc.assert(fc.property(fc.float(), (float) => !G.isString(float)));
+    fc.assert(fc.property(fc.integer(), (int) => !G.isString(int)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isString(obj)));
   });
 
   it("isNumber()", () => {
-    expect(G.isNumber(faker.number.int())).toBe(true);
-    expect(G.isNumber(faker.number.float())).toBe(true);
+    fc.assert(fc.property(fc.float(), (float) => G.isNumber(float)));
+    fc.assert(fc.property(fc.integer(), (int) => G.isNumber(int)));
 
-    expect(G.isNumber(faker.lorem.words(2))).toBe(false);
     expect(G.isNumber(null)).toBe(false);
-    expect(G.isNumber(false)).toBe(false);
     expect(G.isNumber(undefined)).toBe(false);
-    expect(G.isNumber(faker.date.past())).toBe(false);
-    expect(G.isNumber({})).toBe(false);
+    fc.assert(fc.property(fc.boolean(), (bool) => !G.isNumber(bool)));
+    fc.assert(fc.property(fc.date(), (date) => !G.isNumber(date)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isNumber(obj)));
+    fc.assert(fc.property(fc.string(), (str) => !G.isNumber(str)));
   });
 
   it("isDate()", () => {
-    expect(G.isDate(faker.date.past())).toBe(true);
+    fc.assert(fc.property(fc.date(), (date) => G.isDate(date)));
 
-    expect(G.isDate(1)).toBe(false);
-    expect(G.isDate(faker.lorem.words(2))).toBe(false);
     expect(G.isDate(null)).toBe(false);
-    expect(G.isDate(false)).toBe(false);
     expect(G.isDate(undefined)).toBe(false);
-    expect(G.isDate({})).toBe(false);
+    fc.assert(fc.property(fc.boolean(), (bool) => !G.isDate(bool)));
+    fc.assert(fc.property(fc.float(), (float) => !G.isDate(float)));
+    fc.assert(fc.property(fc.integer(), (int) => !G.isDate(int)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isDate(obj)));
+    fc.assert(fc.property(fc.string(), (str) => !G.isDate(str)));
   });
 
   it("isArray()", () => {
@@ -114,17 +125,17 @@ describe("ffx-guards", () => {
     // Little known fact: Array.prototype itself is an array:
     expect(G.isArray(Array.prototype)).toBe(true);
 
-    expect(G.isArray({})).toBe(false);
     expect(G.isArray(null)).toBe(false);
     expect(G.isArray(undefined)).toBe(false);
-    expect(G.isArray(faker.number.int())).toBe(false);
     expect(G.isArray("Array")).toBe(false);
-    expect(G.isArray(true)).toBe(false);
-    expect(G.isArray(false)).toBe(false);
-    expect(G.isArray(faker.date.past())).toBe(false);
     expect(G.isArray(new Uint8Array(32))).toBe(false);
     // This is not an array, because it was not created using the
     // array literal syntax or the Array constructor
     expect(G.isArray({ __proto__: Array.prototype })).toBe(false);
+    fc.assert(fc.property(fc.boolean(), (bool) => !G.isArray(bool)));
+    fc.assert(fc.property(fc.date(), (date) => !G.isArray(date)));
+    fc.assert(fc.property(fc.float(), (float) => !G.isArray(float)));
+    fc.assert(fc.property(fc.integer(), (int) => !G.isArray(int)));
+    fc.assert(fc.property(fc.object(), (obj) => !G.isArray(obj)));
   });
 });
