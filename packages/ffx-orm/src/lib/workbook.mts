@@ -160,7 +160,7 @@ export class WorkbookBuilder implements Builder {
    *
    * @since 0.1.0
    */
-  withSheet(sheet: Sheet): Builder {
+  withSheet(sheet: Sheet): WorkbookBuilder {
     this.#sheets = pipe(this.#sheets, RA.append(sheet), RA.uniq(eqSheet));
 
     return this;
