@@ -57,7 +57,20 @@ const eqDbConstraint: Eq.Eq<DbConstraint> = pipe(
   Eq.contramap((dbContstraint) => dbContstraint.type),
 );
 
+export type Cardinality = "has-one";
+
+export interface SheetReferenceArgs {
+  readonly cardinality: Cardinality;
+  readonly fieldKey: string;
+  readonly sheetSlug: string;
+}
+
 export interface LinkedField {
+  readonly config: Readonly<{
+    key: string;
+    ref: string;
+    relationship: Cardinality;
+  }>;
   readonly constraints?: ReadonlyArray<DbConstraint>;
   readonly description?: string;
   readonly key: string;
@@ -84,7 +97,11 @@ interface Builder {
  * ```ts
  * import { LinkedFieldBuilder } from "@oberan/ffx-orm";
  *
- * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar").done();
+ * const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", {
+ *   sheetSlug: "venders",
+ *   fieldKey: "vender_ref",
+ *   cardinality: "has-one",
+ * }).done();
  * ```
  *
  * @since 0.1.0
@@ -96,10 +113,12 @@ export class LinkedFieldBuilder implements Builder {
   readonly #internaKey: string;
   #isReadOnly: boolean = false;
   #metadata: O.Option<J.Json> = O.none;
+  readonly #sheetReference: SheetReferenceArgs;
 
-  constructor(internaKey: string, displayName: string) {
+  constructor(internaKey: string, displayName: string, sheetReference: SheetReferenceArgs) {
     this.#displayName = displayName;
     this.#internaKey = internaKey;
+    this.#sheetReference = sheetReference;
   }
 
   /**
@@ -222,6 +241,11 @@ export class LinkedFieldBuilder implements Builder {
    */
   done(): LinkedField {
     return {
+      config: {
+        key: this.#sheetReference.fieldKey,
+        relationship: this.#sheetReference.cardinality,
+        ref: this.#sheetReference.sheetSlug,
+      },
       constraints: RA.isEmpty(this.#constraints) ? undefined : this.#constraints,
       description: pipe(
         this.#description,

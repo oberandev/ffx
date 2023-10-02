@@ -1,11 +1,17 @@
 import * as J from "fp-ts/lib/Json.js";
 
-import { LinkedFieldBuilder } from "../src/lib/linked_field.mjs";
+import { LinkedFieldBuilder, SheetReferenceArgs } from "../src/lib/linked_field.mjs";
 
 describe("LinkedField", () => {
   describe("[Builders]", () => {
+    const sheetReference: SheetReferenceArgs = {
+      sheetSlug: "venders",
+      fieldKey: "vender_ref",
+      cardinality: "has-one",
+    };
+
     it("should handle calling builder with defaults", () => {
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar").done();
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference).done();
 
       expect(linkedField.constraints).toEqual(undefined);
       expect(linkedField.description).toEqual(undefined);
@@ -19,7 +25,7 @@ describe("LinkedField", () => {
     it("should handle withDescription()", () => {
       const description = "Nothing is certain except death and taxes";
 
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
         .withDescription(description)
         .done();
 
@@ -29,7 +35,7 @@ describe("LinkedField", () => {
     it("should handle withMetadata()", () => {
       const metadata: J.Json = { foo: "bar" };
 
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
         .withMetadata(metadata)
         .done();
 
@@ -37,19 +43,23 @@ describe("LinkedField", () => {
     });
 
     it("should handle withReadonly()", () => {
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar").withReadonly().done();
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
+        .withReadonly()
+        .done();
 
       expect(linkedField.readonly).toBe(true);
     });
 
     it("should handle withRequired()", () => {
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar").withRequired().done();
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
+        .withRequired()
+        .done();
 
       expect(linkedField.constraints).toStrictEqual([{ type: "required" }]);
     });
 
     it("should handle duplicate withRequired()", () => {
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
         .withRequired()
         .withRequired()
         .done();
@@ -58,13 +68,15 @@ describe("LinkedField", () => {
     });
 
     it("should handle withUnique() without args", () => {
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar").withUnique().done();
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
+        .withUnique()
+        .done();
 
       expect(linkedField.constraints).toStrictEqual([{ type: "unique", config: undefined }]);
     });
 
     it("should handle withUnique() with args", () => {
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
         .withUnique({ caseSensitive: false })
         .done();
 
@@ -80,7 +92,7 @@ describe("LinkedField", () => {
     });
 
     it("should handle duplicate withUnique() with args", () => {
-      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar")
+      const linkedField = new LinkedFieldBuilder("foo_bar", "Foo Bar", sheetReference)
         .withUnique({ caseSensitive: false })
         .withUnique({ caseSensitive: true })
         .done();
