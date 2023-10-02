@@ -21,6 +21,7 @@
 - Remove _magic_ from FF configuration by making it more explicit
 - We strongly encourage the [parse, don't validate](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/) approach
 - Guide you towards the [_pit of success_](https://blog.codinghorror.com/falling-into-the-pit-of-success/) rather than the _pit of dispair_
+- Strive to adhere to the [principle of least astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
 - All packages export only pure ES Modules
 - Code is thoroughly documented with JSDoc for better DX
 - Code never _throws_ errors; errors are instead returned as data
