@@ -7,5 +7,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*.mts"],
-  "exclude": ["src/**/*.spec.mts"]
+  "exclude": ["test/**/*.spec.mts"]
 }
