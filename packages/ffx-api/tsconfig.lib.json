@@ -4,6 +4,7 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "../../dist/out-tsc",
+    "resolveJsonModule": true,
     "types": ["node"]
   },
   "include": ["src/**/*.mts"],
