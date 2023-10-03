@@ -2,22 +2,24 @@ codecov:
   require_ci_to_pass: true
 
 comment:
-  layout: "diff, flags, files"
   behavior: default
+  layout: diff, flags, files
   require_changes: false
 
 coverage:
   status:
-    project:
-      default:
-        target: 80%
-        threshold: 1%
-        paths:
-          - "packages/"
-        branches:
-          - main
     patch:
       default:
-        target: 80%
         paths:
-          - "packages/"
+          - packages
+        target: 80.0
+    project:
+      default:
+        branches:
+          - main
+        paths:
+          - packages
+        target: 80.0
+        threshold: 1.0
+
+slack_app: false
