@@ -16,6 +16,7 @@
     "execa": "^8.0.1",
     "fp-ts": "^2.16.1",
     "io-ts": "^2.2.20",
+    "io-ts-reporters": "^2.0.1",
     "ts-pattern": "^5.0.5"
   },
   "devDependencies": {
@@ -29,9 +30,9 @@
     "@nx/js": "16.9.1",
     "@nx/vite": "16.9.1",
     "@nx/workspace": "16.9.1",
-    "@types/node": "^20.8.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
+    "@types/node": "^20.8.2",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
     "@vitest/coverage-v8": "^0.34.6",
     "@vitest/ui": "^0.34.6",
     "commitizen": "^4.3.0",
