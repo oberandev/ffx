@@ -5,7 +5,7 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { mkApiClient } from "../src/index.mjs";
+import mkApiClient from "../src/index.mjs";
 import { Agent, Agents, AgentCodec, CreateAgentInput } from "../src/lib/agents.mjs";
 
 function _mkMockAgent(): Agent {
