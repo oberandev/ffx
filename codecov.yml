@@ -4,9 +4,7 @@ codecov:
 comment:
   behavior: default
   layout: diff, flags, files
-  require_base: false # default true
   require_changes: false
-  require_head: true # default true
 
 coverage:
   status:

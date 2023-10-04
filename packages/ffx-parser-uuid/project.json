@@ -1,0 +1,40 @@
+{
+  "name": "ffx-parser-uuid",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ffx-parser-uuid/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "packages/ffx-parser-uuid/build"
+    },
+    "format:check": {
+      "command": "prettier packages/ffx-parser-uuid/**/*.{js,mts,ts} --check"
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint packages/ffx-parser-uuid"
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs ffx-parser-uuid {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["default"],
+        "reportsDirectory": "../../coverage/packages/ffx-parser-uuid"
+      },
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
+    }
+  },
+  "tags": []
+}
