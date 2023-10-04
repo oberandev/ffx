@@ -12,14 +12,12 @@ coverage:
       default:
         paths:
           - packages
-        target: 80.0
+        target: 90.0
     project:
       default:
-        branches:
-          - main
         paths:
           - packages
-        target: 80.0
+        target: 90.0
         threshold: 1.0
 
 slack_app: false
