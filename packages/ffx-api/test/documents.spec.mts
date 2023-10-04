@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
-import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
+import * as E from "fp-ts/lib/Either.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as IO from "fp-ts/lib/IO.js";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
@@ -8,24 +9,24 @@ import { match } from "ts-pattern";
 import mkApiClient from "../src/index.mjs";
 import { Document, DocumentCodec } from "../src/lib/documents.mjs";
 
-function randomId(): string {
-  return Math.random().toString(16).slice(2, 10);
+function randomId(): IO.IO<string> {
+  return IO.of(Math.random().toString(16).slice(2, 10));
 }
 
-function _mkMockDocument(): Document {
-  return {
-    id: `us_dc_${randomId()}`,
+function _mkMockDocument(): IO.IO<Document> {
+  return IO.of({
+    id: `us_dc_${randomId()()}`,
     body: faker.lorem.paragraphs(2),
     title: faker.lorem.words(2),
-    environmentId: `us_env_${randomId()}`,
-    spaceId: `us_sp_${randomId()}`,
-  };
+    environmentId: `us_env_${randomId()()}`,
+    spaceId: `us_sp_${randomId()()}`,
+  });
 }
 
 describe("documents", () => {
   describe("[Decoders]", () => {
     it("Document", () => {
-      const decoded = pipe(_mkMockDocument(), DocumentCodec.decode);
+      const decoded = pipe(_mkMockDocument()(), DocumentCodec.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -39,7 +40,7 @@ describe("documents", () => {
 
     it("should handle failure when creating a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
@@ -77,7 +78,7 @@ describe("documents", () => {
 
     it("should handle decoder errors when creating a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
@@ -115,7 +116,7 @@ describe("documents", () => {
 
     it("should handle successfully creating a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
@@ -143,7 +144,7 @@ describe("documents", () => {
 
     it("should handle failure when deleting a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.delete(
@@ -183,7 +184,7 @@ describe("documents", () => {
 
     it("should handle decoder errors when deleting a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.delete(
@@ -222,7 +223,7 @@ describe("documents", () => {
 
     it("should handle successfully deleting a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.delete(
@@ -259,7 +260,7 @@ describe("documents", () => {
 
     it("should handle failure when fetching a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.get(
@@ -299,7 +300,7 @@ describe("documents", () => {
 
     it("should handle decoder errors when fetching a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.get(
@@ -339,7 +340,7 @@ describe("documents", () => {
 
     it("should handle successfully fetching a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.get(
@@ -374,7 +375,7 @@ describe("documents", () => {
 
     it("should handle failure when fetching all Documents", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
@@ -408,7 +409,7 @@ describe("documents", () => {
 
     it("should handle decoder errors when fetching all Documents", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
@@ -444,7 +445,7 @@ describe("documents", () => {
 
     it("should handle successfully fetching all Documents", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
@@ -473,7 +474,7 @@ describe("documents", () => {
 
     it("should handle failure when updating a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.patch(
@@ -510,7 +511,7 @@ describe("documents", () => {
 
     it("should handle decoder errors when updating a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.patch(
@@ -547,7 +548,7 @@ describe("documents", () => {
 
     it("should handle successfully updating a Document", async () => {
       // setup
-      const mockDocument: Document = _mkMockDocument();
+      const mockDocument: Document = _mkMockDocument()();
 
       const restHandlers = [
         rest.patch(

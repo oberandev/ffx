@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
-import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
+import * as E from "fp-ts/lib/Either.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as IO from "fp-ts/lib/IO.js";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
@@ -8,19 +9,23 @@ import { match } from "ts-pattern";
 import mkApiClient from "../src/index.mjs";
 import { Agent, Agents, AgentCodec, CreateAgentInput } from "../src/lib/agents.mjs";
 
-function _mkMockAgent(): Agent {
-  return {
-    id: `us_ag_${faker.lorem.word({ length: 8 })}`,
+function randomId(): IO.IO<string> {
+  return IO.of(Math.random().toString(16).slice(2, 10));
+}
+
+function _mkMockAgent(): IO.IO<Agent> {
+  return IO.of({
+    id: `us_ag_${randomId()()}`,
     compiler: "js",
     source: faker.lorem.paragraphs(2),
     topics: ["agent:created"],
-  };
+  });
 }
 
 describe("agents", () => {
   describe("[Decoders]", () => {
     it("Agent", () => {
-      const decoded = pipe(_mkMockAgent(), AgentCodec.decode);
+      const decoded = pipe(_mkMockAgent()(), AgentCodec.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -66,7 +71,7 @@ describe("agents", () => {
 
     it("should handle decoder errors when creating an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
@@ -84,7 +89,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.create(_mkMockAgent());
+      const resp = await client.agents.create(_mkMockAgent()());
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -98,7 +103,7 @@ describe("agents", () => {
 
     it("should handle successfully creating an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
@@ -122,7 +127,7 @@ describe("agents", () => {
 
     it("should handle failure when deleting an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
@@ -156,7 +161,7 @@ describe("agents", () => {
 
     it("should handle decoder errors when deleting an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
@@ -189,7 +194,7 @@ describe("agents", () => {
 
     it("should handle successfully deleting an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
@@ -220,7 +225,7 @@ describe("agents", () => {
 
     it("should handle failure when fetching an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
@@ -254,7 +259,7 @@ describe("agents", () => {
 
     it("should handle decoder errors when fetching an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
@@ -288,7 +293,7 @@ describe("agents", () => {
 
     it("should handle successfully fetching an Agent", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
@@ -349,7 +354,7 @@ describe("agents", () => {
 
     it("should handle decoder errors when fetching all Agents", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent();
+      const mockAgent: Agent = _mkMockAgent()();
 
       const restHandlers = [
         rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
@@ -380,7 +385,7 @@ describe("agents", () => {
 
     it("should handle successfully fetching all Agents", async () => {
       // setup
-      const mockAgents: Agents = Array.from({ length: 2 }, () => _mkMockAgent());
+      const mockAgents: Agents = Array.from({ length: 2 }, () => _mkMockAgent()());
 
       const restHandlers = [
         rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
