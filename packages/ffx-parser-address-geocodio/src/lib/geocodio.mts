@@ -3,15 +3,15 @@ import * as E from "fp-ts/lib/Either.js";
 import { identity, pipe } from "fp-ts/lib/function.js";
 import * as RA from "fp-ts/lib/ReadonlyArray.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
-import * as t from "io-ts";
-import { failure } from "io-ts/PathReporter";
+import * as t from "io-ts/lib";
+import { formatValidationErrors } from "io-ts-reporters";
 
 // eslint-disable-next-line import/no-relative-parent-imports
 import pkgJson from "../../package.json";
 
-// ===================
-//  Runtime decoders
-// ===================
+// ==================
+//   Runtime codecs
+// ==================
 
 export const AddressComponentsCodec = t.partial({
   city: t.string,
@@ -73,51 +73,49 @@ export const BatchAddressResponseCodec = t.type({
 
 export const HttpMethodCodec = t.union([t.literal("GET"), t.literal("POST")]);
 
-// ===================
+// ==================
 //       Types
-// ===================
+// ==================
 
 export type AccuracyType = t.TypeOf<typeof AccuracyTypeCodec>;
-export type AddressSummary = t.TypeOf<typeof AddressSummaryCodec>;
-export type AddressComponents = t.TypeOf<typeof AddressComponentsCodec>;
-export type GeoCoords = t.TypeOf<typeof GeoCoordsCodec>;
-export type SingleAddressResponse = t.TypeOf<typeof SingleAddressResponseCodec>;
-export type BatchAddressResponse = t.TypeOf<typeof BatchAddressResponseCodec>;
+export type AddressSummary = Readonly<t.TypeOf<typeof AddressSummaryCodec>>;
+export type AddressComponents = Readonly<t.TypeOf<typeof AddressComponentsCodec>>;
+export type GeoCoords = Readonly<t.TypeOf<typeof GeoCoordsCodec>>;
 
-type SingleAddress = {
-  _tag: "single_address";
-  result: AddressSummary;
-};
+interface SingleAddress {
+  readonly _tag: "single_address";
+  readonly data: AddressSummary;
+}
 
-type BatchAddress = {
-  query: string;
-  response: ReadonlyArray<AddressSummary>;
-};
+interface BatchAddress {
+  readonly query: string;
+  readonly response: ReadonlyArray<AddressSummary>;
+}
 
-type AddressCollection = {
-  _tag: "address_collection";
-  results: ReadonlyArray<BatchAddress>;
-};
+interface AddressCollection {
+  readonly _tag: "address_collection";
+  readonly data: ReadonlyArray<BatchAddress>;
+}
 
-type DecoderError = {
-  _tag: "decoder_error";
-  reason: string;
-};
+interface DecoderErrors {
+  readonly _tag: "decoder_errors";
+  readonly reasons: ReadonlyArray<string>;
+}
 
-type HttpError = {
-  _tag: "http_error";
-  method: string;
-  reason: string;
-  statusCode: number;
-  url: string;
-  version: string;
-};
+interface HttpError {
+  readonly _tag: "http_error";
+  readonly method: string;
+  readonly reason: string;
+  readonly statusCode: number;
+  readonly url: string;
+  readonly version: string;
+}
 
 type CountryCode = "CA" | "US";
 
-// ===================
+// ==================
 //       Main
-// ===================
+// ==================
 
 export default class Geocodio {
   readonly #apiKey: string;
@@ -148,7 +146,7 @@ export default class Geocodio {
   parseSingle(
     address: string,
     countryCode: CountryCode = "US",
-  ): Promise<DecoderError | SingleAddress | HttpError> {
+  ): Promise<DecoderErrors | HttpError | SingleAddress> {
     return pipe(
       TE.tryCatch(
         () =>
@@ -163,8 +161,17 @@ export default class Geocodio {
           }),
         (reason: unknown) => reason as AxiosError,
       ),
-      TE.chain((resp) => {
-        return TE.of(_decodeSingleAddressResponse(resp.data));
+      TE.map((resp) => resp.data),
+      TE.chain((data) => {
+        return TE.of(
+          pipe(
+            SingleAddressResponseCodec.decode(data),
+            E.matchW(
+              (decoderErrors) => _mkDecoderErrors(formatValidationErrors(decoderErrors)),
+              ({ results }) => _mkSingleAddress(results[0]),
+            ),
+          ),
+        );
       }),
       TE.matchW((axiosError) => _mkHttpError(axiosError), identity),
     )();
@@ -192,7 +199,7 @@ export default class Geocodio {
   parseBatch(
     addresses: ReadonlyArray<string>,
     limit: number = 2,
-  ): Promise<DecoderError | AddressCollection | HttpError> {
+  ): Promise<DecoderErrors | HttpError | AddressCollection> {
     return pipe(
       TE.tryCatch(
         () =>
@@ -207,8 +214,26 @@ export default class Geocodio {
           }),
         (reason: unknown) => reason as AxiosError,
       ),
-      TE.chain((resp) => {
-        return TE.of(_decodeBatchAddressResponse(resp.data));
+      TE.map((resp) => resp.data),
+      TE.chain((data) => {
+        return TE.of(
+          pipe(
+            BatchAddressResponseCodec.decode(data),
+            E.matchW(
+              (decoderErrors) => _mkDecoderErrors(formatValidationErrors(decoderErrors)),
+              ({ results }) => {
+                return pipe(
+                  results,
+                  RA.map((result) => ({
+                    query: result.query,
+                    response: result.response.results,
+                  })),
+                  (rs) => _mkAddressCollection(rs),
+                );
+              },
+            ),
+          ),
+        );
       }),
       TE.matchW((axiosError) => _mkHttpError(axiosError), identity),
     )();
@@ -219,53 +244,24 @@ export default class Geocodio {
 //      Helpers
 // ===================
 
-function _decodeSingleAddressResponse(resp: unknown): DecoderError | SingleAddress {
-  return pipe(
-    SingleAddressResponseCodec.decode(resp),
-    E.matchW(
-      (decodeError) => _mkDecoderError(failure(decodeError).join("\n")),
-      ({ results }) => _mkSingleAddress(results[0]),
-    ),
-  );
-}
-
-function _decodeBatchAddressResponse(resp: unknown): DecoderError | AddressCollection {
-  return pipe(
-    BatchAddressResponseCodec.decode(resp),
-    E.matchW(
-      (decodeError) => _mkDecoderError(failure(decodeError).join("\n")),
-      ({ results }) => {
-        return pipe(
-          results,
-          RA.map((result) => ({
-            query: result.query,
-            response: result.response.results,
-          })),
-          (rs) => _mkAddressCollection(rs),
-        );
-      },
-    ),
-  );
-}
-
 function _mkSingleAddress(address: AddressSummary): SingleAddress {
   return {
     _tag: "single_address",
-    result: address,
+    data: address,
   };
 }
 
 function _mkAddressCollection(addresses: ReadonlyArray<BatchAddress>): AddressCollection {
   return {
     _tag: "address_collection",
-    results: addresses,
+    data: addresses,
   };
 }
 
-function _mkDecoderError(reason: string): DecoderError {
+function _mkDecoderErrors(reasons: ReadonlyArray<string>): DecoderErrors {
   return {
-    _tag: "decoder_error",
-    reason,
+    _tag: "decoder_errors",
+    reasons,
   };
 }
 
@@ -273,7 +269,7 @@ function _mkHttpError(error: AxiosError): HttpError {
   return {
     _tag: "http_error",
     method: pipe(
-      HttpMethodCodec.decode(error.request?.method),
+      HttpMethodCodec.decode(error.config?.method?.toUpperCase()),
       E.getOrElseW(() => "Unsupported method"),
     ),
     reason: error.message,
