@@ -1,8 +1,10 @@
 import { faker, fakerEN_US } from "@faker-js/faker";
-import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
+import * as E from "fp-ts/lib/Either.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as IO from "fp-ts/lib/IO.js";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
+import { match } from "ts-pattern";
 
 import Geocodio, {
   AccuracyType,
@@ -11,30 +13,28 @@ import Geocodio, {
   AddressComponentsCodec,
   AddressSummary,
   AddressSummaryCodec,
-  BatchAddressResponse,
-  BatchAddressResponseCodec,
   GeoCoords,
   GeoCoordsCodec,
   HttpMethodCodec,
-  SingleAddressResponse,
-  SingleAddressResponseCodec,
 } from "../src/lib/geocodio.mjs";
 
-const _mkAccuracyType = (): AccuracyType => {
-  return faker.helpers.arrayElement([
-    "county",
-    "intersection",
-    "nearest_rooftop_match",
-    "place",
-    "point",
-    "range_interpolation",
-    "rooftop",
-    "state",
-    "street_center",
-  ]);
+const _mkAccuracyType = (): IO.IO<AccuracyType> => {
+  return IO.of(
+    faker.helpers.arrayElement([
+      "county",
+      "intersection",
+      "nearest_rooftop_match",
+      "place",
+      "point",
+      "range_interpolation",
+      "rooftop",
+      "state",
+      "street_center",
+    ]),
+  );
 };
 
-const _mkAddressComponets = (): AddressComponents => {
+const _mkAddressComponets = (): IO.IO<AddressComponents> => {
   const predirectional = faker.helpers.arrayElement([
     faker.location.cardinalDirection({ abbreviated: true }),
     faker.location.ordinalDirection({ abbreviated: true }),
@@ -44,8 +44,8 @@ const _mkAddressComponets = (): AddressComponents => {
 
   const suffix = faker.helpers.arrayElement(["Ave", "Dr", "Ln", "St"]);
 
-  return {
-    number: `${faker.number}`,
+  return IO.of({
+    number: `${faker.number.int({ min: 1, max: 10000 })}`,
     predirectional,
     street,
     suffix,
@@ -55,104 +55,53 @@ const _mkAddressComponets = (): AddressComponents => {
     state: faker.location.state({ abbreviated: true }),
     zip: faker.location.zipCode(),
     country: faker.helpers.arrayElement(["CA", "US"]),
-  };
+  });
 };
 
-const _mkGeoCoords = (): GeoCoords => {
-  return {
+const _mkGeoCoords = (): IO.IO<GeoCoords> => {
+  return IO.of({
     lat: faker.number.float({ min: -90, max: 90, precision: 0.01 }),
     lng: faker.number.float({ min: -180, max: 180, precision: 0.01 }),
-  };
+  });
 };
 
-const _mkAddressSummary = (): AddressSummary => {
-  const addressComponents = _mkAddressComponets();
+const _mkAddressSummary = (): IO.IO<AddressSummary> => {
+  const addressComponents = _mkAddressComponets()();
 
-  return {
+  return IO.of({
     accuracy: faker.number.float({ min: 0, max: 1, precision: 0.01 }),
-    accuracy_type: _mkAccuracyType(),
+    accuracy_type: _mkAccuracyType()(),
     address_components: addressComponents,
     formatted_address: `${addressComponents.number} ${addressComponents.formatted_street}, ${addressComponents.city}, ${addressComponents.state} ${addressComponents.zip}`,
-    location: _mkGeoCoords(),
+    location: _mkGeoCoords()(),
     source: faker.lorem.word(2),
-  };
-};
-
-const _mkSingleAddressResponse = (): SingleAddressResponse => {
-  const addressSummary = _mkAddressSummary();
-  const { address_components: addressComponents } = addressSummary;
-
-  return {
-    input: {
-      address_components: addressComponents,
-      formatted_address: `${addressComponents.number} ${addressComponents.formatted_street}, ${addressComponents.city}, ${addressComponents.state} ${addressComponents.zip}`,
-    },
-    results: [addressSummary],
-  };
-};
-
-const _mkBatchAddressResponse = (): BatchAddressResponse => {
-  const addressSummary = _mkAddressSummary();
-  const { address_components: addressComponents } = addressSummary;
-
-  return {
-    results: [
-      {
-        query: addressSummary.formatted_address,
-        response: {
-          input: {
-            address_components: addressComponents,
-            formatted_address: addressSummary.formatted_address,
-          },
-          results: [],
-        },
-      },
-    ],
-  };
+  });
 };
 
 describe("address-geocodio", () => {
   describe("[Decoders]", () => {
     it("AddressComponents", () => {
-      const addressComponets = pipe(_mkAddressComponets(), AddressComponentsCodec.decode);
+      const addressComponets = pipe(_mkAddressComponets()(), AddressComponentsCodec.decode);
 
       expect(E.isRight(addressComponets)).toBe(true);
     });
 
     it("GeoCoords", () => {
-      const geoCoords = pipe(_mkGeoCoords(), GeoCoordsCodec.decode);
+      const geoCoords = pipe(_mkGeoCoords()(), GeoCoordsCodec.decode);
 
       expect(E.isRight(geoCoords)).toBe(true);
     });
 
     it("AccuracyType", () => {
-      const accuracyType = pipe(_mkAccuracyType(), AccuracyTypeCodec.decode);
+      const accuracyType = pipe(_mkAccuracyType()(), AccuracyTypeCodec.decode);
 
       expect(E.isRight(accuracyType)).toBe(true);
     });
 
     it("AddressSummary", () => {
-      const addressSummary = pipe(_mkAddressSummary(), AddressSummaryCodec.decode);
+      const addressSummary = pipe(_mkAddressSummary()(), AddressSummaryCodec.decode);
 
       expect(E.isRight(addressSummary)).toBe(true);
-    });
-
-    it("SingleAddressResponse", () => {
-      const singleAddressResponse = pipe(
-        _mkSingleAddressResponse(),
-        SingleAddressResponseCodec.decode,
-      );
-
-      expect(E.isRight(singleAddressResponse)).toBe(true);
-    });
-
-    it("BatchAddressResponse", () => {
-      const batchAddressResponse = pipe(
-        _mkBatchAddressResponse(),
-        BatchAddressResponseCodec.decode,
-      );
-
-      expect(E.isRight(batchAddressResponse)).toBe(true);
     });
 
     it("HttpMethod", () => {
@@ -163,10 +112,12 @@ describe("address-geocodio", () => {
   });
 
   describe("[Parsers]", () => {
+    const baseUrl: string = "https://api.geocod.io/v1.7";
+
     it("single - should handle an authentication error (mock)", async () => {
       // setup
       const restHandlers = [
-        rest.get("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+        rest.get(`${baseUrl}/geocode`, (_req, res, ctx) => {
           return res(
             ctx.status(403),
             ctx.json({
@@ -185,17 +136,30 @@ describe("address-geocodio", () => {
 
       const resp = await geocoder.parseSingle("1109 N Highland St, Arlington, VA 22201");
 
-      expect(resp._tag).toBe("http_error");
+      match(resp)
+        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(403))
+        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
       server.close();
     });
 
-    it("single - should handle a decode error (mock)", async () => {
+    it("single - should handle decode errors (mock)", async () => {
       // setup
+      const mockAddressSummary: AddressSummary = _mkAddressSummary()();
+
       const restHandlers = [
-        rest.get("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({}));
+        rest.get(`${baseUrl}/geocode`, (_req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              input: {
+                address_components: mockAddressSummary.address_components,
+                formatted_address: null,
+              },
+              results: [mockAddressSummary],
+            }),
+          );
         }),
       ];
 
@@ -207,7 +171,13 @@ describe("address-geocodio", () => {
 
       const resp = await geocoder.parseSingle("1109 N Highland St, Arlington, VA 22201");
 
-      expect(resp._tag).toBe("decoder_error");
+      match(resp)
+        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+          expect(reasons).toStrictEqual([
+            `Expecting string at input.formatted_address but instead got: null`,
+          ]),
+        )
+        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
       server.close();
@@ -215,9 +185,20 @@ describe("address-geocodio", () => {
 
     it("single - should successfully parse a single address (mock)", async () => {
       // setup
+      const mockAddressSummary: AddressSummary = _mkAddressSummary()();
+
       const restHandlers = [
-        rest.get("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json(_mkSingleAddressResponse()));
+        rest.get(`${baseUrl}/geocode`, (_req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              input: {
+                address_components: mockAddressSummary.address_components,
+                formatted_address: mockAddressSummary.formatted_address,
+              },
+              results: [mockAddressSummary],
+            }),
+          );
         }),
       ];
 
@@ -227,9 +208,13 @@ describe("address-geocodio", () => {
       // test
       const geocoder = new Geocodio("foobar");
 
-      const resp = await geocoder.parseSingle("1109 N Highland St, Arlington, VA 22201");
+      const resp = await geocoder.parseSingle("525 University Ave, Toronto, ON, Canada", "CA");
 
-      expect(resp._tag).toBe("single_address");
+      match(resp)
+        .with({ _tag: "single_address" }, ({ data }) =>
+          expect(data).toStrictEqual(mockAddressSummary),
+        )
+        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
       server.close();
@@ -238,7 +223,7 @@ describe("address-geocodio", () => {
     it("batch - should handle an authentication error (mock)", async () => {
       // setup
       const restHandlers = [
-        rest.post("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
+        rest.post(`${baseUrl}/geocode`, (_req, res, ctx) => {
           return res(
             ctx.status(403),
             ctx.json({
@@ -257,17 +242,37 @@ describe("address-geocodio", () => {
 
       const resp = await geocoder.parseBatch(["1109 N Highland St, Arlington, VA 22201"]);
 
-      expect(resp._tag).toBe("http_error");
+      match(resp)
+        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(403))
+        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
       server.close();
     });
 
-    it("batch - should handle a decode error (mock)", async () => {
+    it("batch - should handle decoder errors (mock)", async () => {
       // setup
+      const mockAddressSummary: AddressSummary = _mkAddressSummary()();
+
       const restHandlers = [
-        rest.post("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({}));
+        rest.post(`${baseUrl}/geocode`, (_req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              results: [
+                {
+                  query: undefined,
+                  response: {
+                    input: {
+                      address_components: mockAddressSummary.address_components,
+                      formatted_address: mockAddressSummary.formatted_address,
+                    },
+                    results: [mockAddressSummary],
+                  },
+                },
+              ],
+            }),
+          );
         }),
       ];
 
@@ -279,7 +284,13 @@ describe("address-geocodio", () => {
 
       const resp = await geocoder.parseBatch(["1109 N Highland St, Arlington, VA 22201"]);
 
-      expect(resp._tag).toBe("decoder_error");
+      match(resp)
+        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+          expect(reasons).toStrictEqual([
+            `Expecting string at results.0.query but instead got: undefined`,
+          ]),
+        )
+        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
       server.close();
@@ -287,9 +298,27 @@ describe("address-geocodio", () => {
 
     it("batch - should successfully parse a batch of addresses (mock)", async () => {
       // setup
+      const mockAddressSummary: AddressSummary = _mkAddressSummary()();
+
       const restHandlers = [
-        rest.post("https://api.geocod.io/v1.7/geocode", (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json(_mkBatchAddressResponse()));
+        rest.post(`${baseUrl}/geocode`, (_req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              results: [
+                {
+                  query: mockAddressSummary.formatted_address,
+                  response: {
+                    input: {
+                      address_components: mockAddressSummary.address_components,
+                      formatted_address: mockAddressSummary.formatted_address,
+                    },
+                    results: [mockAddressSummary],
+                  },
+                },
+              ],
+            }),
+          );
         }),
       ];
 
@@ -301,7 +330,16 @@ describe("address-geocodio", () => {
 
       const resp = await geocoder.parseBatch(["1109 N Highland St, Arlington, VA 22201"]);
 
-      expect(resp._tag).toBe("address_collection");
+      match(resp)
+        .with({ _tag: "address_collection" }, ({ data }) =>
+          expect(data).toStrictEqual([
+            {
+              query: mockAddressSummary.formatted_address,
+              response: [mockAddressSummary],
+            },
+          ]),
+        )
+        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
       server.close();
@@ -314,7 +352,7 @@ describe("address-geocodio", () => {
 
       expect(resp).toStrictEqual({
         _tag: "single_address",
-        result: {
+        data: {
           address_components: {
             number: "525",
             street: "University",
@@ -345,7 +383,7 @@ describe("address-geocodio", () => {
 
       expect(resp).toStrictEqual({
         _tag: "address_collection",
-        results: [
+        data: [
           {
             query: "525 University Ave, Toronto, ON, Canada",
             response: [
