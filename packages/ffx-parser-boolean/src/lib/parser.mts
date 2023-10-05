@@ -6,21 +6,25 @@ import * as S from "parser-ts/lib/string.js";
 
 const pTrueShortform = pipe(
   S.oneOf(Traversable)(["t", "y", "1"]),
+  P.chain(() => P.eof()),
   P.map(() => true),
 );
 
 const pFalseShortform = pipe(
   S.oneOf(Traversable)(["f", "n", "0"]),
+  P.chain(() => P.eof()),
   P.map(() => false),
 );
 
 const pTrueLongform = pipe(
   S.oneOf(Traversable)(["on", "yes", "true"]),
+  P.chain(() => P.eof()),
   P.map(() => true),
 );
 
 const pFalseLongform = pipe(
   S.oneOf(Traversable)(["off", "no", "false"]),
+  P.chain(() => P.eof()),
   P.map(() => false),
 );
 

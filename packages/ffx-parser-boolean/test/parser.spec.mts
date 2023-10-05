@@ -232,21 +232,18 @@ describe("Boolean", () => {
   });
 
   describe("Bad values", () => {
-    it.only("should handle 'tr'", () => {
+    it("should handle 'tr'", () => {
       const parserResult = runParser("tr");
 
       expect(parserResult).toStrictEqual({
         _tag: "Left",
-        right: {
-          next: {
+        left: {
+          input: {
             buffer: ["t", "r"],
-            cursor: 1,
+            cursor: 2,
           },
-          start: {
-            buffer: ["t", "r"],
-            cursor: 0,
-          },
-          value: true,
+          expected: ['"true"'],
+          fatal: false,
         },
       });
     });
@@ -256,16 +253,13 @@ describe("Boolean", () => {
 
       expect(parserResult).toStrictEqual({
         _tag: "Left",
-        right: {
-          next: {
+        left: {
+          input: {
             buffer: ["y", "e"],
-            cursor: 1,
+            cursor: 2,
           },
-          start: {
-            buffer: ["y", "e"],
-            cursor: 0,
-          },
-          value: true,
+          expected: ['"yes"'],
+          fatal: false,
         },
       });
     });
@@ -275,16 +269,13 @@ describe("Boolean", () => {
 
       expect(parserResult).toStrictEqual({
         _tag: "Left",
-        right: {
-          next: {
+        left: {
+          input: {
             buffer: ["1", "0"],
             cursor: 1,
           },
-          start: {
-            buffer: ["1", "0"],
-            cursor: 0,
-          },
-          value: true,
+          expected: ["end of file"],
+          fatal: false,
         },
       });
     });
@@ -294,16 +285,13 @@ describe("Boolean", () => {
 
       expect(parserResult).toStrictEqual({
         _tag: "Left",
-        right: {
-          next: {
+        left: {
+          input: {
             buffer: ["0", "1"],
             cursor: 1,
           },
-          start: {
-            buffer: ["0", "1"],
-            cursor: 0,
-          },
-          value: true,
+          expected: ["end of file"],
+          fatal: false,
         },
       });
     });
@@ -313,16 +301,13 @@ describe("Boolean", () => {
 
       expect(parserResult).toStrictEqual({
         _tag: "Left",
-        right: {
-          next: {
+        left: {
+          input: {
             buffer: ["y", "e", "s", "s"],
-            cursor: 4,
+            cursor: 3,
           },
-          start: {
-            buffer: ["y", "e", "s", "s"],
-            cursor: 0,
-          },
-          value: true,
+          expected: ["end of file"],
+          fatal: false,
         },
       });
     });
@@ -332,16 +317,13 @@ describe("Boolean", () => {
 
       expect(parserResult).toStrictEqual({
         _tag: "Left",
-        right: {
-          next: {
+        left: {
+          input: {
             buffer: ["n", "o", "o"],
             cursor: 2,
           },
-          start: {
-            buffer: ["n", "o", "o"],
-            cursor: 0,
-          },
-          value: true,
+          expected: ["end of file"],
+          fatal: false,
         },
       });
     });
