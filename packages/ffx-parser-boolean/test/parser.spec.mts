@@ -274,7 +274,7 @@ describe("Boolean", () => {
             buffer: ["1", "0"],
             cursor: 1,
           },
-          expected: ["end of file"],
+          expected: ["end of string"],
           fatal: false,
         },
       });
@@ -290,7 +290,7 @@ describe("Boolean", () => {
             buffer: ["0", "1"],
             cursor: 1,
           },
-          expected: ["end of file"],
+          expected: ["end of string"],
           fatal: false,
         },
       });
@@ -306,7 +306,7 @@ describe("Boolean", () => {
             buffer: ["y", "e", "s", "s"],
             cursor: 3,
           },
-          expected: ["end of file"],
+          expected: ["end of string"],
           fatal: false,
         },
       });
@@ -322,7 +322,7 @@ describe("Boolean", () => {
             buffer: ["n", "o", "o"],
             cursor: 2,
           },
-          expected: ["end of file"],
+          expected: ["end of string"],
           fatal: false,
         },
       });
