@@ -17,6 +17,9 @@
     "fp-ts": "^2.16.1",
     "io-ts": "^2.2.20",
     "io-ts-reporters": "^2.0.1",
+    "monocle-ts": "^2.3.13",
+    "newtype-ts": "^0.3.5",
+    "parser-ts": "^0.7.0",
     "ts-pattern": "^5.0.5"
   },
   "devDependencies": {
