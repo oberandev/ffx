@@ -3,7 +3,7 @@ codecov:
 
 comment:
   behavior: default
-  layout: diff, flags, files
+  layout: "diff, flags, files"
   require_changes: false
 
 coverage:
