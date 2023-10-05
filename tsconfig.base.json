@@ -15,7 +15,8 @@
       "@ffx/guards": ["packages/ffx-guards/src/index.mts"],
       "@ffx/logger": ["packages/ffx-logger/src/index.mts"],
       "@ffx/orm": ["packages/ffx-orm/src/index.mts"],
-      "@ffx/parser-address-geocodio": ["packages/ffx-parser-address-geocodio/src/index.mts"]
+      "@ffx/parser-address-geocodio": ["packages/ffx-parser-address-geocodio/src/index.mts"],
+      "@ffx/parser-uuid": ["packages/ffx-parser-uuid/src/index.mts"]
     },
     "rootDir": ".",
     "skipDefaultLibCheck": true,
