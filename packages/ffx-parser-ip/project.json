@@ -1,23 +1,23 @@
 {
-  "name": "ffx-orm",
+  "name": "ffx-parser-ip",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/ffx-orm/src",
+  "sourceRoot": "packages/ffx-parser-ip/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "packages/ffx-orm/build"
+      "command": "packages/ffx-parser-ip/build"
     },
     "format:check": {
-      "command": "prettier packages/ffx-orm/**/*.{js,mts,ts} --check"
+      "command": "prettier packages/ffx-parser-ip/**/*.{js,mts,ts} --check"
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "eslint packages/ffx-orm"
+        "command": "eslint packages/ffx-parser-ip"
       }
     },
     "publish": {
-      "command": "node tools/scripts/publish.mjs ffx-orm {args.ver} {args.tag}",
+      "command": "node tools/scripts/publish.mjs ffx-parser-ip {args.ver} {args.tag}",
       "dependsOn": ["build"]
     },
     "test": {
@@ -27,7 +27,7 @@
         "coverage": true,
         "passWithNoTests": false,
         "reporters": ["default"],
-        "reportsDirectory": "../../coverage/packages/ffx-orm"
+        "reportsDirectory": "../../coverage/packages/ffx-parser-ip"
       },
       "configurations": {
         "watch": {

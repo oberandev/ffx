@@ -216,6 +216,12 @@ importers:
         specifier: ^2.0.0
         version: 2.0.1(fp-ts@2.16.1)(io-ts@2.2.20)
 
+  packages/ffx-parser-boolean: {}
+
+  packages/ffx-parser-ip: {}
+
+  packages/ffx-parser-mac: {}
+
   packages/ffx-parser-uuid: {}
 
 packages:
