@@ -67,6 +67,54 @@ const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex 
 const pChunk: P.Parser<string, string> = C.many1(hexDigit);
 const pHyphen: P.Parser<string, string> = C.char("-");
 
+const chunk4 = P.expected(
+  pipe(
+    hexDigit,
+    P.bindTo("d1"),
+    P.bind("d2", () => hexDigit),
+    P.bind("d3", () => hexDigit),
+    P.bind("d4", () => hexDigit),
+    P.map((ds) => Object.values(ds).join("")),
+  ),
+  "4 hex digits",
+);
+
+const chunk8 = P.expected(
+  pipe(
+    hexDigit,
+    P.bindTo("d1"),
+    P.bind("d2", () => hexDigit),
+    P.bind("d3", () => hexDigit),
+    P.bind("d4", () => hexDigit),
+    P.bind("d5", () => hexDigit),
+    P.bind("d6", () => hexDigit),
+    P.bind("d7", () => hexDigit),
+    P.bind("d8", () => hexDigit),
+    P.map((ds) => Object.values(ds).join("")),
+  ),
+  "8 hex digits",
+);
+
+const chunk12 = P.expected(
+  pipe(
+    hexDigit,
+    P.bindTo("d1"),
+    P.bind("d2", () => hexDigit),
+    P.bind("d3", () => hexDigit),
+    P.bind("d4", () => hexDigit),
+    P.bind("d5", () => hexDigit),
+    P.bind("d6", () => hexDigit),
+    P.bind("d7", () => hexDigit),
+    P.bind("d8", () => hexDigit),
+    P.bind("d9", () => hexDigit),
+    P.bind("d10", () => hexDigit),
+    P.bind("d11", () => hexDigit),
+    P.bind("d12", () => hexDigit),
+    P.map((ds) => Object.values(ds).join("")),
+  ),
+  "12 hex digits",
+);
+
 // count :: (Stream s m t) => Int -> ParsecT s u m a -> ParsecT s u m [a]
 // {-# INLINABLE count #-}
 // count n p parses n occurrences of p. If n is smaller or equal to zero, the parser equals to return []. Returns a list of n values returned by p.
