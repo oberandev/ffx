@@ -60,5 +60,5 @@ blocks:
           commands:
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
-            - pnpm nx run-many -t test
+            - pnpm nx affected -t test --base=origin/main --head=$SEMAPHORE_GIT_PR_BRANCH
             - ./codecov
