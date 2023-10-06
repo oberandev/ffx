@@ -1,9 +1,9 @@
-import * as Eq from "fp-ts/lib/Eq.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as J from "fp-ts/lib/Json.js";
-import * as O from "fp-ts/lib/Option.js";
-import * as RA from "fp-ts/lib/ReadonlyArray.js";
-import * as Str from "fp-ts/lib/string.js";
+import * as Eq from "fp-ts/Eq";
+import { pipe } from "fp-ts/function";
+import * as J from "fp-ts/Json";
+import * as O from "fp-ts/Option";
+import * as RA from "fp-ts/ReadonlyArray";
+import * as Str from "fp-ts/string";
 
 type DbConstraint = RequiredConstraint | UniqueConstraint;
 

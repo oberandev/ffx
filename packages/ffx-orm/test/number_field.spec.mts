@@ -1,4 +1,4 @@
-import * as J from "fp-ts/lib/Json.js";
+import * as J from "fp-ts/Json";
 
 import { NumberFieldBuilder } from "../src/lib/number_field.mjs";
 

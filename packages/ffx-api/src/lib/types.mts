@@ -1,8 +1,8 @@
 import { AxiosError } from "axios";
-import * as E from "fp-ts/lib/Either.js";
-import { flow, pipe } from "fp-ts/lib/function.js";
-import * as RTE from "fp-ts/lib/ReaderTaskEither.js";
-import * as t from "io-ts/lib";
+import * as E from "fp-ts/Either";
+import { flow, pipe } from "fp-ts/function";
+import * as RTE from "fp-ts/ReaderTaskEither";
+import * as t from "io-ts";
 import { formatValidationErrors } from "io-ts-reporters";
 
 // ==================

@@ -1,9 +1,9 @@
 import axios, { AxiosError } from "axios";
-import * as E from "fp-ts/lib/Either.js";
-import { identity, pipe } from "fp-ts/lib/function.js";
-import * as RA from "fp-ts/lib/ReadonlyArray.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
-import * as t from "io-ts/lib";
+import * as E from "fp-ts/Either";
+import { identity, pipe } from "fp-ts/function";
+import * as RA from "fp-ts/ReadonlyArray";
+import * as TE from "fp-ts/TaskEither";
+import * as t from "io-ts";
 import { formatValidationErrors } from "io-ts-reporters";
 
 // eslint-disable-next-line import/no-relative-parent-imports

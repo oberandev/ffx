@@ -1,7 +1,7 @@
 import { faker, fakerEN_US } from "@faker-js/faker";
-import * as E from "fp-ts/lib/Either.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as IO from "fp-ts/lib/IO.js";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
+import * as IO from "fp-ts/IO";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";

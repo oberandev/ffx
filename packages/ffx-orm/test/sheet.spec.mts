@@ -1,7 +1,7 @@
-import { pipe } from "fp-ts/lib/function.js";
-import * as J from "fp-ts/lib/Json.js";
-import * as O from "fp-ts/lib/Option.js";
-import * as RA from "fp-ts/lib/ReadonlyArray.js";
+import { pipe } from "fp-ts/function";
+import * as J from "fp-ts/Json";
+import * as O from "fp-ts/Option";
+import * as RA from "fp-ts/ReadonlyArray";
 
 import { CustomActionBuilder, eqCustomAction } from "../src/lib/custom_action.mjs";
 import { eqField, Permission, SheetBuilder } from "../src/lib/sheet.mjs";

@@ -1,9 +1,9 @@
-import { Traversable } from "fp-ts/lib/Array.js";
-import * as E from "fp-ts/lib/Either.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as P from "parser-ts/lib/Parser.js";
-import { ParseResult } from "parser-ts/lib/ParseResult.js";
-import * as S from "parser-ts/lib/string.js";
+import { Traversable } from "fp-ts/Array";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
+import * as P from "parser-ts/Parser";
+import { ParseResult } from "parser-ts/ParseResult";
+import * as S from "parser-ts/string";
 
 // ==================
 //       Types
