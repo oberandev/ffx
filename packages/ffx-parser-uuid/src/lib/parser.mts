@@ -19,7 +19,36 @@ export const isoUUID: Iso<UUID, string> = N.iso<UUID>();
 
 const eqUUID: Eq.Eq<UUID> = N.getEq<UUID>(Str.Eq);
 
-type Version = "v1" | "v2" | "v3" | "v4" | "v5";
+export interface Ok<T> {
+  readonly _tag: "ok";
+  readonly value: T;
+}
+
+export interface Err<E> {
+  readonly _tag: "err";
+  readonly value: E;
+}
+
+/**
+ * A `Result` is either `Ok` meaning the computation succeeded, or it is an `Err` meaning that there was some failure.
+ *
+ * @since 0.1.0
+ */
+export type Result<T, E> = Ok<T> | Err<E>;
+
+function ok<T>(value: T): Ok<T> {
+  return {
+    _tag: "ok",
+    value,
+  };
+}
+
+function err<E>(value: E): Err<E> {
+  return {
+    _tag: "err",
+    value,
+  };
+}
 
 // ==================
 //       Main
@@ -30,13 +59,57 @@ function isHexDigit(c: C.Char): boolean {
 }
 
 const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
-// PR this and octDigit to repo
-// https://github.com/purescript-contrib/purescript-parsing/blob/v10.0.0/src/Parsing/String/Basic.purs#L58-L58
-// contribute others from parsec??
-// https://hackage.haskell.org/package/parsec-3.1.17.0/docs/Text-ParserCombinators-Parsec-Char.html
 
 const pChunk: P.Parser<string, string> = C.many1(hexDigit);
 const pHyphen: P.Parser<string, string> = C.char("-");
+
+const chunk4 = P.expected(
+  pipe(
+    hexDigit,
+    P.bindTo("d1"),
+    P.bind("d2", () => hexDigit),
+    P.bind("d3", () => hexDigit),
+    P.bind("d4", () => hexDigit),
+    P.map((ds) => Object.values(ds).join("")),
+  ),
+  "4 hex digits",
+);
+
+const chunk8 = P.expected(
+  pipe(
+    hexDigit,
+    P.bindTo("d1"),
+    P.bind("d2", () => hexDigit),
+    P.bind("d3", () => hexDigit),
+    P.bind("d4", () => hexDigit),
+    P.bind("d5", () => hexDigit),
+    P.bind("d6", () => hexDigit),
+    P.bind("d7", () => hexDigit),
+    P.bind("d8", () => hexDigit),
+    P.map((ds) => Object.values(ds).join("")),
+  ),
+  "8 hex digits",
+);
+
+const chunk12 = P.expected(
+  pipe(
+    hexDigit,
+    P.bindTo("d1"),
+    P.bind("d2", () => hexDigit),
+    P.bind("d3", () => hexDigit),
+    P.bind("d4", () => hexDigit),
+    P.bind("d5", () => hexDigit),
+    P.bind("d6", () => hexDigit),
+    P.bind("d7", () => hexDigit),
+    P.bind("d8", () => hexDigit),
+    P.bind("d9", () => hexDigit),
+    P.bind("d10", () => hexDigit),
+    P.bind("d11", () => hexDigit),
+    P.bind("d12", () => hexDigit),
+    P.map((ds) => Object.values(ds).join("")),
+  ),
+  "12 hex digits",
+);
 
 // count :: (Stream s m t) => Int -> ParsecT s u m a -> ParsecT s u m [a]
 // {-# INLINABLE count #-}
@@ -47,6 +120,7 @@ const pHyphen: P.Parser<string, string> = C.char("-");
 // chainRec_ might do the trick (many1Till)
 // maybe look at sepBy too
 // }
+// haskell parsec has count (equivalent of replicateM) combinator to parse exactly n number of chars
 
 export function runParser(input: string): ParseResult<string, UUID> {
   // The most used format is the 8-4-4-4-12 format
@@ -74,18 +148,27 @@ export function runParser(input: string): ParseResult<string, UUID> {
   return S.run(input)(parser);
 }
 
-// haskell parsec has count (equivalent of replicateM) combinator to parse exactly n number of chars
-
-export function parse(onFailure: (errors: string) => void, onSuccess: (uuid: UUID) => void) {
-  return function (input: string) {
-    pipe(
-      runParser(input),
-      E.matchW(
-        ({ expected }) => onFailure(expected.join(" ")), // "Expected " + err.expected.join(" ") + " at position " + (err.input.cursor + 1),
-        ({ value }) => onSuccess(value),
-      ),
-    );
-  };
+/**
+ * Parse a string into a possible uuid.
+ *
+ * @example
+ *
+ * ```ts
+ * import { parse } from "@oberan/ffx-parser-uuid";
+ *
+ * const result = parse("23d57c30-afe7-11e4-ab7d-12e3f512a338");
+ * ```
+ *
+ * @since 0.1.0
+ */
+export function parse(input: string): Result<UUID, string> {
+  return pipe(
+    runParser(input),
+    E.matchW(
+      ({ expected }) => err(expected.join(" ")),
+      ({ value }) => ok(value),
+    ),
+  );
 }
 
 // ==================
@@ -98,9 +181,9 @@ export function parse(onFailure: (errors: string) => void, onSuccess: (uuid: UUI
  * @example
  *
  * ```ts
- * import * as Uuid from "@oberan/ffx-parser-uuid";
+ * import { format } from "@oberan/ffx-parser-uuid";
  *
- * Uuid.format(uuid);
+ * format(uuid);
  * ```
  *
  * @since 0.1.0
@@ -115,9 +198,9 @@ export function format(uuid: UUID): UUID {
  * @example
  *
  * ```ts
- * import * as Uuid from "@oberan/ffx-parser-uuid";
+ * import { isMax } from "@oberan/ffx-parser-uuid";
  *
- * Uuid.isMax(uuid);
+ * isMax(uuid);
  * ```
  *
  * @since 0.1.0
@@ -132,9 +215,9 @@ export function isMax(uuid: UUID): boolean {
  * @example
  *
  * ```ts
- * import * as Uuid from "@oberan/ffx-parser-uuid";
+ * import { isNil } from "@oberan/ffx-parser-uuid";
  *
- * Uuid.isNil(uuid);
+ * isNil(uuid);
  * ```
  *
  * @since 0.1.0
@@ -149,9 +232,9 @@ export function isNil(uuid: UUID): boolean {
  * @example
  *
  * ```ts
- * import * as Uuid from "@oberan/ffx-parser-uuid";
+ * import { unwrap } from "@oberan/ffx-parser-uuid";
  *
- * Uuid.unwrap(uuid);
+ * unwrap(uuid);
  * ```
  *
  * @since 0.1.0
