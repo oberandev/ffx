@@ -20,7 +20,7 @@ export interface Err<E> {
 }
 
 /**
- * A Result is either `Ok` meaning the computation succeeded, or it is an `Err` meaning that there was some failure.
+ * A `Result` is either `Ok` meaning the computation succeeded, or it is an `Err` meaning that there was some failure.
  *
  * @since 0.1.0
  */
