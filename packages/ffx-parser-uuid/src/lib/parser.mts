@@ -20,13 +20,13 @@ export const isoUUID: Iso<UUID, string> = N.iso<UUID>();
 const eqUUID: Eq.Eq<UUID> = N.getEq<UUID>(Str.Eq);
 
 export interface Ok<T> {
-  _tag: "ok";
-  value: T;
+  readonly _tag: "ok";
+  readonly value: T;
 }
 
 export interface Err<E> {
-  _tag: "err";
-  value: E;
+  readonly _tag: "err";
+  readonly value: E;
 }
 
 /**
