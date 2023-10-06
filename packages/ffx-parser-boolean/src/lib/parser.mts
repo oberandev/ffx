@@ -19,6 +19,11 @@ export interface Err<E> {
   value: E;
 }
 
+/**
+ * A Result is either `Ok` meaning the computation succeeded, or it is an `Err` meaning that there was some failure.
+ *
+ * @since 0.1.0
+ */
 export type Result<T, E> = Ok<T> | Err<E>;
 
 function ok<T>(value: T): Ok<T> {
