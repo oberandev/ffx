@@ -1,5 +1,5 @@
-import { pipe } from "fp-ts/lib/function.js";
-import * as RA from "fp-ts/lib/ReadonlyArray.js";
+import { pipe } from "fp-ts/function";
+import * as RA from "fp-ts/ReadonlyArray";
 
 import { Sheet, eqSheet } from "./sheet.mjs";
 

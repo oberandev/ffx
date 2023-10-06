@@ -1,4 +1,4 @@
-import * as J from "fp-ts/lib/Json.js";
+import * as J from "fp-ts/Json";
 
 import { BooleanFieldBuilder } from "../src/lib/boolean_field.mjs";
 

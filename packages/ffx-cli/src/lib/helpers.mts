@@ -1,9 +1,9 @@
 import { $ } from "execa";
-import * as E from "fp-ts/lib/Either.js";
-import { constVoid, pipe } from "fp-ts/lib/function.js";
-import * as J from "fp-ts/lib/Json.js";
-import * as RTE from "fp-ts/lib/ReaderTaskEither.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
+import * as E from "fp-ts/Either";
+import { constVoid, pipe } from "fp-ts/function";
+import * as J from "fp-ts/Json";
+import * as RTE from "fp-ts/ReaderTaskEither";
+import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";

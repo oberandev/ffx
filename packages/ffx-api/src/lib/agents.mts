@@ -1,9 +1,9 @@
 import axios, { AxiosError } from "axios";
-import { identity, pipe } from "fp-ts/lib/function.js";
-import * as RT from "fp-ts/lib/ReaderTask.js";
-import * as RTE from "fp-ts/lib/ReaderTaskEither.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
-import * as t from "io-ts/lib";
+import { identity, pipe } from "fp-ts/function";
+import * as RT from "fp-ts/ReaderTask";
+import * as RTE from "fp-ts/ReaderTaskEither";
+import * as TE from "fp-ts/TaskEither";
+import * as t from "io-ts";
 
 import {
   ApiReader,
