@@ -1,1 +1,1 @@
-export * from "./lib/ffx-parser-boolean";
+export { Err, Ok, Result, parse } from "./lib/parser.mjs";

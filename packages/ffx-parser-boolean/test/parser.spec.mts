@@ -1,8 +1,8 @@
-import { runParser } from "../src/lib/parser.mjs";
+import { parse, runParser } from "../src/lib/parser.mjs";
 
 describe("Boolean", () => {
-  describe("All possible valid values", () => {
-    it("should handle 't' shortform", () => {
+  describe("runParser()", () => {
+    it("[shortform] should handle 't'", () => {
       const parserResult = runParser("t");
 
       expect(parserResult).toStrictEqual({
@@ -21,7 +21,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'f' shortform", () => {
+    it("[shortform] should handle 'f'", () => {
       const parserResult = runParser("f");
 
       expect(parserResult).toStrictEqual({
@@ -40,7 +40,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'y' shortform", () => {
+    it("[shortform] should handle 'y'", () => {
       const parserResult = runParser("y");
 
       expect(parserResult).toStrictEqual({
@@ -59,7 +59,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'n' shortform", () => {
+    it("[shortform] should handle 'n'", () => {
       const parserResult = runParser("n");
 
       expect(parserResult).toStrictEqual({
@@ -78,7 +78,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle '1' shortform", () => {
+    it("[shortform] should handle '1'", () => {
       const parserResult = runParser("1");
 
       expect(parserResult).toStrictEqual({
@@ -97,7 +97,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle '0' shortform", () => {
+    it("[shortform] should handle '0'", () => {
       const parserResult = runParser("0");
 
       expect(parserResult).toStrictEqual({
@@ -116,7 +116,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'on' longform", () => {
+    it("[longform] should handle 'on'", () => {
       const parserResult = runParser("on");
 
       expect(parserResult).toStrictEqual({
@@ -135,7 +135,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'off' longform", () => {
+    it("[longform] should handle 'off'", () => {
       const parserResult = runParser("off");
 
       expect(parserResult).toStrictEqual({
@@ -154,7 +154,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'yes' longform", () => {
+    it("[longform] should handle 'yes'", () => {
       const parserResult = runParser("yes");
 
       expect(parserResult).toStrictEqual({
@@ -173,7 +173,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'no' longform", () => {
+    it("[longform] should handle 'no'", () => {
       const parserResult = runParser("no");
 
       expect(parserResult).toStrictEqual({
@@ -192,7 +192,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'true' longform", () => {
+    it("[longform] should handle 'true'", () => {
       const parserResult = runParser("true");
 
       expect(parserResult).toStrictEqual({
@@ -211,7 +211,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'false' longform", () => {
+    it("[longform] should handle 'false'", () => {
       const parserResult = runParser("false");
 
       expect(parserResult).toStrictEqual({
@@ -229,10 +229,8 @@ describe("Boolean", () => {
         },
       });
     });
-  });
 
-  describe("Bad values", () => {
-    it("should handle 'tr'", () => {
+    it("[invalid] should handle 'tr'", () => {
       const parserResult = runParser("tr");
 
       expect(parserResult).toStrictEqual({
@@ -248,7 +246,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'ye'", () => {
+    it("[invalid] should handle 'ye'", () => {
       const parserResult = runParser("ye");
 
       expect(parserResult).toStrictEqual({
@@ -264,7 +262,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle '10'", () => {
+    it("[invalid] should handle '10'", () => {
       const parserResult = runParser("10");
 
       expect(parserResult).toStrictEqual({
@@ -280,7 +278,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle '01'", () => {
+    it("[invalid] should handle '01'", () => {
       const parserResult = runParser("01");
 
       expect(parserResult).toStrictEqual({
@@ -296,7 +294,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'yess'", () => {
+    it("[invalid] should handle 'yess'", () => {
       const parserResult = runParser("yess");
 
       expect(parserResult).toStrictEqual({
@@ -312,7 +310,7 @@ describe("Boolean", () => {
       });
     });
 
-    it("should handle 'noo'", () => {
+    it("[invalid] should handle 'noo'", () => {
       const parserResult = runParser("noo");
 
       expect(parserResult).toStrictEqual({
@@ -325,6 +323,170 @@ describe("Boolean", () => {
           expected: ["end of string"],
           fatal: false,
         },
+      });
+    });
+  });
+
+  describe("parser()", () => {
+    it("[shortform] should handle 't'", () => {
+      const result = parse("t");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: true,
+      });
+    });
+
+    it("[shortform] should handle 'f'", () => {
+      const result = parse("f");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: false,
+      });
+    });
+
+    it("[shortform] should handle 'y'", () => {
+      const result = parse("y");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: true,
+      });
+    });
+
+    it("[shortform] should handle 'n'", () => {
+      const result = parse("n");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: false,
+      });
+    });
+
+    it("[shortform] should handle '1'", () => {
+      const result = parse("1");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: true,
+      });
+    });
+
+    it("[shortform] should handle '0'", () => {
+      const result = parse("0");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: false,
+      });
+    });
+
+    it("[longform] should handle 'on'", () => {
+      const result = parse("on");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: true,
+      });
+    });
+
+    it("[longform] should handle 'off'", () => {
+      const result = parse("off");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: false,
+      });
+    });
+
+    it("[longform] should handle 'yes'", () => {
+      const result = parse("yes");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: true,
+      });
+    });
+
+    it("[longform] should handle 'no'", () => {
+      const result = parse("no");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: false,
+      });
+    });
+
+    it("[longform] should handle 'true'", () => {
+      const result = parse("true");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: true,
+      });
+    });
+
+    it("[longform] should handle 'false'", () => {
+      const result = parse("false");
+
+      expect(result).toStrictEqual({
+        _tag: "ok",
+        value: false,
+      });
+    });
+
+    it("[invalid] should handle 'tr'", () => {
+      const result = parse("tr");
+
+      expect(result).toStrictEqual({
+        _tag: "err",
+        value: 'Expected "true" but found "tr"',
+      });
+    });
+
+    it("[invalid] should handle 'ye'", () => {
+      const result = parse("ye");
+
+      expect(result).toStrictEqual({
+        _tag: "err",
+        value: 'Expected "yes" but found "ye"',
+      });
+    });
+
+    it("[invalid] should handle '10'", () => {
+      const result = parse("10");
+
+      expect(result).toStrictEqual({
+        _tag: "err",
+        value: 'Expected end of string but found "10"',
+      });
+    });
+
+    it("[invalid] should handle '01'", () => {
+      const result = parse("01");
+
+      expect(result).toStrictEqual({
+        _tag: "err",
+        value: 'Expected end of string but found "01"',
+      });
+    });
+
+    it("[invalid] should handle 'yess'", () => {
+      const result = parse("yess");
+
+      expect(result).toStrictEqual({
+        _tag: "err",
+        value: 'Expected end of string but found "yess"',
+      });
+    });
+
+    it("[invalid] should handle 'noo'", () => {
+      const result = parse("noo");
+
+      expect(result).toStrictEqual({
+        _tag: "err",
+        value: 'Expected end of string but found "noo"',
       });
     });
   });

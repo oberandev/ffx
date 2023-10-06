@@ -1,8 +1,43 @@
 import { Traversable } from "fp-ts/lib/Array.js";
+import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as P from "parser-ts/lib/Parser.js";
 import { ParseResult } from "parser-ts/lib/ParseResult.js";
 import * as S from "parser-ts/lib/string.js";
+
+// ==================
+//       Types
+// ==================
+
+export interface Ok<T> {
+  _tag: "ok";
+  value: T;
+}
+
+export interface Err<E> {
+  _tag: "err";
+  value: E;
+}
+
+export type Result<T, E> = Ok<T> | Err<E>;
+
+function ok<T>(value: T): Ok<T> {
+  return {
+    _tag: "ok",
+    value,
+  };
+}
+
+function err<E>(value: E): Err<E> {
+  return {
+    _tag: "err",
+    value,
+  };
+}
+
+// ==================
+//       Main
+// ==================
 
 const pTrueShortform = pipe(
   S.oneOf(Traversable)(["t", "y", "1"]),
@@ -37,17 +72,31 @@ export function runParser(input: string): ParseResult<string, boolean> {
   return S.run(input)(parser);
 }
 
-// Expected "one of [ 't', 'f', 'y', 'n', '1', '0', 'on', 'off', 'yes', 'no', 'true', 'false' ]" but found ___
-
 /**
  * Parse a string into a possible Flatfile boolean.
  *
  * @example
  *
  * ```ts
- * import { parse } from "@obera/ffx-parser-boolean";
+ * import { parse } from "@oberan/ffx-parser-boolean";
+ *
+ * const result = parse("true");
  * ```
  *
  * @since 0.1.0
  */
-export function parse(input: string) {}
+export function parse(input: string): Result<boolean, string> {
+  return pipe(
+    runParser(input),
+    E.matchW(
+      ({ expected, input }) => {
+        const customErrorMsg: string = `Expected ${expected.join(
+          " ",
+        )} but found "${input.buffer.join("")}"`;
+
+        return err(customErrorMsg);
+      },
+      ({ value }) => ok(value),
+    ),
+  );
+}
