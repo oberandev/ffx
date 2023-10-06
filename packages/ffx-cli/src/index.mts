@@ -1,10 +1,10 @@
 import * as p from "@clack/prompts";
 import chalk from "chalk";
 import { Command } from "commander";
-import * as E from "fp-ts/lib/Either.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as RTE from "fp-ts/lib/ReaderTaskEither.js";
-import * as Str from "fp-ts/lib/string.js";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
+import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 
 import {
   ProjectCodec,

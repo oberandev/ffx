@@ -1,7 +1,7 @@
-import * as Eq from "fp-ts/lib/Eq.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as O from "fp-ts/lib/Option.js";
-import * as Str from "fp-ts/lib/string.js";
+import * as Eq from "fp-ts/Eq";
+import { pipe } from "fp-ts/function";
+import * as O from "fp-ts/Option";
+import * as Str from "fp-ts/string";
 
 type CusotmActionMode = "background" | "foreground";
 

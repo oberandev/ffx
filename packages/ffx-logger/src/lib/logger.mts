@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import * as IO from "fp-ts/lib/IO.js";
+import * as IO from "fp-ts/IO";
 
 interface Logger {
   readonly debug: (msg: string) => IO.IO<void>;

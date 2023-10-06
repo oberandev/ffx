@@ -1,13 +1,13 @@
-import * as E from "fp-ts/lib/Either.js";
-import * as Eq from "fp-ts/lib/Eq.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as Str from "fp-ts/lib/string.js";
-import { Iso } from "monocle-ts/lib";
-import * as N from "newtype-ts/lib";
-import * as C from "parser-ts/lib/char.js";
-import * as P from "parser-ts/lib/Parser.js";
-import { ParseResult } from "parser-ts/lib/ParseResult.js";
-import * as S from "parser-ts/lib/string.js";
+import * as E from "fp-ts/Either";
+import * as Eq from "fp-ts/Eq";
+import { pipe } from "fp-ts/function";
+import * as Str from "fp-ts/string";
+import { Iso } from "monocle-ts";
+import * as N from "newtype-ts";
+import * as C from "parser-ts/char";
+import * as P from "parser-ts/Parser";
+import { ParseResult } from "parser-ts/ParseResult";
+import * as S from "parser-ts/string";
 
 // ==================
 //       Types
