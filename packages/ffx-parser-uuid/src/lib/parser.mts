@@ -59,10 +59,6 @@ function isHexDigit(c: C.Char): boolean {
 }
 
 const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
-// PR this and octDigit to repo
-// https://github.com/purescript-contrib/purescript-parsing/blob/v10.0.0/src/Parsing/String/Basic.purs#L58-L58
-// contribute others from parsec??
-// https://hackage.haskell.org/package/parsec-3.1.17.0/docs/Text-ParserCombinators-Parsec-Char.html
 
 const pChunk: P.Parser<string, string> = C.many1(hexDigit);
 const pHyphen: P.Parser<string, string> = C.char("-");
