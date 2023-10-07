@@ -27,7 +27,7 @@
     "directory": "packages/ffx-orm"
   },
   "dependencies": {
-    "fp-ts": "^2.16.0",
+    "fp-ts": "^2.16.1",
     "parser-ts": "^0.7.0"
   }
 }

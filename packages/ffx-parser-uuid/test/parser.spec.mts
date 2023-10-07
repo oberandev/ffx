@@ -5,8 +5,8 @@ describe("UUID", () => {
     const result = parse("23d57c30-afe7-11e4-ab7d-12e3f512a338");
 
     expect(result).toStrictEqual({
-      _tag: "ok",
-      value: "23d57c30-afe7-11e4-ab7d-12e3f512a338",
+      _tag: "Right",
+      right: "23d57c30-afe7-11e4-ab7d-12e3f512a338",
     });
   });
 
@@ -14,8 +14,8 @@ describe("UUID", () => {
     const result = parse("-afe7-11e4-ab7d-12e3f512a338");
 
     expect(result).toStrictEqual({
-      _tag: "err",
-      value: `Expected a hex digit at position 1 but found "-"`,
+      _tag: "Left",
+      left: `Expected a hex digit at position 1 but found "-"`,
     });
   });
 
@@ -23,8 +23,8 @@ describe("UUID", () => {
     const result = parse("23d57c30*afe7-11e4-ab7d-12e3f512a338");
 
     expect(result).toStrictEqual({
-      _tag: "err",
-      value: `Expected "-" at position 9 but found "*"`,
+      _tag: "Left",
+      left: `Expected "-" at position 9 but found "*"`,
     });
   });
 

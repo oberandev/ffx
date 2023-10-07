@@ -20,37 +20,6 @@ export const isoUUID: Iso<UUID, string> = N.iso<UUID>();
 
 const eqUUID: Eq.Eq<UUID> = N.getEq<UUID>(Str.Eq);
 
-export interface Ok<T> {
-  readonly _tag: "ok";
-  readonly value: T;
-}
-
-export interface Err<E> {
-  readonly _tag: "err";
-  readonly value: E;
-}
-
-/**
- * A `Result` is either `Ok` meaning the computation succeeded, or it is an `Err` meaning that there was some failure.
- *
- * @since 0.1.0
- */
-export type Result<T, E> = Ok<T> | Err<E>;
-
-function ok<T>(value: T): Ok<T> {
-  return {
-    _tag: "ok",
-    value,
-  };
-}
-
-function err<E>(value: E): Err<E> {
-  return {
-    _tag: "err",
-    value,
-  };
-}
-
 // ==================
 //       Main
 // ==================
@@ -101,7 +70,7 @@ export function runParser(input: string): ParseResult<string, UUID> {
  *
  * @since 0.1.0
  */
-export function parse(input: string): Result<UUID, string> {
+export function parse(input: string): E.Either<string, UUID> {
   return pipe(
     runParser(input),
     E.matchW(
@@ -110,9 +79,9 @@ export function parse(input: string): Result<UUID, string> {
           input.cursor + 1
         } but found "${input.buffer[input.cursor]}"`;
 
-        return err(customErrorMsg);
+        return E.left(customErrorMsg);
       },
-      ({ value }) => ok(value),
+      ({ value }) => E.right(value),
     ),
   );
 }
@@ -122,7 +91,7 @@ export function parse(input: string): Result<UUID, string> {
 // ==================
 
 /**
- *  Opionionated format - convert to lowercase.
+ *  Opinionated format - convert to lowercase.
  *
  * @example
  *

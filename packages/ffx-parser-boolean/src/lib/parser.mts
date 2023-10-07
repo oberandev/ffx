@@ -6,41 +6,6 @@ import { ParseResult } from "parser-ts/ParseResult";
 import * as S from "parser-ts/string";
 
 // ==================
-//       Types
-// ==================
-
-export interface Ok<T> {
-  readonly _tag: "ok";
-  readonly value: T;
-}
-
-export interface Err<E> {
-  readonly _tag: "err";
-  readonly value: E;
-}
-
-/**
- * A `Result` is either `Ok` meaning the computation succeeded, or it is an `Err` meaning that there was some failure.
- *
- * @since 0.1.0
- */
-export type Result<T, E> = Ok<T> | Err<E>;
-
-function ok<T>(value: T): Ok<T> {
-  return {
-    _tag: "ok",
-    value,
-  };
-}
-
-function err<E>(value: E): Err<E> {
-  return {
-    _tag: "err",
-    value,
-  };
-}
-
-// ==================
 //       Main
 // ==================
 
@@ -92,7 +57,7 @@ export function runParser(input: string): ParseResult<string, boolean> {
  *
  * @since 0.1.0
  */
-export function parse(input: string): Result<boolean, string> {
+export function parse(input: string): E.Either<string, boolean> {
   return pipe(
     runParser(input),
     E.matchW(
@@ -101,9 +66,9 @@ export function parse(input: string): Result<boolean, string> {
           " ",
         )} but found "${input.buffer.join("")}"`;
 
-        return err(customErrorMsg);
+        return E.left(customErrorMsg);
       },
-      ({ value }) => ok(value),
+      ({ value }) => E.right(value),
     ),
   );
 }

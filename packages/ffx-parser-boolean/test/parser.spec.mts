@@ -332,8 +332,8 @@ describe("Boolean", () => {
       const result = parse("t");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: true,
+        _tag: "Right",
+        right: true,
       });
     });
 
@@ -341,8 +341,8 @@ describe("Boolean", () => {
       const result = parse("f");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: false,
+        _tag: "Right",
+        right: false,
       });
     });
 
@@ -350,8 +350,8 @@ describe("Boolean", () => {
       const result = parse("y");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: true,
+        _tag: "Right",
+        right: true,
       });
     });
 
@@ -359,8 +359,8 @@ describe("Boolean", () => {
       const result = parse("n");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: false,
+        _tag: "Right",
+        right: false,
       });
     });
 
@@ -368,8 +368,8 @@ describe("Boolean", () => {
       const result = parse("1");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: true,
+        _tag: "Right",
+        right: true,
       });
     });
 
@@ -377,8 +377,8 @@ describe("Boolean", () => {
       const result = parse("0");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: false,
+        _tag: "Right",
+        right: false,
       });
     });
 
@@ -386,8 +386,8 @@ describe("Boolean", () => {
       const result = parse("on");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: true,
+        _tag: "Right",
+        right: true,
       });
     });
 
@@ -395,8 +395,8 @@ describe("Boolean", () => {
       const result = parse("off");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: false,
+        _tag: "Right",
+        right: false,
       });
     });
 
@@ -404,8 +404,8 @@ describe("Boolean", () => {
       const result = parse("yes");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: true,
+        _tag: "Right",
+        right: true,
       });
     });
 
@@ -413,8 +413,8 @@ describe("Boolean", () => {
       const result = parse("no");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: false,
+        _tag: "Right",
+        right: false,
       });
     });
 
@@ -422,8 +422,8 @@ describe("Boolean", () => {
       const result = parse("true");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: true,
+        _tag: "Right",
+        right: true,
       });
     });
 
@@ -431,8 +431,8 @@ describe("Boolean", () => {
       const result = parse("false");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: false,
+        _tag: "Right",
+        right: false,
       });
     });
 
@@ -440,8 +440,8 @@ describe("Boolean", () => {
       const result = parse("tr");
 
       expect(result).toStrictEqual({
-        _tag: "err",
-        value: 'Expected "true" but found "tr"',
+        _tag: "Left",
+        left: 'Expected "true" but found "tr"',
       });
     });
 
@@ -449,8 +449,8 @@ describe("Boolean", () => {
       const result = parse("ye");
 
       expect(result).toStrictEqual({
-        _tag: "err",
-        value: 'Expected "yes" but found "ye"',
+        _tag: "Left",
+        left: 'Expected "yes" but found "ye"',
       });
     });
 
@@ -458,8 +458,8 @@ describe("Boolean", () => {
       const result = parse("10");
 
       expect(result).toStrictEqual({
-        _tag: "err",
-        value: 'Expected end of string but found "10"',
+        _tag: "Left",
+        left: 'Expected end of string but found "10"',
       });
     });
 
@@ -467,8 +467,8 @@ describe("Boolean", () => {
       const result = parse("01");
 
       expect(result).toStrictEqual({
-        _tag: "err",
-        value: 'Expected end of string but found "01"',
+        _tag: "Left",
+        left: 'Expected end of string but found "01"',
       });
     });
 
@@ -476,8 +476,8 @@ describe("Boolean", () => {
       const result = parse("yess");
 
       expect(result).toStrictEqual({
-        _tag: "err",
-        value: 'Expected end of string but found "yess"',
+        _tag: "Left",
+        left: 'Expected end of string but found "yess"',
       });
     });
 
@@ -485,8 +485,8 @@ describe("Boolean", () => {
       const result = parse("noo");
 
       expect(result).toStrictEqual({
-        _tag: "err",
-        value: 'Expected end of string but found "noo"',
+        _tag: "Left",
+        left: 'Expected end of string but found "noo"',
       });
     });
   });
