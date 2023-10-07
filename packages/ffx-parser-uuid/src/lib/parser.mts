@@ -122,7 +122,7 @@ export function parse(input: string): Result<UUID, string> {
 // ==================
 
 /**
- *  Opionionated format - convert to lowercase.
+ *  Opinionated format - convert to lowercase.
  *
  * @example
  *
