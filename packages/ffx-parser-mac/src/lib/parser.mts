@@ -2,10 +2,12 @@ import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import * as RA from "fp-ts/ReadonlyArray";
 import * as Str from "fp-ts/string";
+import { Lens } from "monocle-ts";
 import * as C from "parser-ts/char";
 import * as P from "parser-ts/Parser";
 import { ParseResult } from "parser-ts/ParseResult";
 import * as S from "parser-ts/string";
+import { match } from "ts-pattern";
 
 // ==================
 //       Types
@@ -42,50 +44,50 @@ function err<E>(value: E): Err<E> {
   };
 }
 
-type MacAddr = IPv4 | IPv6;
+export type MacAddr = IPv4 | IPv6;
 
-interface IPv4 {
+export interface IPv4 {
   readonly _tag: "ip_v4";
-  readonly data: Eui48;
+  readonly value: Eui48;
 }
 
-interface IPv6 {
+export interface IPv6 {
   readonly _tag: "ip_v6";
-  readonly data: Eui64;
+  readonly value: Eui64;
 }
 
 type Eui48 = SixGroupsByColon | SixGroupsByHyphen | ThreeGroupsByDot;
 
 interface SixGroupsByColon {
   readonly _tag: "six_groups_by_colon";
-  readonly data: string;
+  readonly value: string;
 }
 
 interface SixGroupsByHyphen {
   readonly _tag: "six_groups_by_hyphen";
-  readonly data: string;
+  readonly value: string;
 }
 
 interface ThreeGroupsByDot {
   readonly _tag: "three_groups_by_dot";
-  readonly data: string;
+  readonly value: string;
 }
 
 type Eui64 = EightGroupsByColon | EightGroupsByHyphen | FourGroupsByDot;
 
 interface EightGroupsByColon {
   readonly _tag: "eight_groups_by_colon";
-  readonly data: string;
+  readonly value: string;
 }
 
 interface EightGroupsByHyphen {
   readonly _tag: "eight_groups_by_hyphen";
-  readonly data: string;
+  readonly value: string;
 }
 
 interface FourGroupsByDot {
   readonly _tag: "four_groups_by_dot";
-  readonly data: string;
+  readonly value: string;
 }
 
 // ==================
@@ -126,7 +128,7 @@ const pSixGroupsByColon: P.Parser<string, Eui48> = pipe(
   P.apFirst(P.expected(P.eof(), "end of string")),
   P.map((groups) => ({
     _tag: "six_groups_by_colon",
-    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
+    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
   })),
 );
 
@@ -146,7 +148,7 @@ const pSixGroupsByHyphen: P.Parser<string, Eui48> = pipe(
   P.apFirst(P.expected(P.eof(), "end of string")),
   P.map((groups) => ({
     _tag: "six_groups_by_hyphen",
-    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
+    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
   })),
 );
 
@@ -160,7 +162,7 @@ const pThreeGroupsByDot: P.Parser<string, Eui48> = pipe(
   P.apFirst(P.expected(P.eof(), "end of string")),
   P.map((groups) => ({
     _tag: "three_groups_by_dot",
-    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
+    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
   })),
 );
 
@@ -174,7 +176,7 @@ const pIPv4: P.Parser<string, MacAddr> = pipe(
   pEui48,
   P.map((value) => ({
     _tag: "ip_v4",
-    data: value,
+    value: value,
   })),
 );
 
@@ -198,7 +200,7 @@ const pEightGroupsByColon: P.Parser<string, Eui64> = pipe(
   P.apFirst(P.expected(P.eof(), "end of string")),
   P.map((groups) => ({
     _tag: "eight_groups_by_colon",
-    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
+    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
   })),
 );
 
@@ -222,7 +224,7 @@ const pEightGroupsByHyphen: P.Parser<string, Eui64> = pipe(
   P.apFirst(P.expected(P.eof(), "end of string")),
   P.map((groups) => ({
     _tag: "eight_groups_by_hyphen",
-    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
+    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
   })),
 );
 
@@ -238,7 +240,7 @@ const pFourGroupsByDot: P.Parser<string, Eui64> = pipe(
   P.apFirst(P.expected(P.eof(), "end of string")),
   P.map((groups) => ({
     _tag: "four_groups_by_dot",
-    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
+    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
   })),
 );
 
@@ -252,9 +254,11 @@ const pIPv6: P.Parser<string, MacAddr> = pipe(
   pEui64,
   P.map((value) => ({
     _tag: "ip_v6",
-    data: value,
+    value: value,
   })),
 );
+
+const addrL = Lens.fromPath<MacAddr>()(["value", "value"]);
 
 export function runParser(input: string): ParseResult<string, MacAddr> {
   const parser = pipe(P.either(pIPv4, () => pIPv6));
@@ -289,4 +293,69 @@ export function parse(input: string): Result<MacAddr, string> {
       ({ value }) => ok(value),
     ),
   );
+}
+
+// ==================
+//      Helpers
+// ==================
+
+/**
+ *  Opinionated format - convert to uppercase.
+ *
+ * @example
+ *
+ * ```ts
+ * import { format } from "@oberan/ffx-parser-mac";
+ *
+ * format(macAddr);
+ * ```
+ *
+ * @since 0.1.0
+ */
+export function format(macAddr: MacAddr): MacAddr {
+  return addrL.modify(Str.toUpperCase)(macAddr);
+}
+
+/**
+ * Determines if a given mac address is also a broadcast address.
+ *
+ * @example
+ *
+ * ```ts
+ * import { isBroadcast } from "@oberan/ffx-parser-mac";
+ *
+ * isBroadcast(macAddr);
+ * ```
+ *
+ * @since 0.1.0
+ */
+export function isBroadcast(macAddr: MacAddr): boolean {
+  return match(format(macAddr))
+    .with({ _tag: "ip_v4" }, ({ value: mac }) => {
+      return match(mac)
+        .with({ _tag: "six_groups_by_colon" }, () => {
+          return Str.Eq.equals(mac.value, "FF:FF:FF:FF:FF:FF");
+        })
+        .with({ _tag: "six_groups_by_hyphen" }, () => {
+          return Str.Eq.equals(mac.value, "FF-FF-FF-FF-FF-FF");
+        })
+        .with({ _tag: "three_groups_by_dot" }, () => {
+          return Str.Eq.equals(mac.value, "FFFF.FFFF.FFFF");
+        })
+        .exhaustive();
+    })
+    .with({ _tag: "ip_v6" }, ({ value: mac }) => {
+      return match(mac)
+        .with({ _tag: "eight_groups_by_colon" }, () => {
+          return Str.Eq.equals(mac.value, "FF:FF:FF:FF:FF:FF:FF:FF");
+        })
+        .with({ _tag: "eight_groups_by_hyphen" }, () => {
+          return Str.Eq.equals(mac.value, "FF-FF-FF-FF-FF-FF-FF-FF");
+        })
+        .with({ _tag: "four_groups_by_dot" }, () => {
+          return Str.Eq.equals(mac.value, "FFFF.FFFF.FFFF.FFFF");
+        })
+        .exhaustive();
+    })
+    .exhaustive();
 }

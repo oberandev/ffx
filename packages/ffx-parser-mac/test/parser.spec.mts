@@ -1,4 +1,6 @@
-import { parse, runParser } from "../src/lib/parser.mjs";
+import { match } from "ts-pattern";
+
+import { isBroadcast, parse, runParser } from "../src/lib/parser.mjs";
 
 describe("Mac Address", () => {
   describe("runParser()", () => {
@@ -10,9 +12,9 @@ describe("Mac Address", () => {
         right: {
           value: {
             _tag: "ip_v4",
-            data: {
+            value: {
               _tag: "six_groups_by_colon",
-              data: "ff:ff:ff:ff:ff:ff",
+              value: "ff:ff:ff:ff:ff:ff",
             },
           },
           next: {
@@ -71,9 +73,9 @@ describe("Mac Address", () => {
         right: {
           value: {
             _tag: "ip_v4",
-            data: {
+            value: {
               _tag: "six_groups_by_hyphen",
-              data: "ff-ff-ff-ff-ff-ff",
+              value: "ff-ff-ff-ff-ff-ff",
             },
           },
           next: {
@@ -132,9 +134,9 @@ describe("Mac Address", () => {
         right: {
           value: {
             _tag: "ip_v4",
-            data: {
+            value: {
               _tag: "three_groups_by_dot",
-              data: "ffff.ffff.ffff",
+              value: "ffff.ffff.ffff",
             },
           },
           next: {
@@ -157,9 +159,9 @@ describe("Mac Address", () => {
         right: {
           value: {
             _tag: "ip_v6",
-            data: {
+            value: {
               _tag: "eight_groups_by_colon",
-              data: "ff:ff:ff:ff:ff:ff:ff:ff",
+              value: "ff:ff:ff:ff:ff:ff:ff:ff",
             },
           },
           next: {
@@ -230,9 +232,9 @@ describe("Mac Address", () => {
         right: {
           value: {
             _tag: "ip_v6",
-            data: {
+            value: {
               _tag: "eight_groups_by_hyphen",
-              data: "ff-ff-ff-ff-ff-ff-ff-ff",
+              value: "ff-ff-ff-ff-ff-ff-ff-ff",
             },
           },
           next: {
@@ -303,9 +305,9 @@ describe("Mac Address", () => {
         right: {
           value: {
             _tag: "ip_v6",
-            data: {
+            value: {
               _tag: "four_groups_by_dot",
-              data: "ffff.ffff.ffff.ffff",
+              value: "ffff.ffff.ffff.ffff",
             },
           },
           next: {
@@ -369,9 +371,9 @@ describe("Mac Address", () => {
         _tag: "ok",
         value: {
           _tag: "ip_v4",
-          data: {
+          value: {
             _tag: "six_groups_by_colon",
-            data: "ff:ff:ff:ff:ff:ff",
+            value: "ff:ff:ff:ff:ff:ff",
           },
         },
       });
@@ -384,9 +386,9 @@ describe("Mac Address", () => {
         _tag: "ok",
         value: {
           _tag: "ip_v4",
-          data: {
+          value: {
             _tag: "six_groups_by_hyphen",
-            data: "ff-ff-ff-ff-ff-ff",
+            value: "ff-ff-ff-ff-ff-ff",
           },
         },
       });
@@ -399,9 +401,9 @@ describe("Mac Address", () => {
         _tag: "ok",
         value: {
           _tag: "ip_v4",
-          data: {
+          value: {
             _tag: "three_groups_by_dot",
-            data: "ffff.ffff.ffff",
+            value: "ffff.ffff.ffff",
           },
         },
       });
@@ -414,9 +416,9 @@ describe("Mac Address", () => {
         _tag: "ok",
         value: {
           _tag: "ip_v6",
-          data: {
+          value: {
             _tag: "eight_groups_by_colon",
-            data: "ff:ff:ff:ff:ff:ff:ff:ff",
+            value: "ff:ff:ff:ff:ff:ff:ff:ff",
           },
         },
       });
@@ -429,9 +431,9 @@ describe("Mac Address", () => {
         _tag: "ok",
         value: {
           _tag: "ip_v6",
-          data: {
+          value: {
             _tag: "eight_groups_by_hyphen",
-            data: "ff-ff-ff-ff-ff-ff-ff-ff",
+            value: "ff-ff-ff-ff-ff-ff-ff-ff",
           },
         },
       });
@@ -444,12 +446,92 @@ describe("Mac Address", () => {
         _tag: "ok",
         value: {
           _tag: "ip_v6",
-          data: {
+          value: {
             _tag: "four_groups_by_dot",
-            data: "ffff.ffff.ffff.ffff",
+            value: "ffff.ffff.ffff.ffff",
           },
         },
       });
+    });
+  });
+
+  describe("isBroadcast()", () => {
+    it("should handle SixGroupsByColon", () => {
+      const result = parse("ff:ff:ff:ff:ff:ff");
+
+      match(result)
+        .with({ _tag: "err" }, ({ value: err }) => {
+          expect.fail(err);
+        })
+        .with({ _tag: "ok" }, ({ value: mac }) => {
+          expect(isBroadcast(mac)).toBe(true);
+        })
+        .exhaustive();
+    });
+
+    it("should handle SixGroupsByHyphen", () => {
+      const result = parse("ff-ff-ff-ff-ff-ff");
+
+      match(result)
+        .with({ _tag: "err" }, ({ value: err }) => {
+          expect.fail(err);
+        })
+        .with({ _tag: "ok" }, ({ value: mac }) => {
+          expect(isBroadcast(mac)).toBe(true);
+        })
+        .exhaustive();
+    });
+
+    it("should handle ThreeGroupsByDot", () => {
+      const result = parse("ffff.ffff.ffff");
+
+      match(result)
+        .with({ _tag: "err" }, ({ value: err }) => {
+          expect.fail(err);
+        })
+        .with({ _tag: "ok" }, ({ value: mac }) => {
+          expect(isBroadcast(mac)).toBe(true);
+        })
+        .exhaustive();
+    });
+
+    it("should handle EightGroupsByColon", () => {
+      const result = parse("ff:ff:ff:ff:ff:ff:ff:ff");
+
+      match(result)
+        .with({ _tag: "err" }, ({ value: err }) => {
+          expect.fail(err);
+        })
+        .with({ _tag: "ok" }, ({ value: mac }) => {
+          expect(isBroadcast(mac)).toBe(true);
+        })
+        .exhaustive();
+    });
+
+    it("should handle EightGroupsByHyphen", () => {
+      const result = parse("ff-ff-ff-ff-ff-ff-ff-ff");
+
+      match(result)
+        .with({ _tag: "err" }, ({ value: err }) => {
+          expect.fail(err);
+        })
+        .with({ _tag: "ok" }, ({ value: mac }) => {
+          expect(isBroadcast(mac)).toBe(true);
+        })
+        .exhaustive();
+    });
+
+    it("should handle FourGroupsByDot", () => {
+      const result = parse("ffff.ffff.ffff.ffff");
+
+      match(result)
+        .with({ _tag: "err" }, ({ value: err }) => {
+          expect.fail(err);
+        })
+        .with({ _tag: "ok" }, ({ value: mac }) => {
+          expect(isBroadcast(mac)).toBe(true);
+        })
+        .exhaustive();
     });
   });
 });
