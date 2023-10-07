@@ -31,39 +31,34 @@ blocks:
           commands:
             - pnpm install
             - cache store node-$(checksum pnpm-lock.yaml) $(pnpm store path)
-            - echo "${SEMAPHORE_GIT_BRANCH}"
-            - echo "${SEMAPHORE_GIT_SHA}"
-            - echo "${SEMAPHORE_GIT_PR_BRANCH}"
-            - echo "${SEMAPHORE_GIT_PR_SLUG}"
-            - echo "${SEMAPHORE_GIT_PR_SHA}"
 
-  # - name: "\U0001F50D Static Analysis"
-  #   task:
-  #     prologue:
-  #       commands:
-  #         - pnpm install
-  #     jobs:
-  #       - name: prettier & eslint
-  #         commands:
-  #           - pnpm nx run-many -t format:check
-  #           - pnpm nx run-many -t lint
+  - name: "\U0001F50D Static Analysis"
+    task:
+      prologue:
+        commands:
+          - pnpm install
+      jobs:
+        - name: prettier & eslint
+          commands:
+            - pnpm nx run-many -t format:check
+            - pnpm nx run-many -t lint
 
-  #       - name: pnpm audit
-  #         commands:
-  #           - pnpm audit --prod
+        - name: pnpm audit
+          commands:
+            - pnpm audit --prod
 
-  # - name: "\U0001F9EA Unit Tests"
-  #   task:
-  #     prologue:
-  #       commands:
-  #         - pnpm install
-  #     secrets:
-  #       - name: codecov
-  #       - name: geocodio
-  #     jobs:
-  #       - name: vitest
-  #         commands:
-  #           - curl -Os https://uploader.codecov.io/latest/linux/codecov
-  #           - chmod +x codecov
-  #           - pnpm nx affected -t test --base=origin/main --head="origin/${SEMAPHORE_GIT_PR_BRANCH}"
-  #           - ./codecov
+  - name: "\U0001F9EA Unit Tests"
+    task:
+      prologue:
+        commands:
+          - pnpm install
+      secrets:
+        - name: codecov
+        - name: geocodio
+      jobs:
+        - name: vitest
+          commands:
+            - curl -Os https://uploader.codecov.io/latest/linux/codecov
+            - chmod +x codecov
+            - pnpm nx affected -t test --base=main --head=HEAD
+            - ./codecov
