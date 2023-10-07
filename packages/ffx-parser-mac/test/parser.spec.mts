@@ -379,6 +379,15 @@ describe("Mac Address", () => {
       });
     });
 
+    it("should handle SixGroupsByColon failure", () => {
+      const result = parse("pf:ff:ff:ff:ff:ff");
+
+      expect(result).toStrictEqual({
+        _tag: "err",
+        value: `Expected a hex digit at position 1 but found "p"`,
+      });
+    });
+
     it("should handle SixGroupsByHyphen", () => {
       const result = parse("ff-ff-ff-ff-ff-ff");
 

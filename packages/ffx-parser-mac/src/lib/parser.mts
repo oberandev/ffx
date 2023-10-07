@@ -284,9 +284,9 @@ export function parse(input: string): Result<MacAddr, string> {
     runParser(input),
     E.matchW(
       ({ expected, input }) => {
-        const customErrorMsg: string = `Expected ${expected.join(
-          " ",
-        )} but found "${input.buffer.join("")}"`;
+        const customErrorMsg: string = `Expected ${expected[input.cursor % 2]} at position ${
+          input.cursor + 1
+        } but found "${input.buffer[input.cursor]}"`;
 
         return err(customErrorMsg);
       },
