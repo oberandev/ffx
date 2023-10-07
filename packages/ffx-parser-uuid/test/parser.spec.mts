@@ -15,7 +15,7 @@ describe("UUID", () => {
 
     expect(result).toStrictEqual({
       _tag: "err",
-      value: "a hex digit",
+      value: `Expected a hex digit at position 1 but found "-"`,
     });
   });
 
@@ -24,20 +24,20 @@ describe("UUID", () => {
 
     expect(result).toStrictEqual({
       _tag: "err",
-      value: `"-"`,
+      value: `Expected "-" at position 9 but found "*"`,
     });
   });
 
   it("should handle `format` when all caps", () => {
     const acutal: UUID = format(isoUUID.wrap("2357C30-AFE7-11E4-AB7D-12E3F512A338"));
-    const expected: string = "2357c30-afe7-11e4-ab7d-12e3f512a338";
+    const expected: UUID = isoUUID.wrap("2357c30-afe7-11e4-ab7d-12e3f512a338");
 
     expect(acutal).toStrictEqual(expected);
   });
 
   it("should handle `format` with random caps", () => {
     const acutal: UUID = format(isoUUID.wrap("2357C30-afe7-11E4-ab7d-12E3F512A338"));
-    const expected: string = "2357c30-afe7-11e4-ab7d-12e3f512a338";
+    const expected: UUID = isoUUID.wrap("2357c30-afe7-11e4-ab7d-12e3f512a338");
 
     expect(acutal).toStrictEqual(expected);
   });
@@ -53,7 +53,7 @@ describe("UUID", () => {
     const actual: UUID = isoUUID.wrap("123e4567-e89b-12d3-a456-426614174000");
     const expected: boolean = false;
 
-    expect(isMax(actual)).toBe(false);
+    expect(isMax(actual)).toBe(expected);
   });
 
   it("should handle `isNil` success", () => {
