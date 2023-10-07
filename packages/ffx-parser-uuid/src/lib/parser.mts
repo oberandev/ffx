@@ -1,6 +1,7 @@
 import * as E from "fp-ts/Either";
 import * as Eq from "fp-ts/Eq";
 import { pipe } from "fp-ts/function";
+import * as RA from "fp-ts/ReadonlyArray";
 import * as Str from "fp-ts/string";
 import { Iso } from "monocle-ts";
 import * as N from "newtype-ts";
@@ -60,90 +61,29 @@ function isHexDigit(c: C.Char): boolean {
 
 const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
 
-const pChunk: P.Parser<string, string> = C.many1(hexDigit);
-const pHyphen: P.Parser<string, string> = C.char("-");
+const hyphen: P.Parser<string, string> = C.char("-");
 
-const chunk4 = P.expected(
-  pipe(
-    hexDigit,
-    P.bindTo("d1"),
-    P.bind("d2", () => hexDigit),
-    P.bind("d3", () => hexDigit),
-    P.bind("d4", () => hexDigit),
-    P.map((ds) => Object.values(ds).join("")),
-  ),
-  "4 hex digits",
-);
-
-const chunk8 = P.expected(
-  pipe(
-    hexDigit,
-    P.bindTo("d1"),
-    P.bind("d2", () => hexDigit),
-    P.bind("d3", () => hexDigit),
-    P.bind("d4", () => hexDigit),
-    P.bind("d5", () => hexDigit),
-    P.bind("d6", () => hexDigit),
-    P.bind("d7", () => hexDigit),
-    P.bind("d8", () => hexDigit),
-    P.map((ds) => Object.values(ds).join("")),
-  ),
-  "8 hex digits",
-);
-
-const chunk12 = P.expected(
-  pipe(
-    hexDigit,
-    P.bindTo("d1"),
-    P.bind("d2", () => hexDigit),
-    P.bind("d3", () => hexDigit),
-    P.bind("d4", () => hexDigit),
-    P.bind("d5", () => hexDigit),
-    P.bind("d6", () => hexDigit),
-    P.bind("d7", () => hexDigit),
-    P.bind("d8", () => hexDigit),
-    P.bind("d9", () => hexDigit),
-    P.bind("d10", () => hexDigit),
-    P.bind("d11", () => hexDigit),
-    P.bind("d12", () => hexDigit),
-    P.map((ds) => Object.values(ds).join("")),
-  ),
-  "12 hex digits",
-);
-
-// count :: (Stream s m t) => Int -> ParsecT s u m a -> ParsecT s u m [a]
-// {-# INLINABLE count #-}
-// count n p parses n occurrences of p. If n is smaller or equal to zero, the parser equals to return []. Returns a list of n values returned by p.
-// count n p           | n <= 0    = return []
-//                     | otherwise = sequence (replicate n p)
-// function count(n: number, parser: P.Parser<string, string>) {
-// chainRec_ might do the trick (many1Till)
-// maybe look at sepBy too
-// }
-// haskell parsec has count (equivalent of replicateM) combinator to parse exactly n number of chars
+const chunkN = (length: number): P.Parser<string, string> =>
+  S.fold(Array.from({ length }, () => hexDigit));
+const chunk4 = chunkN(4);
+const chunk8 = chunkN(8);
+const chunk12 = chunkN(12);
 
 export function runParser(input: string): ParseResult<string, UUID> {
-  // The most used format is the 8-4-4-4-12 format
-
   const parser = pipe(
-    pChunk,
+    chunk8,
     P.bindTo("c1"),
-    P.chainFirst(() => pHyphen),
-    P.bind("c2", () => pChunk),
-    P.chainFirst(() => pHyphen),
-    P.bind("c3", () => pChunk),
-    P.chainFirst(() => pHyphen),
-    P.bind("c4", () => pChunk),
-    P.chainFirst(() => pHyphen),
-    P.bind("c5", () => pChunk),
-    P.map(({ c1, c2, c3, c4, c5 }) => isoUUID.wrap(`${c1}-${c2}-${c3}-${c4}-${c5}`)),
+    P.apFirst(hyphen),
+    P.bind("c2", () => chunk4),
+    P.apFirst(hyphen),
+    P.bind("c3", () => chunk4),
+    P.apFirst(hyphen),
+    P.bind("c4", () => chunk4),
+    P.apFirst(hyphen),
+    P.bind("c5", () => chunk12),
+    P.apFirst(P.eof()),
+    P.map((chunks) => pipe(Object.values(chunks), RA.intercalate(Str.Monoid)("-"), isoUUID.wrap)),
   );
-
-  // const parser2 = pipe(
-  //   pChunk,
-  //   P.alt(() => pHyphen),
-  //   P.many1,
-  // );
 
   return S.run(input)(parser);
 }
@@ -165,7 +105,13 @@ export function parse(input: string): Result<UUID, string> {
   return pipe(
     runParser(input),
     E.matchW(
-      ({ expected }) => err(expected.join(" ")),
+      ({ expected, input }) => {
+        const customErrorMsg: string = `Expected ${expected.join(" ")} at position ${
+          input.cursor + 1
+        } but found "${input.buffer[input.cursor]}"`;
+
+        return err(customErrorMsg);
+      },
       ({ value }) => ok(value),
     ),
   );
@@ -189,7 +135,7 @@ export function parse(input: string): Result<UUID, string> {
  * @since 0.1.0
  */
 export function format(uuid: UUID): UUID {
-  return isoUUID.modify((str) => Str.toLowerCase(str))(uuid);
+  return pipe(uuid, isoUUID.modify(Str.toLowerCase));
 }
 
 /**

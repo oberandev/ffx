@@ -1,6 +1,6 @@
-import { Traversable } from "fp-ts/Array";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
+import { Traversable } from "fp-ts/ReadonlyArray";
 import * as P from "parser-ts/Parser";
 import { ParseResult } from "parser-ts/ParseResult";
 import * as S from "parser-ts/string";
@@ -44,27 +44,29 @@ function err<E>(value: E): Err<E> {
 //       Main
 // ==================
 
+const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
+
 const pTrueShortform = pipe(
   S.oneOf(Traversable)(["t", "y", "1"]),
-  P.chain(() => P.expected(P.eof(), "end of string")),
+  P.apFirst(eof),
   P.map(() => true),
 );
 
 const pFalseShortform = pipe(
   S.oneOf(Traversable)(["f", "n", "0"]),
-  P.chain(() => P.expected(P.eof(), "end of string")),
+  P.apFirst(eof),
   P.map(() => false),
 );
 
 const pTrueLongform = pipe(
   S.oneOf(Traversable)(["on", "yes", "true"]),
-  P.chain(() => P.expected(P.eof(), "end of string")),
+  P.apFirst(eof),
   P.map(() => true),
 );
 
 const pFalseLongform = pipe(
   S.oneOf(Traversable)(["off", "no", "false"]),
-  P.chain(() => P.expected(P.eof(), "end of string")),
+  P.apFirst(eof),
   P.map(() => false),
 );
 
