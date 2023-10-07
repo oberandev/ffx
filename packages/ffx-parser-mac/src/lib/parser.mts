@@ -1,5 +1,7 @@
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
+import * as RA from "fp-ts/ReadonlyArray";
+import * as Str from "fp-ts/string";
 import * as C from "parser-ts/char";
 import * as P from "parser-ts/Parser";
 import { ParseResult } from "parser-ts/ParseResult";
@@ -96,28 +98,69 @@ function isHexDigit(c: C.Char): boolean {
 
 const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
 
+const hyphen: P.Parser<string, string> = C.char("-");
+
+const dot: P.Parser<string, string> = C.char(".");
+
+const colon: P.Parser<string, string> = C.char(":");
+
+const groupN = (length: number): P.Parser<string, string> =>
+  S.fold(Array.from({ length }, () => hexDigit));
+
+const group2 = groupN(2);
+const group4 = groupN(4);
+
 const pSixGroupsByColon: P.Parser<string, Eui48> = pipe(
-  S.string("f"),
-  // P.chain(() => P.expected(P.eof(), "end of string")),
-  P.map((value) => ({
+  group2,
+  P.bindTo("g1"),
+  P.apFirst(colon),
+  P.bind("g2", () => group2),
+  P.apFirst(colon),
+  P.bind("g3", () => group2),
+  P.apFirst(colon),
+  P.bind("g4", () => group2),
+  P.apFirst(colon),
+  P.bind("g5", () => group2),
+  P.apFirst(colon),
+  P.bind("g6", () => group2),
+  P.apFirst(P.expected(P.eof(), "end of string")),
+  P.map((groups) => ({
     _tag: "six_groups_by_colon",
-    data: value,
+    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
   })),
 );
 
 const pSixGroupsByHyphen: P.Parser<string, Eui48> = pipe(
-  S.string("a"),
-  P.map((value) => ({
+  group2,
+  P.bindTo("g1"),
+  P.apFirst(hyphen),
+  P.bind("g2", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g3", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g4", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g5", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g6", () => group2),
+  P.apFirst(P.expected(P.eof(), "end of string")),
+  P.map((groups) => ({
     _tag: "six_groups_by_hyphen",
-    data: value,
+    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
   })),
 );
 
 const pThreeGroupsByDot: P.Parser<string, Eui48> = pipe(
-  S.string("a"),
-  P.map((value) => ({
+  group4,
+  P.bindTo("g1"),
+  P.apFirst(dot),
+  P.bind("g2", () => group4),
+  P.apFirst(dot),
+  P.bind("g3", () => group4),
+  P.apFirst(P.expected(P.eof(), "end of string")),
+  P.map((groups) => ({
     _tag: "three_groups_by_dot",
-    data: value,
+    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
   })),
 );
 
@@ -136,26 +179,66 @@ const pIPv4: P.Parser<string, MacAddr> = pipe(
 );
 
 const pEightGroupsByColon: P.Parser<string, Eui64> = pipe(
-  S.string("a"),
-  P.map((value) => ({
+  group2,
+  P.bindTo("g1"),
+  P.apFirst(colon),
+  P.bind("g2", () => group2),
+  P.apFirst(colon),
+  P.bind("g3", () => group2),
+  P.apFirst(colon),
+  P.bind("g4", () => group2),
+  P.apFirst(colon),
+  P.bind("g5", () => group2),
+  P.apFirst(colon),
+  P.bind("g6", () => group2),
+  P.apFirst(colon),
+  P.bind("g7", () => group2),
+  P.apFirst(colon),
+  P.bind("g8", () => group2),
+  P.apFirst(P.expected(P.eof(), "end of string")),
+  P.map((groups) => ({
     _tag: "eight_groups_by_colon",
-    data: value,
+    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
   })),
 );
 
 const pEightGroupsByHyphen: P.Parser<string, Eui64> = pipe(
-  S.string("a"),
-  P.map((value) => ({
+  group2,
+  P.bindTo("g1"),
+  P.apFirst(hyphen),
+  P.bind("g2", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g3", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g4", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g5", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g6", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g7", () => group2),
+  P.apFirst(hyphen),
+  P.bind("g8", () => group2),
+  P.apFirst(P.expected(P.eof(), "end of string")),
+  P.map((groups) => ({
     _tag: "eight_groups_by_hyphen",
-    data: value,
+    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
   })),
 );
 
 const pFourGroupsByDot: P.Parser<string, Eui64> = pipe(
-  S.string("a"),
-  P.map((value) => ({
+  group4,
+  P.bindTo("g1"),
+  P.apFirst(dot),
+  P.bind("g2", () => group4),
+  P.apFirst(dot),
+  P.bind("g3", () => group4),
+  P.apFirst(dot),
+  P.bind("g4", () => group4),
+  P.apFirst(P.expected(P.eof(), "end of string")),
+  P.map((groups) => ({
     _tag: "four_groups_by_dot",
-    data: value,
+    data: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
   })),
 );
 
