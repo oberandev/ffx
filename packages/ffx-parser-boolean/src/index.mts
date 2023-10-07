@@ -1,1 +1,1 @@
-export { Err, Ok, Result, parse } from "./lib/parser.mjs";
+export { parse } from "./lib/parser.mjs";
