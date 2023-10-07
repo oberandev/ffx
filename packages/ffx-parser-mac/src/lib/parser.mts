@@ -13,37 +13,6 @@ import { match } from "ts-pattern";
 //       Types
 // ==================
 
-export interface Ok<T> {
-  readonly _tag: "ok";
-  readonly value: T;
-}
-
-export interface Err<E> {
-  readonly _tag: "err";
-  readonly value: E;
-}
-
-/**
- * A `Result` is either `Ok` meaning the computation succeeded, or it is an `Err` meaning that there was some failure.
- *
- * @since 0.1.0
- */
-export type Result<T, E> = Ok<T> | Err<E>;
-
-function ok<T>(value: T): Ok<T> {
-  return {
-    _tag: "ok",
-    value,
-  };
-}
-
-function err<E>(value: E): Err<E> {
-  return {
-    _tag: "err",
-    value,
-  };
-}
-
 export type MacAddr = IPv4 | IPv6;
 
 export interface IPv4 {
@@ -279,7 +248,7 @@ export function runParser(input: string): ParseResult<string, MacAddr> {
  *
  * @since 0.1.0
  */
-export function parse(input: string): Result<MacAddr, string> {
+export function parse(input: string): E.Either<string, MacAddr> {
   return pipe(
     runParser(input),
     E.matchW(
@@ -288,9 +257,9 @@ export function parse(input: string): Result<MacAddr, string> {
           input.cursor + 1
         } but found "${input.buffer[input.cursor]}"`;
 
-        return err(customErrorMsg);
+        return E.left(customErrorMsg);
       },
-      ({ value }) => ok(value),
+      ({ value }) => E.right(value),
     ),
   );
 }

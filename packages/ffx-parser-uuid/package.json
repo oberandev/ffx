@@ -26,5 +26,11 @@
     "type": "git",
     "url": "https://github.com/oberandev/ffx.git",
     "directory": "packages/ffx-api"
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.1",
+    "monocle-ts": "^2.3.13",
+    "newtype-ts": "^0.3.5",
+    "parser-ts": "^0.7.0"
   }
 }

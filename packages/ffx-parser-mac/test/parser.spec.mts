@@ -1,4 +1,5 @@
-import { match } from "ts-pattern";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
 
 import { isBroadcast, parse, runParser } from "../src/lib/parser.mjs";
 
@@ -368,8 +369,8 @@ describe("Mac Address", () => {
       const result = parse("ff:ff:ff:ff:ff:ff");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: {
+        _tag: "Right",
+        right: {
           _tag: "ip_v4",
           value: {
             _tag: "six_groups_by_colon",
@@ -383,8 +384,8 @@ describe("Mac Address", () => {
       const result = parse("pf:ff:ff:ff:ff:ff");
 
       expect(result).toStrictEqual({
-        _tag: "err",
-        value: `Expected a hex digit at position 1 but found "p"`,
+        _tag: "Left",
+        left: `Expected a hex digit at position 1 but found "p"`,
       });
     });
 
@@ -392,8 +393,8 @@ describe("Mac Address", () => {
       const result = parse("ff-ff-ff-ff-ff-ff");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: {
+        _tag: "Right",
+        right: {
           _tag: "ip_v4",
           value: {
             _tag: "six_groups_by_hyphen",
@@ -407,8 +408,8 @@ describe("Mac Address", () => {
       const result = parse("ffff.ffff.ffff");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: {
+        _tag: "Right",
+        right: {
           _tag: "ip_v4",
           value: {
             _tag: "three_groups_by_dot",
@@ -422,8 +423,8 @@ describe("Mac Address", () => {
       const result = parse("ff:ff:ff:ff:ff:ff:ff:ff");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: {
+        _tag: "Right",
+        right: {
           _tag: "ip_v6",
           value: {
             _tag: "eight_groups_by_colon",
@@ -437,8 +438,8 @@ describe("Mac Address", () => {
       const result = parse("ff-ff-ff-ff-ff-ff-ff-ff");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: {
+        _tag: "Right",
+        right: {
           _tag: "ip_v6",
           value: {
             _tag: "eight_groups_by_hyphen",
@@ -452,8 +453,8 @@ describe("Mac Address", () => {
       const result = parse("ffff.ffff.ffff.ffff");
 
       expect(result).toStrictEqual({
-        _tag: "ok",
-        value: {
+        _tag: "Right",
+        right: {
           _tag: "ip_v6",
           value: {
             _tag: "four_groups_by_dot",
@@ -468,79 +469,67 @@ describe("Mac Address", () => {
     it("should handle SixGroupsByColon", () => {
       const result = parse("ff:ff:ff:ff:ff:ff");
 
-      match(result)
-        .with({ _tag: "err" }, ({ value: err }) => {
-          expect.fail(err);
-        })
-        .with({ _tag: "ok" }, ({ value: mac }) => {
-          expect(isBroadcast(mac)).toBe(true);
-        })
-        .exhaustive();
+      pipe(
+        result,
+        E.map((macAddr) => {
+          expect(isBroadcast(macAddr)).toBe(true);
+        }),
+      );
     });
 
     it("should handle SixGroupsByHyphen", () => {
       const result = parse("ff-ff-ff-ff-ff-ff");
 
-      match(result)
-        .with({ _tag: "err" }, ({ value: err }) => {
-          expect.fail(err);
-        })
-        .with({ _tag: "ok" }, ({ value: mac }) => {
-          expect(isBroadcast(mac)).toBe(true);
-        })
-        .exhaustive();
+      pipe(
+        result,
+        E.map((macAddr) => {
+          expect(isBroadcast(macAddr)).toBe(true);
+        }),
+      );
     });
 
     it("should handle ThreeGroupsByDot", () => {
       const result = parse("ffff.ffff.ffff");
 
-      match(result)
-        .with({ _tag: "err" }, ({ value: err }) => {
-          expect.fail(err);
-        })
-        .with({ _tag: "ok" }, ({ value: mac }) => {
-          expect(isBroadcast(mac)).toBe(true);
-        })
-        .exhaustive();
+      pipe(
+        result,
+        E.map((macAddr) => {
+          expect(isBroadcast(macAddr)).toBe(true);
+        }),
+      );
     });
 
     it("should handle EightGroupsByColon", () => {
       const result = parse("ff:ff:ff:ff:ff:ff:ff:ff");
 
-      match(result)
-        .with({ _tag: "err" }, ({ value: err }) => {
-          expect.fail(err);
-        })
-        .with({ _tag: "ok" }, ({ value: mac }) => {
-          expect(isBroadcast(mac)).toBe(true);
-        })
-        .exhaustive();
+      pipe(
+        result,
+        E.map((macAddr) => {
+          expect(isBroadcast(macAddr)).toBe(true);
+        }),
+      );
     });
 
     it("should handle EightGroupsByHyphen", () => {
       const result = parse("ff-ff-ff-ff-ff-ff-ff-ff");
 
-      match(result)
-        .with({ _tag: "err" }, ({ value: err }) => {
-          expect.fail(err);
-        })
-        .with({ _tag: "ok" }, ({ value: mac }) => {
-          expect(isBroadcast(mac)).toBe(true);
-        })
-        .exhaustive();
+      pipe(
+        result,
+        E.map((macAddr) => {
+          expect(isBroadcast(macAddr)).toBe(true);
+        }),
+      );
     });
 
     it("should handle FourGroupsByDot", () => {
       const result = parse("ffff.ffff.ffff.ffff");
 
-      match(result)
-        .with({ _tag: "err" }, ({ value: err }) => {
-          expect.fail(err);
-        })
-        .with({ _tag: "ok" }, ({ value: mac }) => {
-          expect(isBroadcast(mac)).toBe(true);
-        })
-        .exhaustive();
+      pipe(
+        result,
+        E.map((macAddr) => {
+          expect(isBroadcast(macAddr)).toBe(true);
+        }),
+      );
     });
   });
 });

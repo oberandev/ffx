@@ -1,1 +1,1 @@
-export { Err, Ok, Result, MacAddr, IPv4, IPv6, format, isBroadcast, parse } from "./lib/parser.mjs";
+export { IPv4, IPv6, MacAddr, format, isBroadcast, parse } from "./lib/parser.mjs";
