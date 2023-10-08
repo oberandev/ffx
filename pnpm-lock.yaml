@@ -227,7 +227,14 @@ importers:
 
   packages/ffx-parser-ip: {}
 
-  packages/ffx-parser-isbn: {}
+  packages/ffx-parser-isbn:
+    dependencies:
+      fp-ts:
+        specifier: ^2.16.1
+        version: 2.16.1
+      parser-ts:
+        specifier: ^0.7.0
+        version: 0.7.0(fp-ts@2.16.1)
 
   packages/ffx-parser-mac:
     dependencies:
