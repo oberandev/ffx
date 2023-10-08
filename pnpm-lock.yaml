@@ -227,6 +227,8 @@ importers:
 
   packages/ffx-parser-ip: {}
 
+  packages/ffx-parser-isbn: {}
+
   packages/ffx-parser-mac:
     dependencies:
       fp-ts:

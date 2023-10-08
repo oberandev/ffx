@@ -1,0 +1,40 @@
+{
+  "name": "ffx-parser-isbn",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ffx-parser-isbn/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "packages/ffx-parser-isbn/build"
+    },
+    "format:check": {
+      "command": "prettier packages/ffx-parser-isbn/**/*.{js,mts,ts} --check"
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint packages/ffx-parser-isbn"
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs ffx-parser-isbn {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "coverage": true,
+        "passWithNoTests": false,
+        "reporters": ["default"],
+        "reportsDirectory": "../../coverage/packages/ffx-parser-isbn"
+      },
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
+    }
+  },
+  "tags": []
+}
