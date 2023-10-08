@@ -18,6 +18,7 @@
       "@ffx/parser-address-geocodio": ["packages/ffx-parser-address-geocodio/src/index.mts"],
       "@ffx/parser-boolean": ["packages/ffx-parser-boolean/src/index.mts"],
       "@ffx/parser-ip": ["packages/ffx-parser-ip/src/index.mts"],
+      "@ffx/parser-isbn": ["packages/ffx-parser-isbn/src/index.mts"],
       "@ffx/parser-mac": ["packages/ffx-parser-mac/src/index.mts"],
       "@ffx/parser-uuid": ["packages/ffx-parser-uuid/src/index.mts"]
     },
