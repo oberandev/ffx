@@ -91,7 +91,7 @@ export function parse(input: string): E.Either<string, UUID> {
 // ==================
 
 /**
- *  Opinionated format - convert to lowercase.
+ * Opinionated format - convert to lowercase.
  *
  * @example
  *
@@ -108,7 +108,7 @@ export function format(uuid: UUID): UUID {
 }
 
 /**
- *  Test for the special case of the "max" UUID - `FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF`
+ * Test for the special case of the "max" UUID - `FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF`
  *
  * @example
  *
@@ -125,7 +125,7 @@ export function isMax(uuid: UUID): boolean {
 }
 
 /**
- *  Test for the special case of the "nil" UUID - `00000000-0000-0000-0000-000000000000`
+ * Test for the special case of the "nil" UUID - `00000000-0000-0000-0000-000000000000`
  *
  * @example
  *
@@ -142,7 +142,7 @@ export function isNil(uuid: UUID): boolean {
 }
 
 /**
- *  Unwrap a UUID type.
+ * Unwrap an UUID type.
  *
  * @example
  *
