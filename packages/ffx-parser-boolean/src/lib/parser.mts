@@ -11,25 +11,25 @@ import * as S from "parser-ts/string";
 
 const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
 
-const pTrueShortform = pipe(
+const trueShortform = pipe(
   S.oneOf(Traversable)(["t", "y", "1"]),
   P.apFirst(eof),
   P.map(() => true),
 );
 
-const pFalseShortform = pipe(
+const falseShortform = pipe(
   S.oneOf(Traversable)(["f", "n", "0"]),
   P.apFirst(eof),
   P.map(() => false),
 );
 
-const pTrueLongform = pipe(
+const trueLongform = pipe(
   S.oneOf(Traversable)(["on", "yes", "true"]),
   P.apFirst(eof),
   P.map(() => true),
 );
 
-const pFalseLongform = pipe(
+const falseLongform = pipe(
   S.oneOf(Traversable)(["off", "no", "false"]),
   P.apFirst(eof),
   P.map(() => false),
@@ -37,8 +37,8 @@ const pFalseLongform = pipe(
 
 export function runParser(input: string): ParseResult<string, boolean> {
   const parser = pipe(
-    P.either(pTrueLongform, () => pFalseLongform),
-    P.alt(() => P.either(pTrueShortform, () => pFalseShortform)),
+    P.either(trueLongform, () => falseLongform),
+    P.alt(() => P.either(trueShortform, () => falseShortform)),
   );
 
   return S.run(input)(parser);
