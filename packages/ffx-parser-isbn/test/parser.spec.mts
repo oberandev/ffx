@@ -1,7 +1,8 @@
+import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import * as RA from "fp-ts/ReadonlyArray";
 
-import { parse, runParser } from "../src/lib/parser.mjs";
+import { parse, runParser, upConvert } from "../src/lib/parser.mjs";
 
 describe("ISBN", () => {
   describe("runParser()", () => {
@@ -92,15 +93,18 @@ describe("ISBN", () => {
           "1-84356-028-3",
           "0-684-84328-5",
           "0-85131-041-9",
-          "93-86954-21-4",
-          "0-943396-04-2",
+          "9386954214",
+          "0943396042",
         ],
         RA.map((input) => {
           const result = parse(input);
 
           expect(result).toStrictEqual({
             _tag: "Right",
-            right: input,
+            right: {
+              _tag: "isbn10",
+              value: input,
+            },
           });
         }),
       );
@@ -114,13 +118,48 @@ describe("ISBN", () => {
           "978-1-4028-9462-6",
           "9781681972718",
           "9781861973719",
+          // "0-85131-041-9", // => 978-0-85131-041-1 => verify that adding 978 doesn't always work for upConvert
         ],
         RA.map((input) => {
           const result = parse(input);
 
           expect(result).toStrictEqual({
             _tag: "Right",
-            right: input,
+            right: {
+              _tag: "isbn13",
+              value: input,
+            },
+          });
+        }),
+      );
+    });
+
+    it.only("should handle upConvert()", () => {
+      pipe(
+        [
+          ["99921-58-10-7", "978-99921-58-10-4"],
+          ["9971-5-0210-0", "978-9971-5-0210-2"],
+          ["960-425-059-0", "978-960-425-059-2"],
+          ["80-902734-1-6", "978-80-902734-1-2"],
+          ["85-359-0277-5", "978-85-359-0277-8"],
+          ["1-84356-028-3", "978-1-84356-028-9"],
+          ["0-684-84328-5", "978-0-684-84328-5"],
+          ["0-85131-041-9", "978-0-85131-041-1"],
+          ["9386954214", "9789386954213"],
+          // ["0943396042", "978094339604X"],
+        ],
+        RA.map(([input, upconverted]) => {
+          const result = pipe(
+            parse(input),
+            E.map((isbn) => upConvert(isbn)),
+          );
+
+          expect(result).toStrictEqual({
+            _tag: "Right",
+            right: {
+              _tag: "isbn13",
+              value: upconverted,
+            },
           });
         }),
       );
