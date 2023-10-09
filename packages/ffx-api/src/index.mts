@@ -20,6 +20,17 @@ import {
   listDocuments,
   updateDocument,
 } from "./lib/documents.mjs";
+import {
+  CreateEnvironmentInput,
+  Environment,
+  Environments,
+  UpdateEnvironmentInput,
+  createEnvironment,
+  deleteEnvironment,
+  getEnvironment,
+  listEnvironments,
+  updateEnvironment,
+} from "./lib/environments.mjs";
 import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/types.mjs";
 import pkgJson from "../package.json"; // eslint-disable-line import/no-relative-parent-imports
 
@@ -44,6 +55,19 @@ interface ApiClient {
     update: (
       input: UpdateDocumentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
+  };
+  environments: {
+    create: (
+      input: CreateEnvironmentInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
+    delete: (
+      environmentId: string,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    get: (environmentId: string) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
+    list: () => Promise<DecoderErrors | HttpError | Successful<Environments>>;
+    update: (
+      input: UpdateEnvironmentInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
   };
 }
 
@@ -71,6 +95,13 @@ export default function mkApiClient(secret: string, environmentId: string): ApiC
       get: (input) => getDocument(input)(reader)(),
       list: (spaceId) => listDocuments(spaceId)(reader)(),
       update: (input) => updateDocument(input)(reader)(),
+    },
+    environments: {
+      create: (input) => createEnvironment(input)(reader)(),
+      delete: (environmentId) => deleteEnvironment(environmentId)(reader)(),
+      get: (environmentId) => getEnvironment(environmentId)(reader)(),
+      list: () => listEnvironments()(reader)(),
+      update: (input) => updateEnvironment(input)(reader)(),
     },
   };
 }
