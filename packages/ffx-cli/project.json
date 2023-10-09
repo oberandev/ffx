@@ -12,10 +12,11 @@
         "esbuildOptions": {
           "banner": { "js": "#!/usr/bin/env node" }
         },
-        "format": ["esm"],
+        "format": ["cjs"],
         "generatePackageJson": false,
         "main": "{projectRoot}/src/index.mts",
         "outputPath": "dist/packages/ffx-cli",
+        "thirdParty": true,
         "tsConfig": "{projectRoot}/tsconfig.lib.json"
       }
     },
