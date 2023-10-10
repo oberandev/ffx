@@ -15,8 +15,8 @@ function randomId(): IO.IO<string> {
 
 function _mkMockEnvironment(): IO.IO<Environment> {
   return IO.of({
-    id: `us_env${randomId()()}`,
-    accountId: `us_act${randomId()()}`,
+    id: `us_env_${randomId()()}`,
+    accountId: `us_act_${randomId()()}`,
     features: {},
     guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
     isProd: faker.helpers.arrayElement([false, true]),
