@@ -31,7 +31,7 @@ export const WorkbookCodec = t.intersection([
   t.partial({
     actions: t.array(CustomActionCodec),
     labels: t.array(t.string),
-    metadata: t.string,
+    metadata: t.UnknownRecord,
     namespace: t.string,
     sheets: t.array(SheetCodec),
   }),

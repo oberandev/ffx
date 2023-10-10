@@ -42,12 +42,18 @@ export const CustomActionCodec = t.intersection([
           }),
           t.partial({
             config: t.type({
-              color: t.string,
-              description: t.string,
-              icon: t.string,
-              label: t.string,
-              meta: t.UnknownRecord,
-              value: t.union([t.boolean, t.number, t.string]),
+              options: t.intersection([
+                t.type({
+                  value: t.union([t.boolean, t.number, t.string]),
+                }),
+                t.partial({
+                  color: t.string,
+                  description: t.string,
+                  icon: t.string,
+                  label: t.string,
+                  meta: t.UnknownRecord,
+                }),
+              ]),
             }),
             constraints: t.array(
               t.type({
@@ -70,6 +76,25 @@ export const CustomActionCodec = t.intersection([
   }),
 ]);
 
+const FieldCodec = t.intersection([
+  t.type({
+    key: t.string,
+    type: t.string,
+  }),
+  t.partial({
+    constraints: t.array(
+      t.type({
+        type: t.literal("required"),
+      }),
+    ),
+    description: t.string,
+    label: t.string,
+    metadata: t.UnknownRecord,
+    readonly: t.boolean,
+    treatments: t.array(t.string),
+  }),
+]);
+
 const PermissionCodec = t.union([
   t.literal("*"),
   t.literal("add"),
@@ -80,13 +105,14 @@ const PermissionCodec = t.union([
 
 const SheetConfigCodec = t.intersection([
   t.type({
-    fields: t.array(t.string),
+    fields: t.array(FieldCodec),
     name: t.string,
   }),
   t.partial({
     access: t.array(PermissionCodec),
     actions: t.array(CustomActionCodec),
     allowAdditionalFields: t.boolean,
+    description: t.string,
     metadata: t.UnknownRecord,
     readonly: t.boolean,
     slug: t.string,
@@ -98,15 +124,11 @@ export const SheetCodec = t.intersection([
     id: t.string,
     config: SheetConfigCodec,
     createdAt: t.string,
-    fields: t.array(t.string),
     name: t.string,
     updatedAt: t.string,
     workbookId: t.string,
   }),
   t.partial({
-    access: t.array(PermissionCodec),
-    actions: t.array(CustomActionCodec),
-    allowAdditionalFields: t.boolean,
     countRecords: t.intersection([
       t.type({
         error: t.number,
@@ -117,11 +139,7 @@ export const SheetCodec = t.intersection([
         errorsByField: t.UnknownRecord,
       }),
     ]),
-    description: t.string,
-    metadata: t.UnknownRecord,
     namespace: t.string,
-    readonly: t.boolean,
-    slug: t.string,
   }),
 ]);
 
@@ -129,6 +147,7 @@ export const SheetCodec = t.intersection([
 //       Types
 // ==================
 
+export type Permission = t.TypeOf<typeof PermissionCodec>;
 export type Sheet = Readonly<t.TypeOf<typeof SheetCodec>>;
 export type Sheets = ReadonlyArray<Sheet>;
 export type CreateSheetInput = Omit<Sheet, "id">;
