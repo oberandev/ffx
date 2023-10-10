@@ -55,8 +55,21 @@ const EventTopicCodec = t.union([
   t.literal("workbook:updated"),
 ]);
 
+export const AgentIdCodec = new t.Type<string, string, unknown>(
+  "AgentId",
+  (input: unknown): input is string => {
+    return typeof input === "string" && /^us_ag_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_ag_\w{8}$/g.test(input)
+      ? t.success(input)
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
 export const AgentCodec = t.strict({
-  id: t.string,
+  id: AgentIdCodec,
   compiler: t.literal("js"),
   source: t.string,
   topics: t.array(EventTopicCodec),
@@ -66,9 +79,10 @@ export const AgentCodec = t.strict({
 //       Types
 // ==================
 
-export type EventTopic = Readonly<t.TypeOf<typeof EventTopicCodec>>;
 export type Agent = Readonly<t.TypeOf<typeof AgentCodec>>;
+export type AgentId = t.TypeOf<typeof AgentIdCodec>;
 export type Agents = ReadonlyArray<Agent>;
+export type EventTopic = Readonly<t.TypeOf<typeof EventTopicCodec>>;
 export type CreateAgentInput = Omit<Agent, "id">;
 
 /**
@@ -110,7 +124,7 @@ export function createAgent(
  * @since 0.1.0
  */
 export function deleteAgent(
-  agentId: string,
+  agentId: AgentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -143,7 +157,7 @@ export function deleteAgent(
  * @since 0.1.0
  */
 export function getAgent(
-  agentId: string,
+  agentId: AgentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Agent>> {
   return pipe(
     RTE.ask<ApiReader>(),

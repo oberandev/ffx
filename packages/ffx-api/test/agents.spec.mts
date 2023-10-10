@@ -7,7 +7,7 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Agent, Agents, AgentCodec, CreateAgentInput } from "../src/lib/agents.mjs";
+import { Agent, AgentCodec, AgentIdCodec, Agents, CreateAgentInput } from "../src/lib/agents.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -15,7 +15,7 @@ function randomId(): IO.IO<string> {
 
 function _mkMockAgent(): IO.IO<Agent> {
   return IO.of({
-    id: `us_ag_${randomId()()}`,
+    id: AgentIdCodec.encode(`us_ag_${randomId()()}`),
     compiler: "js",
     source: faker.lorem.paragraphs(2),
     topics: ["agent:created"],
@@ -23,11 +23,17 @@ function _mkMockAgent(): IO.IO<Agent> {
 }
 
 describe("agents", () => {
-  describe("[Decoders]", () => {
+  describe("[Codecs]", () => {
     it("Agent", () => {
       const decoded = pipe(_mkMockAgent()(), AgentCodec.decode);
 
       expect(E.isRight(decoded)).toBe(true);
+    });
+
+    it("AgentId", () => {
+      const encoded = AgentIdCodec.encode(`us_ag_${randomId()()}`);
+
+      expect(AgentIdCodec.is(encoded)).toBe(true);
     });
   });
 
@@ -79,7 +85,7 @@ describe("agents", () => {
             ctx.status(200),
             ctx.json({
               ...mockAgent,
-              compiler: "ts",
+              id: "bogus_agent_id",
             }),
           );
         }),
@@ -93,7 +99,9 @@ describe("agents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting "js" at compiler but instead got: "ts"`]),
+          expect(reasons).toStrictEqual([
+            `Expecting AgentId at id but instead got: "bogus_agent_id"`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 

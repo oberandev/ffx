@@ -7,7 +7,8 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Document, DocumentCodec } from "../src/lib/documents.mjs";
+import { Document, DocumentCodec, DocumentIdCodec, SpaceIdCodec } from "../src/lib/documents.mjs";
+import { EnvironmentIdCodec } from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -15,20 +16,32 @@ function randomId(): IO.IO<string> {
 
 function _mkMockDocument(): IO.IO<Document> {
   return IO.of({
-    id: `us_dc_${randomId()()}`,
+    id: DocumentIdCodec.encode(`us_dc_${randomId()()}`),
     body: faker.lorem.paragraphs(2),
     title: faker.lorem.words(2),
-    environmentId: `us_env_${randomId()()}`,
-    spaceId: `us_sp_${randomId()()}`,
+    environmentId: EnvironmentIdCodec.encode(`us_env_${randomId()()}`),
+    spaceId: SpaceIdCodec.encode(`us_sp_${randomId()()}`),
   });
 }
 
 describe("documents", () => {
-  describe("[Decoders]", () => {
+  describe("[Codecs]", () => {
     it("Document", () => {
       const decoded = pipe(_mkMockDocument()(), DocumentCodec.decode);
 
       expect(E.isRight(decoded)).toBe(true);
+    });
+
+    it("DocumentId", () => {
+      const encoded = DocumentIdCodec.encode(`us_dc_${randomId()()}`);
+
+      expect(DocumentIdCodec.is(encoded)).toBe(true);
+    });
+
+    it("SpaceId", () => {
+      const encoded = SpaceIdCodec.encode(`us_sp_${randomId()()}`);
+
+      expect(SpaceIdCodec.is(encoded)).toBe(true);
     });
   });
 
@@ -87,7 +100,7 @@ describe("documents", () => {
             ctx.json({
               data: {
                 ...mockDocument,
-                spaceId: null,
+                id: "bogus_document_id",
               },
             }),
           );
@@ -106,7 +119,9 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting DocumentId at id but instead got: "bogus_document_id"`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -330,7 +345,7 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SpaceId at spaceId but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -435,7 +450,7 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.spaceId but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -538,7 +553,7 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SpaceId at spaceId but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 

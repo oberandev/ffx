@@ -1,5 +1,6 @@
 import {
   Agent,
+  AgentId,
   Agents,
   CreateAgentInput,
   createAgent,
@@ -12,6 +13,7 @@ import {
   DeleteDocumentInput,
   Document,
   Documents,
+  SpaceId,
   GetDocumentInput,
   UpdateDocumentInput,
   createDocument,
@@ -23,6 +25,7 @@ import {
 import {
   CreateEnvironmentInput,
   Environment,
+  EnvironmentId,
   Environments,
   UpdateEnvironmentInput,
   createEnvironment,
@@ -34,6 +37,7 @@ import {
 import {
   CreateSheetInput,
   Sheet,
+  SheetId,
   Sheets,
   UpdateSheetInput,
   createSheet,
@@ -47,6 +51,7 @@ import {
   CreateWorkbookInput,
   UpdateWorkbookInput,
   Workbook,
+  WorkbookId,
   Workbooks,
   createWorkbook,
   deleteWorkbook,
@@ -60,9 +65,9 @@ interface ApiClient {
   agents: {
     create: (input: CreateAgentInput) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
     delete: (
-      agentId: string,
+      agentId: AgentId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (agentId: string) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
+    get: (agentId: AgentId) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Agents>>;
   };
   documents: {
@@ -73,7 +78,7 @@ interface ApiClient {
       input: DeleteDocumentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     get: (input: GetDocumentInput) => Promise<DecoderErrors | HttpError | Successful<Document>>;
-    list: (spaceId: string) => Promise<DecoderErrors | HttpError | Successful<Documents>>;
+    list: (spaceId: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Documents>>;
     update: (
       input: UpdateDocumentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
@@ -83,9 +88,11 @@ interface ApiClient {
       input: CreateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
     delete: (
-      environmentId: string,
+      environmentId: EnvironmentId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (environmentId: string) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
+    get: (
+      environmentId: EnvironmentId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Environments>>;
     update: (
       input: UpdateEnvironmentInput,
@@ -94,9 +101,9 @@ interface ApiClient {
   sheets: {
     create: (input: CreateSheetInput) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
     delete: (
-      sheetId: string,
+      sheetId: SheetId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (sheetId: string) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
+    get: (sheetId: SheetId) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
     update: (input: UpdateSheetInput) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
   };
@@ -105,9 +112,9 @@ interface ApiClient {
       input: CreateWorkbookInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
     delete: (
-      workbookId: string,
+      workbookId: WorkbookId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (workbookId: string) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
+    get: (workbookId: WorkbookId) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Workbooks>>;
     update: (
       input: UpdateWorkbookInput,

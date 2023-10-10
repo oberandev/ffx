@@ -7,7 +7,7 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { CreateSheetInput, Sheet, Sheets, SheetCodec } from "../src/lib/sheets.mjs";
+import { CreateSheetInput, Sheet, Sheets, SheetCodec, SheetIdCodec } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -15,7 +15,7 @@ function randomId(): IO.IO<string> {
 
 function _mkMockSheet(): IO.IO<Sheet> {
   return IO.of({
-    id: `us_sh_${randomId()()}`,
+    id: SheetIdCodec.encode(`us_sh_${randomId()()}`),
     config: {
       access: faker.helpers.arrayElements(["*", "add", "delete", "edit", "import"]),
       actions: [
@@ -99,11 +99,17 @@ function _mkMockSheet(): IO.IO<Sheet> {
 }
 
 describe("sheets", () => {
-  describe("[Decoders]", () => {
+  describe("[Codecs]", () => {
     it("Sheet", () => {
       const decoded = pipe(_mkMockSheet()(), SheetCodec.decode);
 
       expect(E.isRight(decoded)).toBe(true);
+    });
+
+    it("SheetId", () => {
+      const encoded = SheetIdCodec.encode(`us_sh_${randomId()()}`);
+
+      expect(SheetIdCodec.is(encoded)).toBe(true);
     });
   });
 
@@ -361,7 +367,7 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SheetId at 0.id but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -453,7 +459,7 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual(["Expecting string at 0.0.id but instead got: null"]),
+          expect(reasons).toStrictEqual(["Expecting SheetId at 0.0.id but instead got: null"]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -550,7 +556,7 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SheetId at 0.id but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 

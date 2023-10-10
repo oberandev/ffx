@@ -119,9 +119,22 @@ const SheetConfigCodec = t.intersection([
   }),
 ]);
 
+export const SheetIdCodec = new t.Type<string, string, unknown>(
+  "SheetId",
+  (input: unknown): input is string => {
+    return typeof input === "string" && /^us_sh_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_sh_\w{8}$/g.test(input)
+      ? t.success(input)
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
 export const SheetCodec = t.intersection([
   t.strict({
-    id: t.string,
+    id: SheetIdCodec,
     config: SheetConfigCodec,
     createdAt: t.string,
     name: t.string,
@@ -149,6 +162,7 @@ export const SheetCodec = t.intersection([
 
 export type Permission = t.TypeOf<typeof PermissionCodec>;
 export type Sheet = Readonly<t.TypeOf<typeof SheetCodec>>;
+export type SheetId = Readonly<t.TypeOf<typeof SheetIdCodec>>;
 export type Sheets = ReadonlyArray<Sheet>;
 export type CreateSheetInput = Omit<Sheet, "id">;
 export type UpdateSheetInput = Partial<Sheet>;
@@ -193,7 +207,7 @@ export function createSheet(
  * @since 0.1.0
  */
 export function deleteSheet(
-  sheetId: string,
+  sheetId: SheetId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -223,7 +237,7 @@ export function deleteSheet(
  * @since 0.1.0
  */
 export function getSheet(
-  sheetId: string,
+  sheetId: SheetId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Sheet>> {
   return pipe(
     RTE.ask<ApiReader>(),

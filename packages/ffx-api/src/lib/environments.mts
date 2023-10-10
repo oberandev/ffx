@@ -20,10 +20,36 @@ import {
 
 const AuthenticationLinkCodec = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
+export const EnvironmentIdCodec = new t.Type<string, string, unknown>(
+  "EnvironmentId",
+  (input: unknown): input is string => {
+    return typeof input === "string" && /^us_env_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_env_\w{8}$/g.test(input)
+      ? t.success(input)
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+export const AccountIdCodec = new t.Type<string, string, unknown>(
+  "AccountId",
+  (input: unknown): input is string => {
+    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input)
+      ? t.success(input)
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
 export const EnvironmentCodec = t.intersection([
   t.strict({
-    id: t.string,
-    accountId: t.string,
+    id: EnvironmentIdCodec,
+    accountId: AccountIdCodec,
     features: t.UnknownRecord,
     guestAuthentication: t.array(AuthenticationLinkCodec),
     isProd: t.boolean,
@@ -40,7 +66,9 @@ export const EnvironmentCodec = t.intersection([
 //       Types
 // ==================
 
+export type AccountId = Readonly<t.TypeOf<typeof AccountIdCodec>>;
 export type Environment = Readonly<t.TypeOf<typeof EnvironmentCodec>>;
+export type EnvironmentId = Readonly<t.TypeOf<typeof EnvironmentIdCodec>>;
 export type Environments = ReadonlyArray<Environment>;
 export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
 export type UpdateEnvironmentInput = Pick<Environment, "id"> &
@@ -86,7 +114,7 @@ export function createEnvironment(
  * @since 0.1.0
  */
 export function deleteEnvironment(
-  environmentId: string,
+  environmentId: EnvironmentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -116,7 +144,7 @@ export function deleteEnvironment(
  * @since 0.1.0
  */
 export function getEnvironment(
-  environmentId: string,
+  environmentId: EnvironmentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environment>> {
   return pipe(
     RTE.ask<ApiReader>(),

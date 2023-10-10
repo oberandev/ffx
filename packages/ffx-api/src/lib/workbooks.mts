@@ -5,6 +5,8 @@ import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 
+import { SpaceIdCodec } from "./documents.mjs";
+import { EnvironmentIdCodec } from "./environments.mjs";
 import { CustomActionCodec, SheetCodec } from "./sheets.mjs";
 import {
   ApiReader,
@@ -19,13 +21,26 @@ import {
 //   Runtime codecs
 // ==================
 
+export const WorkbookIdCodec = new t.Type<string, string, unknown>(
+  "WorkbookId",
+  (input: unknown): input is string => {
+    return typeof input === "string" && /^us_wb_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_wb_\w{8}$/g.test(input)
+      ? t.success(input)
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
 export const WorkbookCodec = t.intersection([
   t.strict({
-    id: t.string,
+    id: WorkbookIdCodec,
     createdAt: t.string,
-    environmentId: t.string,
+    environmentId: EnvironmentIdCodec,
     name: t.string,
-    spaceId: t.string,
+    spaceId: SpaceIdCodec,
     updatedAt: t.string,
   }),
   t.partial({
@@ -42,6 +57,7 @@ export const WorkbookCodec = t.intersection([
 // ==================
 
 export type Workbook = Readonly<t.TypeOf<typeof WorkbookCodec>>;
+export type WorkbookId = Readonly<t.TypeOf<typeof WorkbookIdCodec>>;
 export type Workbooks = ReadonlyArray<Workbook>;
 export type CreateWorkbookInput = Omit<Workbook, "id">;
 export type UpdateWorkbookInput = Partial<Workbook>;
@@ -86,7 +102,7 @@ export function createWorkbook(
  * @since 0.1.0
  */
 export function deleteWorkbook(
-  workbookId: string,
+  workbookId: WorkbookId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -116,7 +132,7 @@ export function deleteWorkbook(
  * @since 0.1.0
  */
 export function getWorkbook(
-  workbookId: string,
+  workbookId: WorkbookId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
   return pipe(
     RTE.ask<ApiReader>(),

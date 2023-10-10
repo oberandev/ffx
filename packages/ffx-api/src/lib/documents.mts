@@ -5,6 +5,7 @@ import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 
+import { EnvironmentIdCodec } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -18,11 +19,37 @@ import {
 //   Runtime codecs
 // ==================
 
+export const DocumentIdCodec = new t.Type<string, string, unknown>(
+  "DocumentId",
+  (input: unknown): input is string => {
+    return typeof input === "string" && /^us_dc_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_dc_\w{8}$/g.test(input)
+      ? t.success(input)
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+export const SpaceIdCodec = new t.Type<string, string, unknown>(
+  "SpaceId",
+  (input: unknown): input is string => {
+    return typeof input === "string" && /^us_sp_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_sp_\w{8}$/g.test(input)
+      ? t.success(input)
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
 export const DocumentCodec = t.strict({
-  id: t.string,
+  id: DocumentIdCodec,
   body: t.string,
-  environmentId: t.string,
-  spaceId: t.string,
+  environmentId: EnvironmentIdCodec,
+  spaceId: SpaceIdCodec,
   title: t.string,
 });
 
@@ -31,7 +58,10 @@ export const DocumentCodec = t.strict({
 // ==================
 
 export type Document = Readonly<t.TypeOf<typeof DocumentCodec>>;
+export type DocumentId = t.TypeOf<typeof DocumentIdCodec>;
 export type Documents = ReadonlyArray<Document>;
+export type EnvironmentId = t.TypeOf<typeof EnvironmentIdCodec>;
+export type SpaceId = t.TypeOf<typeof SpaceIdCodec>;
 export type CreateDocumentInput = Pick<Document, "body" | "spaceId" | "title">;
 export type DeleteDocumentInput = Pick<Document, "id" | "spaceId">;
 export type GetDocumentInput = Pick<Document, "id" | "spaceId">;
@@ -137,7 +167,7 @@ export function getDocument(
  * @since 0.1.0
  */
 export function listDocuments(
-  spaceId: string,
+  spaceId: SpaceId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Documents>> {
   return pipe(
     RTE.ask<ApiReader>(),
