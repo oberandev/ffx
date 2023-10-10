@@ -18,7 +18,7 @@ import {
 //   Runtime codecs
 // ==================
 
-export const DocumentCodec = t.type({
+export const DocumentCodec = t.strict({
   id: t.string,
   body: t.string,
   environmentId: t.string,
@@ -96,7 +96,7 @@ export function deleteDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

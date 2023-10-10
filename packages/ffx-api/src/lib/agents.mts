@@ -55,7 +55,7 @@ const EventTopicCodec = t.union([
   t.literal("workbook:updated"),
 ]);
 
-export const AgentCodec = t.type({
+export const AgentCodec = t.strict({
   id: t.string,
   compiler: t.literal("js"),
   source: t.string,
@@ -132,7 +132,7 @@ export function deleteAgent(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

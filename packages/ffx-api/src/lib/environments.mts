@@ -21,7 +21,7 @@ import {
 const AuthenticationLinkCodec = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
 export const EnvironmentCodec = t.intersection([
-  t.type({
+  t.strict({
     id: t.string,
     accountId: t.string,
     features: t.UnknownRecord,
@@ -44,7 +44,7 @@ export type Environment = Readonly<t.TypeOf<typeof EnvironmentCodec>>;
 export type Environments = ReadonlyArray<Environment>;
 export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
 export type UpdateEnvironmentInput = Pick<Environment, "id"> &
-  Omit<Partial<Environment>, "accountId" | "features">;
+  Partial<Omit<Environment, "accountId" | "features">>;
 
 // ==================
 //       Main
@@ -105,7 +105,7 @@ export function deleteEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

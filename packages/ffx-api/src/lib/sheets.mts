@@ -19,17 +19,17 @@ import {
 // ==================
 
 export const CustomActionCodec = t.intersection([
-  t.type({
+  t.strict({
     label: t.string,
   }),
   t.partial({
     confirm: t.boolean,
     description: t.string,
     icon: t.string,
-    inputForm: t.type({
+    inputForm: t.strict({
       fields: t.array(
         t.intersection([
-          t.type({
+          t.strict({
             key: t.string,
             label: t.string,
             type: t.union([
@@ -41,9 +41,9 @@ export const CustomActionCodec = t.intersection([
             ]),
           }),
           t.partial({
-            config: t.type({
+            config: t.strict({
               options: t.intersection([
-                t.type({
+                t.strict({
                   value: t.union([t.boolean, t.number, t.string]),
                 }),
                 t.partial({
@@ -56,7 +56,7 @@ export const CustomActionCodec = t.intersection([
               ]),
             }),
             constraints: t.array(
-              t.type({
+              t.strict({
                 type: t.literal("required"),
               }),
             ),
@@ -77,13 +77,13 @@ export const CustomActionCodec = t.intersection([
 ]);
 
 const FieldCodec = t.intersection([
-  t.type({
+  t.strict({
     key: t.string,
     type: t.string,
   }),
   t.partial({
     constraints: t.array(
-      t.type({
+      t.strict({
         type: t.literal("required"),
       }),
     ),
@@ -104,7 +104,7 @@ const PermissionCodec = t.union([
 ]);
 
 const SheetConfigCodec = t.intersection([
-  t.type({
+  t.strict({
     fields: t.array(FieldCodec),
     name: t.string,
   }),
@@ -120,7 +120,7 @@ const SheetConfigCodec = t.intersection([
 ]);
 
 export const SheetCodec = t.intersection([
-  t.type({
+  t.strict({
     id: t.string,
     config: SheetConfigCodec,
     createdAt: t.string,
@@ -130,7 +130,7 @@ export const SheetCodec = t.intersection([
   }),
   t.partial({
     countRecords: t.intersection([
-      t.type({
+      t.strict({
         error: t.number,
         total: t.number,
         valid: t.number,
@@ -212,7 +212,7 @@ export function deleteSheet(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
