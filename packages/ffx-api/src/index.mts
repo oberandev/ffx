@@ -31,7 +31,29 @@ import {
   listEnvironments,
   updateEnvironment,
 } from "./lib/environments.mjs";
+import {
+  CreateSheetInput,
+  Sheet,
+  Sheets,
+  UpdateSheetInput,
+  createSheet,
+  deleteSheet,
+  getSheet,
+  listSheets,
+  updateSheet,
+} from "./lib/sheets.mjs";
 import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/types.mjs";
+import {
+  CreateWorkbookInput,
+  UpdateWorkbookInput,
+  Workbook,
+  Workbooks,
+  createWorkbook,
+  deleteWorkbook,
+  getWorkbook,
+  listWorkbooks,
+  updateWorkbook,
+} from "./lib/workbooks.mjs";
 import pkgJson from "../package.json"; // eslint-disable-line import/no-relative-parent-imports
 
 interface ApiClient {
@@ -69,6 +91,28 @@ interface ApiClient {
       input: UpdateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
   };
+  sheets: {
+    create: (input: CreateSheetInput) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
+    delete: (
+      sheetId: string,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    get: (sheetId: string) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
+    list: () => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
+    update: (input: UpdateSheetInput) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
+  };
+  workbooks: {
+    create: (
+      input: CreateWorkbookInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
+    delete: (
+      workbookId: string,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    get: (workbookId: string) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
+    list: () => Promise<DecoderErrors | HttpError | Successful<Workbooks>>;
+    update: (
+      input: UpdateWorkbookInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
+  };
 }
 
 export default function mkApiClient(secret: string, environmentId: string): ApiClient {
@@ -102,6 +146,20 @@ export default function mkApiClient(secret: string, environmentId: string): ApiC
       get: (environmentId) => getEnvironment(environmentId)(reader)(),
       list: () => listEnvironments()(reader)(),
       update: (input) => updateEnvironment(input)(reader)(),
+    },
+    sheets: {
+      create: (input) => createSheet(input)(reader)(),
+      delete: (sheetId) => deleteSheet(sheetId)(reader)(),
+      get: (sheetId) => getSheet(sheetId)(reader)(),
+      list: () => listSheets()(reader)(),
+      update: (input) => updateSheet(input)(reader)(),
+    },
+    workbooks: {
+      create: (input) => createWorkbook(input)(reader)(),
+      delete: (workbookId) => deleteWorkbook(workbookId)(reader)(),
+      get: (workbookId) => getWorkbook(workbookId)(reader)(),
+      list: () => listWorkbooks()(reader)(),
+      update: (input) => updateWorkbook(input)(reader)(),
     },
   };
 }

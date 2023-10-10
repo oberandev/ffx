@@ -89,7 +89,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.create(_mkMockAgent()());
+      const resp = await client.agents.create(mockAgent);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>

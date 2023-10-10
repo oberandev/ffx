@@ -7,28 +7,101 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Environment, EnvironmentCodec } from "../src/lib/environments.mjs";
+import { CreateSheetInput, Sheet, Sheets, SheetCodec } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
 }
 
-function _mkMockEnvironment(): IO.IO<Environment> {
+function _mkMockSheet(): IO.IO<Sheet> {
   return IO.of({
-    id: `us_env_${randomId()()}`,
-    accountId: `us_act_${randomId()()}`,
-    features: {},
-    guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
-    isProd: faker.helpers.arrayElement([false, true]),
-    metadata: {},
+    id: `us_sh_${randomId()()}`,
+    config: {
+      access: faker.helpers.arrayElements(["*", "add", "delete", "edit", "import"]),
+      actions: [
+        {
+          confirm: faker.helpers.arrayElement([false, true]),
+          description: faker.lorem.words(3),
+          icon: faker.lorem.word(),
+          inputForm: {
+            fields: [
+              {
+                config: {
+                  options: {
+                    color: faker.lorem.word(),
+                    description: faker.lorem.words(3),
+                    icon: faker.lorem.word(),
+                    label: faker.lorem.word(),
+                    meta: {},
+                    value: faker.helpers.arrayElement([
+                      faker.helpers.arrayElement([false, true]),
+                      faker.number.int(),
+                      faker.lorem.word(),
+                    ]),
+                  },
+                },
+                constraints: [{ type: "required" }],
+                description: faker.lorem.words(3),
+                key: faker.lorem.word(),
+                label: faker.lorem.word(),
+                type: faker.helpers.arrayElement([
+                  "boolean",
+                  "enum",
+                  "number",
+                  "string",
+                  "textarea",
+                ]),
+              },
+            ],
+            type: "simple",
+          },
+          label: faker.lorem.word(),
+          mode: faker.helpers.arrayElement(["background", "foreground"]),
+          operation: faker.lorem.word(),
+          primary: faker.helpers.arrayElement([false, true]),
+          requireAllValid: faker.helpers.arrayElement([false, true]),
+          requireSelection: faker.helpers.arrayElement([false, true]),
+          schedule: faker.helpers.arrayElement(["daily", "hourly", "weekly"]),
+          tooltip: faker.lorem.word(),
+        },
+      ],
+      allowAdditionalFields: faker.helpers.arrayElement([false, true]),
+      description: faker.lorem.words(3),
+      fields: [
+        {
+          constraints: [{ type: "required" }],
+          description: faker.lorem.words(3),
+          key: faker.lorem.word(),
+          label: faker.lorem.word(),
+          metadata: {},
+          readonly: faker.helpers.arrayElement([false, true]),
+          treatments: [faker.lorem.word()],
+          type: faker.lorem.word(),
+        },
+      ],
+      metadata: {},
+      name: faker.lorem.word(),
+      readonly: faker.helpers.arrayElement([false, true]),
+      slug: faker.lorem.word(),
+    },
+    countRecords: {
+      error: faker.number.int({ min: 0 }),
+      errorsByField: {},
+      total: faker.number.int({ min: 0 }),
+      valid: faker.number.int({ min: 0 }),
+    },
+    createdAt: faker.date.past().toISOString(),
     name: faker.lorem.word(),
+    namespace: faker.lorem.word(),
+    updatedAt: faker.date.past().toISOString(),
+    workbookId: `us_wb_${randomId()()}`,
   });
 }
 
-describe("environments", () => {
+describe("sheets", () => {
   describe("[Decoders]", () => {
-    it("Environment", () => {
-      const decoded = pipe(_mkMockEnvironment()(), EnvironmentCodec.decode);
+    it("Sheet", () => {
+      const decoded = pipe(_mkMockSheet()(), SheetCodec.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -40,12 +113,10 @@ describe("environments", () => {
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 
-    it("should handle failure when creating an Environment", async () => {
+    it("should handle failure when creating a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
       const restHandlers = [
-        rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+        rest.post(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -64,36 +135,28 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.create({
-        features: mockEnvironment.features,
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
+      const resp = await client.sheets.create({} as CreateSheetInput);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle decoder errors when creating an Environment", async () => {
+    it("should handle decoder errors when creating a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+        rest.post(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
               data: {
-                ...mockEnvironment,
-                id: null,
+                ...mockSheet,
+                name: undefined,
               },
             }),
           );
@@ -104,38 +167,25 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.create({
-        features: mockEnvironment.features,
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
+      const resp = await client.sheets.create(mockSheet);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting string at 0.name but instead got: undefined`]),
         )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle decoder errors when creating an Environment", async () => {
+    it("should handle successfully creating a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockEnvironment,
-            }),
-          );
+        rest.post(`${baseUrl}/sheets`, (_req, res, ctx) => {
+          return res(ctx.status(200), ctx.json({ data: mockSheet }));
         }),
       ];
 
@@ -143,30 +193,22 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.create({
-        features: mockEnvironment.features,
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
+      const resp = await client.sheets.create(mockSheet);
 
       match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheet))
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle failure when deleting an Environment", async () => {
+    it("should handle failure when deleting a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -185,22 +227,22 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.delete(mockEnvironment.id);
+      const resp = await client.sheets.delete(mockSheet.id);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle decoder errors when deleting an Environment", async () => {
+    it("should handle decoder errors when deleting a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -216,24 +258,24 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.delete(mockEnvironment.id);
+      const resp = await client.sheets.delete(mockSheet.id);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([`Expecting boolean at success but instead got: "foobar"`]),
         )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle successfully deleting an Environment", async () => {
+    it("should handle successfully deleting a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -249,22 +291,22 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.delete(mockEnvironment.id);
+      const resp = await client.sheets.delete(mockSheet.id);
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle failure when fetching an Environment", async () => {
+    it("should handle failure when fetching a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -283,27 +325,27 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.get(mockEnvironment.id);
+      const resp = await client.sheets.get(mockSheet.id);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle decoder errors when fetching an Environment", async () => {
+    it("should handle decoder errors when fetching a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
               data: {
-                ...mockEnvironment,
+                ...mockSheet,
                 id: null,
               },
             }),
@@ -315,28 +357,28 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.get(mockEnvironment.id);
+      const resp = await client.sheets.get(mockSheet.id);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([`Expecting string at 0.id but instead got: null`]),
         )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle successfully fetching an Environment", async () => {
+    it("should handle successfully fetching a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
-              data: mockEnvironment,
+              data: mockSheet,
             }),
           );
         }),
@@ -346,20 +388,20 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.get(mockEnvironment.id);
+      const resp = await client.sheets.get(mockSheet.id);
 
       match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheet))
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle failure when fetching all Environments", async () => {
+    it("should handle failure when fetching all Sheets", async () => {
       // setup
       const restHandlers = [
-        rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -378,31 +420,26 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.list();
+      const resp = await client.sheets.list();
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle decoder errors when fetching all Environments", async () => {
+    it("should handle decoder errors when fetching all Sheets", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
-              data: [
-                {
-                  ...mockEnvironment,
-                  id: null,
-                },
-              ],
+              data: [{ ...mockSheet, id: null }],
             }),
           );
         }),
@@ -412,28 +449,28 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.list();
+      const resp = await client.sheets.list();
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.0.id but instead got: null`]),
+          expect(reasons).toStrictEqual(["Expecting string at 0.0.id but instead got: null"]),
         )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle successfully fetching all Environments", async () => {
+    it("should handle successfully fetching all Sheets", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheets: Sheets = Array.from({ length: 2 }, () => _mkMockSheet()());
 
       const restHandlers = [
-        rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
-              data: [mockEnvironment],
+              data: mockSheets,
             }),
           );
         }),
@@ -443,22 +480,22 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.list();
+      const resp = await client.sheets.list();
 
       match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockEnvironment]))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheets))
+        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle failure when updating an Environment", async () => {
+    it("should handle failure when updating a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.patch(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -477,7 +514,7 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.sheets.update(mockSheet);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -487,17 +524,17 @@ describe("environments", () => {
       server.close();
     });
 
-    it("should handle decoder errors when updating an Environment", async () => {
+    it("should handle decoder errors when updating a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.patch(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
               data: {
-                ...mockEnvironment,
+                ...mockSheet,
                 id: null,
               },
             }),
@@ -509,7 +546,7 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.sheets.update(mockSheet);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -521,16 +558,16 @@ describe("environments", () => {
       server.close();
     });
 
-    it("should handle successfully updating an Environment", async () => {
+    it("should handle successfully updating a Sheet", async () => {
       // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        rest.patch(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
-              data: mockEnvironment,
+              data: mockSheet,
             }),
           );
         }),
@@ -540,10 +577,10 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.sheets.update(mockSheet);
 
       match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
+        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheet))
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
