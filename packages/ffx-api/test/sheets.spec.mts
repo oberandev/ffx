@@ -8,7 +8,7 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { Sheet, Sheets, codecSheet, codecSheetId, isoSheetId } from "../src/lib/sheets.mjs";
+import { Sheet, SheetC, SheetIdFromString, Sheets, isoSheetId } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -102,7 +102,7 @@ function _mkMockSheet(): IO.IO<Sheet> {
 describe("sheets", () => {
   describe("[Codecs]", () => {
     it("Sheet", () => {
-      const decoded = pipe(_mkMockSheet()(), codecSheet.decode);
+      const decoded = pipe(_mkMockSheet()(), SheetC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -110,7 +110,7 @@ describe("sheets", () => {
     it("SheetId", () => {
       const encoded = isoSheetId.wrap(`us_sh_${randomId()()}`);
 
-      expect(codecSheetId.is(encoded)).toBe(true);
+      expect(SheetIdFromString.is(encoded)).toBe(true);
     });
   });
 
@@ -278,7 +278,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SheetId at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting SheetIdFromString at 0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -370,7 +372,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual(["Expecting SheetId at 0.0.id but instead got: null"]),
+          expect(reasons).toStrictEqual([
+            "Expecting SheetIdFromString at 0.0.id but instead got: null",
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 

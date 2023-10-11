@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { Iso } from "monocle-ts";
@@ -20,19 +21,19 @@ import {
 //   Runtime codecs
 // ==================
 
-const codecAuthenticationLink = t.union([t.literal("shared_link"), t.literal("magic_link")]);
+const AuthLinkC = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
 export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique symbol }, string> {}
 
 export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
 
-export const codecEnvironmentId = new t.Type<EnvironmentId, EnvironmentId, unknown>(
-  "EnvironmentId",
+export const EnvironmentIdFromString = new t.Type<EnvironmentId>(
+  "EnvironmentIdFromString",
   (input: unknown): input is EnvironmentId => {
-    return typeof input === "string" && /^us_env_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_env_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_env_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_env_\w{8}$/g.test(input)
       ? t.success(isoEnvironmentId.wrap(input))
       : t.failure(input, context);
   },
@@ -43,40 +44,43 @@ export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }
 
 export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
 
-export const codecAccountId = new t.Type<AccountId, AccountId, unknown>(
-  "AccountId",
+export const AccountIdFromString = new t.Type<AccountId>(
+  "AccountIdFromString",
   (input: unknown): input is AccountId => {
-    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_acc_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_acc_\w{8}$/g.test(input)
       ? t.success(isoAccountId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const codecEnvironment = t.intersection([
-  t.type({
-    id: codecEnvironmentId,
-    accountId: codecAccountId,
-    features: t.UnknownRecord,
-    guestAuthentication: t.array(codecAuthenticationLink),
-    isProd: t.boolean,
-    metadata: t.UnknownRecord,
-    name: t.string,
-  }),
-  t.partial({
-    namespaces: t.array(t.string),
-    translationsPath: t.string,
-  }),
-]);
+export const EnvironmentC = t.intersection(
+  [
+    t.type({
+      id: EnvironmentIdFromString,
+      accountId: AccountIdFromString,
+      features: t.UnknownRecord,
+      guestAuthentication: t.array(AuthLinkC),
+      isProd: t.boolean,
+      metadata: t.UnknownRecord,
+      name: t.string,
+    }),
+    t.partial({
+      namespaces: t.array(t.string),
+      translationsPath: t.string,
+    }),
+  ],
+  "EnvironmentC",
+);
 
 // ==================
 //       Types
 // ==================
 
-export type Environment = Readonly<t.TypeOf<typeof codecEnvironment>>;
+export type Environment = Readonly<t.TypeOf<typeof EnvironmentC>>;
 export type Environments = ReadonlyArray<Environment>;
 export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
 export type UpdateEnvironmentInput = Partial<Omit<Environment, "accountId" | "features" | "id">>;
@@ -110,7 +114,7 @@ export function createEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecEnvironment)),
+    RTE.chain(decodeWith(EnvironmentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -170,7 +174,7 @@ export function getEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecEnvironment)),
+    RTE.chain(decodeWith(EnvironmentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -201,7 +205,7 @@ export function listEnvironments(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecEnvironment))),
+    RTE.chain(decodeWith(t.array(EnvironmentC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -232,7 +236,7 @@ export function updateEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecEnvironment)),
+    RTE.chain(decodeWith(EnvironmentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
