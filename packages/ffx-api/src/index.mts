@@ -1,5 +1,6 @@
 import {
   Agent,
+  AgentId,
   Agents,
   CreateAgentInput,
   createAgent,
@@ -9,10 +10,10 @@ import {
 } from "./lib/agents.mjs";
 import {
   CreateDocumentInput,
-  DeleteDocumentInput,
   Document,
+  DocumentId,
   Documents,
-  GetDocumentInput,
+  SpaceId,
   UpdateDocumentInput,
   createDocument,
   deleteDocument,
@@ -23,6 +24,7 @@ import {
 import {
   CreateEnvironmentInput,
   Environment,
+  EnvironmentId,
   Environments,
   UpdateEnvironmentInput,
   createEnvironment,
@@ -31,28 +33,48 @@ import {
   listEnvironments,
   updateEnvironment,
 } from "./lib/environments.mjs";
+import { Sheet, SheetId, Sheets, deleteSheet, getSheet, listSheets } from "./lib/sheets.mjs";
 import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/types.mjs";
+import {
+  CreateWorkbookInput,
+  UpdateWorkbookInput,
+  Workbook,
+  WorkbookId,
+  Workbooks,
+  createWorkbook,
+  deleteWorkbook,
+  getWorkbook,
+  listWorkbooks,
+  updateWorkbook,
+} from "./lib/workbooks.mjs";
 import pkgJson from "../package.json"; // eslint-disable-line import/no-relative-parent-imports
 
 interface ApiClient {
   agents: {
     create: (input: CreateAgentInput) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
     delete: (
-      agentId: string,
+      agentId: AgentId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (agentId: string) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
+    get: (agentId: AgentId) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Agents>>;
   };
   documents: {
     create: (
+      spaceId: SpaceId,
       input: CreateDocumentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
     delete: (
-      input: DeleteDocumentInput,
+      documentId: DocumentId,
+      spaceId: SpaceId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (input: GetDocumentInput) => Promise<DecoderErrors | HttpError | Successful<Document>>;
-    list: (spaceId: string) => Promise<DecoderErrors | HttpError | Successful<Documents>>;
+    get: (
+      documentId: DocumentId,
+      spaceId: SpaceId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
+    list: (spaceId: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Documents>>;
     update: (
+      documentId: DocumentId,
+      spaceId: SpaceId,
       input: UpdateDocumentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
   };
@@ -61,17 +83,41 @@ interface ApiClient {
       input: CreateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
     delete: (
-      environmentId: string,
+      environmentId: EnvironmentId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (environmentId: string) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
+    get: (
+      environmentId: EnvironmentId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Environments>>;
     update: (
+      environmentId: EnvironmentId,
       input: UpdateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
   };
+  sheets: {
+    delete: (
+      sheetId: SheetId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    get: (sheetId: SheetId) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
+    list: () => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
+  };
+  workbooks: {
+    create: (
+      input: CreateWorkbookInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
+    delete: (
+      workbookId: WorkbookId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    get: (workbookId: WorkbookId) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
+    list: () => Promise<DecoderErrors | HttpError | Successful<Workbooks>>;
+    update: (
+      workbookId: WorkbookId,
+      input: UpdateWorkbookInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
+  };
 }
 
-export default function mkApiClient(secret: string, environmentId: string): ApiClient {
+export default function mkApiClient(secret: string, environmentId: EnvironmentId): ApiClient {
   const reader: ApiReader = {
     baseUrl: "https://platform.flatfile.com/api/v1",
     environmentId,
@@ -90,18 +136,50 @@ export default function mkApiClient(secret: string, environmentId: string): ApiC
       list: () => listAgents()(reader)(),
     },
     documents: {
-      create: (input) => createDocument(input)(reader)(),
-      delete: (input) => deleteDocument(input)(reader)(),
-      get: (input) => getDocument(input)(reader)(),
+      create: (spaceId, input) => createDocument(spaceId, input)(reader)(),
+      delete: (documentId, spaceId) => deleteDocument(documentId, spaceId)(reader)(),
+      get: (documentId, spaceId) => getDocument(documentId, spaceId)(reader)(),
       list: (spaceId) => listDocuments(spaceId)(reader)(),
-      update: (input) => updateDocument(input)(reader)(),
+      update: (documentId, spaceId, input) => updateDocument(documentId, spaceId, input)(reader)(),
     },
     environments: {
       create: (input) => createEnvironment(input)(reader)(),
       delete: (environmentId) => deleteEnvironment(environmentId)(reader)(),
       get: (environmentId) => getEnvironment(environmentId)(reader)(),
       list: () => listEnvironments()(reader)(),
-      update: (input) => updateEnvironment(input)(reader)(),
+      update: (environmentId, input) => updateEnvironment(environmentId, input)(reader)(),
+    },
+    sheets: {
+      delete: (sheetId) => deleteSheet(sheetId)(reader)(),
+      get: (sheetId) => getSheet(sheetId)(reader)(),
+      list: () => listSheets()(reader)(),
+    },
+    workbooks: {
+      create: (input) => createWorkbook(input)(reader)(),
+      delete: (workbookId) => deleteWorkbook(workbookId)(reader)(),
+      get: (workbookId) => getWorkbook(workbookId)(reader)(),
+      list: () => listWorkbooks()(reader)(),
+      update: (workbookId, input) => updateWorkbook(workbookId, input)(reader)(),
     },
   };
 }
+
+export { Agent, Agents, AgentId, EventTopic, isoAgentId } from "./lib/agents.mjs";
+export {
+  Document,
+  Documents,
+  DocumentId,
+  SpaceId,
+  isoDocumentId,
+  isoSpaceId,
+} from "./lib/documents.mjs";
+export {
+  AccountId,
+  Environment,
+  Environments,
+  EnvironmentId,
+  isoAccountId,
+  isoEnvironmentId,
+} from "./lib/environments.mjs";
+export { Permission, Sheet, Sheets, SheetId, isoSheetId } from "./lib/sheets.mjs";
+export { Workbook, Workbooks, WorkbookId, isoWorkbookId } from "./lib/workbooks.mjs";

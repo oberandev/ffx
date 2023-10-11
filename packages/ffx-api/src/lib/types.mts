@@ -5,6 +5,8 @@ import * as RTE from "fp-ts/ReaderTaskEither";
 import * as t from "io-ts";
 import { formatValidationErrors } from "io-ts-reporters";
 
+import { EnvironmentId } from "./environments.mjs";
+
 // ==================
 //   Runtime codecs
 // ==================
@@ -23,7 +25,7 @@ const HttpMethodCodec = t.union([
 
 export interface ApiReader {
   readonly baseUrl: string;
-  readonly environmentId: string;
+  readonly environmentId: EnvironmentId;
   readonly pkgJson: Readonly<{
     name: string;
     version: string;

@@ -4,6 +4,8 @@ import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { Iso } from "monocle-ts";
+import { Newtype, iso } from "newtype-ts";
 
 import {
   ApiReader,
@@ -18,14 +20,48 @@ import {
 //   Runtime codecs
 // ==================
 
-const AuthenticationLinkCodec = t.union([t.literal("shared_link"), t.literal("magic_link")]);
+const codecAuthenticationLink = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
-export const EnvironmentCodec = t.intersection([
+export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique symbol }, string> {}
+
+export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
+
+export const codecEnvironmentId = new t.Type<EnvironmentId, EnvironmentId, unknown>(
+  "EnvironmentId",
+  (input: unknown): input is EnvironmentId => {
+    return typeof input === "string" && /^us_env_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_env_\w{8}$/g.test(input)
+      ? t.success(isoEnvironmentId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }, string> {}
+
+export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
+
+export const codecAccountId = new t.Type<AccountId, AccountId, unknown>(
+  "AccountId",
+  (input: unknown): input is AccountId => {
+    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input)
+      ? t.success(isoAccountId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+export const codecEnvironment = t.intersection([
   t.type({
-    id: t.string,
-    accountId: t.string,
+    id: codecEnvironmentId,
+    accountId: codecAccountId,
     features: t.UnknownRecord,
-    guestAuthentication: t.array(AuthenticationLinkCodec),
+    guestAuthentication: t.array(codecAuthenticationLink),
     isProd: t.boolean,
     metadata: t.UnknownRecord,
     name: t.string,
@@ -40,11 +76,10 @@ export const EnvironmentCodec = t.intersection([
 //       Types
 // ==================
 
-export type Environment = Readonly<t.TypeOf<typeof EnvironmentCodec>>;
+export type Environment = Readonly<t.TypeOf<typeof codecEnvironment>>;
 export type Environments = ReadonlyArray<Environment>;
 export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
-export type UpdateEnvironmentInput = Pick<Environment, "id"> &
-  Omit<Partial<Environment>, "accountId" | "features">;
+export type UpdateEnvironmentInput = Partial<Omit<Environment, "accountId" | "features" | "id">>;
 
 // ==================
 //       Main
@@ -75,7 +110,7 @@ export function createEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(EnvironmentCodec)),
+    RTE.chain(decodeWith(codecEnvironment)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -86,7 +121,7 @@ export function createEnvironment(
  * @since 0.1.0
  */
 export function deleteEnvironment(
-  environmentId: string,
+  environmentId: EnvironmentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -116,7 +151,7 @@ export function deleteEnvironment(
  * @since 0.1.0
  */
 export function getEnvironment(
-  environmentId: string,
+  environmentId: EnvironmentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environment>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -135,7 +170,7 @@ export function getEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(EnvironmentCodec)),
+    RTE.chain(decodeWith(codecEnvironment)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -166,7 +201,7 @@ export function listEnvironments(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(EnvironmentCodec))),
+    RTE.chain(decodeWith(t.array(codecEnvironment))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -177,6 +212,7 @@ export function listEnvironments(): RT.ReaderTask<
  * @since 0.1.0
  */
 export function updateEnvironment(
+  environmentId: EnvironmentId,
   input: UpdateEnvironmentInput,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environment>> {
   return pipe(
@@ -185,22 +221,18 @@ export function updateEnvironment(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.patch(
-              `${r.baseUrl}/environments/${input.id}`,
-              { ...input, id: undefined },
-              {
-                headers: {
-                  "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-                },
+            return axios.patch(`${r.baseUrl}/environments/${environmentId}`, input, {
+              headers: {
+                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
-            );
+            });
           },
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(EnvironmentCodec)),
+    RTE.chain(decodeWith(codecEnvironment)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
