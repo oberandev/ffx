@@ -31,6 +31,8 @@
     "axios": "^1.5.0",
     "fp-ts": "^2.16.0",
     "io-ts": "^2.2.20",
-    "io-ts-reporters": "^2.0.0"
+    "io-ts-reporters": "^2.0.0",
+    "monocle-ts": "^2.3.13",
+    "newtype-ts": "^0.3.5"
   }
 }
