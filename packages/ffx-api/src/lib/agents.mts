@@ -61,7 +61,7 @@ export interface AgentId extends Newtype<{ readonly AgentId: unique symbol }, st
 
 export const isoAgentId: Iso<AgentId, string> = iso<AgentId>();
 
-export const codecAgentId = new t.Type<AgentId, AgentId, unknown>(
+export const codecAgentId = new t.Type<AgentId>(
   "AgentId",
   (input: unknown): input is AgentId => {
     return typeof input === "string" && /^us_ag_\w{8}$/g.test(input);

@@ -125,7 +125,7 @@ export interface SheetId extends Newtype<{ readonly SheetId: unique symbol }, st
 
 export const isoSheetId: Iso<SheetId, string> = iso<SheetId>();
 
-export const codecSheetId = new t.Type<SheetId, SheetId, unknown>(
+export const codecSheetId = new t.Type<SheetId>(
   "SheetId",
   (input: unknown): input is SheetId => {
     return typeof input === "string" && /^us_sh_\w{8}$/g.test(input);

@@ -26,7 +26,7 @@ export interface SecretId extends Newtype<{ readonly SecretId: unique symbol }, 
 
 export const isoSecretId: Iso<SecretId, string> = iso<SecretId>();
 
-export const codecSecretId = new t.Type<SecretId, SecretId, unknown>(
+export const codecSecretId = new t.Type<SecretId>(
   "SecretId",
   (input: unknown): input is SecretId => {
     return typeof input === "string" && /^us_sec_\w{8}$/g.test(input);

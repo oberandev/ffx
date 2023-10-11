@@ -25,7 +25,7 @@ export interface VersionId extends Newtype<{ readonly VersionId: unique symbol }
 
 export const isoVersionId: Iso<VersionId, string> = iso<VersionId>();
 
-export const codecVersionId = new t.Type<VersionId, VersionId, unknown>(
+export const codecVersionId = new t.Type<VersionId>(
   "VersionId",
   (input: unknown): input is VersionId => {
     return typeof input === "string" && /^us_vr_\w{8}$/g.test(input);

@@ -27,7 +27,7 @@ export interface WorkbookId extends Newtype<{ readonly WorkbookId: unique symbol
 
 export const isoWorkbookId: Iso<WorkbookId, string> = iso<WorkbookId>();
 
-export const codecWorkbookId = new t.Type<WorkbookId, WorkbookId, unknown>(
+export const codecWorkbookId = new t.Type<WorkbookId>(
   "WorkbookId",
   (input: unknown): input is WorkbookId => {
     return typeof input === "string" && /^us_wb_\w{8}$/g.test(input);

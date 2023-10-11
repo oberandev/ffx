@@ -26,7 +26,7 @@ export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique 
 
 export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
 
-export const codecEnvironmentId = new t.Type<EnvironmentId, EnvironmentId, unknown>(
+export const codecEnvironmentId = new t.Type<EnvironmentId>(
   "EnvironmentId",
   (input: unknown): input is EnvironmentId => {
     return typeof input === "string" && /^us_env_\w{8}$/g.test(input);
@@ -43,7 +43,7 @@ export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }
 
 export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
 
-export const codecAccountId = new t.Type<AccountId, AccountId, unknown>(
+export const codecAccountId = new t.Type<AccountId>(
   "AccountId",
   (input: unknown): input is AccountId => {
     return typeof input === "string" && /^us_acc_\w{8}$/g.test(input);

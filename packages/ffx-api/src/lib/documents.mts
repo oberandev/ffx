@@ -25,7 +25,7 @@ export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol
 
 export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
 
-export const codecDocumentId = new t.Type<DocumentId, DocumentId, unknown>(
+export const codecDocumentId = new t.Type<DocumentId>(
   "DocumentId",
   (input: unknown): input is DocumentId => {
     return typeof input === "string" && /^us_dc_\w{8}$/g.test(input);
@@ -42,7 +42,7 @@ export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, st
 
 export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
 
-export const codecSpaceId = new t.Type<SpaceId, SpaceId, unknown>(
+export const codecSpaceId = new t.Type<SpaceId>(
   "SpaceId",
   (input: unknown): input is SpaceId => {
     return typeof input === "string" && /^us_sp_\w{8}$/g.test(input);
