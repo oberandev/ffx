@@ -74,7 +74,7 @@ export const codecAgentId = new t.Type<AgentId, AgentId, unknown>(
   t.identity,
 );
 
-export const codecAgent = t.strict({
+export const codecAgent = t.type({
   id: codecAgentId,
   compiler: t.literal("js"),
   source: t.string,
@@ -151,7 +151,7 @@ export function deleteAgent(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

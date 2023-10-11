@@ -56,7 +56,7 @@ export const codecSpaceId = new t.Type<SpaceId, SpaceId, unknown>(
 );
 
 export const codecDocument = t.intersection([
-  t.strict({
+  t.type({
     id: codecDocumentId,
     body: t.string,
     environmentId: codecEnvironmentId,
@@ -138,7 +138,7 @@ export function deleteDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

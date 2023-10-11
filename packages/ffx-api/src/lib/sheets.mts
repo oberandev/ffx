@@ -21,17 +21,17 @@ import {
 // ==================
 
 export const codecCustomAction = t.intersection([
-  t.strict({
+  t.type({
     label: t.string,
   }),
   t.partial({
     confirm: t.boolean,
     description: t.string,
     icon: t.string,
-    inputForm: t.strict({
+    inputForm: t.type({
       fields: t.array(
         t.intersection([
-          t.strict({
+          t.type({
             key: t.string,
             label: t.string,
             type: t.union([
@@ -43,9 +43,9 @@ export const codecCustomAction = t.intersection([
             ]),
           }),
           t.partial({
-            config: t.strict({
+            config: t.type({
               options: t.intersection([
-                t.strict({
+                t.type({
                   value: t.union([t.boolean, t.number, t.string]),
                 }),
                 t.partial({
@@ -58,7 +58,7 @@ export const codecCustomAction = t.intersection([
               ]),
             }),
             constraints: t.array(
-              t.strict({
+              t.type({
                 type: t.literal("required"),
               }),
             ),
@@ -79,13 +79,13 @@ export const codecCustomAction = t.intersection([
 ]);
 
 const codecField = t.intersection([
-  t.strict({
+  t.type({
     key: t.string,
     type: t.string,
   }),
   t.partial({
     constraints: t.array(
-      t.strict({
+      t.type({
         type: t.literal("required"),
       }),
     ),
@@ -106,7 +106,7 @@ const codecPermission = t.union([
 ]);
 
 const codecSheetConfig = t.intersection([
-  t.strict({
+  t.type({
     fields: t.array(codecField),
     name: t.string,
   }),
@@ -139,7 +139,7 @@ export const codecSheetId = new t.Type<SheetId, SheetId, unknown>(
 );
 
 export const codecSheet = t.intersection([
-  t.strict({
+  t.type({
     id: codecSheetId,
     config: codecSheetConfig,
     createdAt: t.string,
@@ -149,7 +149,7 @@ export const codecSheet = t.intersection([
   }),
   t.partial({
     countRecords: t.intersection([
-      t.strict({
+      t.type({
         error: t.number,
         total: t.number,
         valid: t.number,
@@ -231,7 +231,7 @@ export function deleteSheet(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

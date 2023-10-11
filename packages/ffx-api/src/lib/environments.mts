@@ -57,7 +57,7 @@ export const codecAccountId = new t.Type<AccountId, AccountId, unknown>(
 );
 
 export const codecEnvironment = t.intersection([
-  t.strict({
+  t.type({
     id: codecEnvironmentId,
     accountId: codecAccountId,
     features: t.UnknownRecord,
@@ -141,7 +141,7 @@ export function deleteEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.strict({ success: t.boolean }))),
+    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
