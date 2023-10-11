@@ -4,6 +4,8 @@ import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { Iso } from "monocle-ts";
+import { Newtype, iso } from "newtype-ts";
 
 import {
   ApiReader,
@@ -18,7 +20,7 @@ import {
 //   Runtime codecs
 // ==================
 
-export const CustomActionCodec = t.intersection([
+export const codecCustomAction = t.intersection([
   t.strict({
     label: t.string,
   }),
@@ -76,7 +78,7 @@ export const CustomActionCodec = t.intersection([
   }),
 ]);
 
-const FieldCodec = t.intersection([
+const codecField = t.intersection([
   t.strict({
     key: t.string,
     type: t.string,
@@ -95,7 +97,7 @@ const FieldCodec = t.intersection([
   }),
 ]);
 
-const PermissionCodec = t.union([
+const codecPermission = t.union([
   t.literal("*"),
   t.literal("add"),
   t.literal("delete"),
@@ -103,14 +105,14 @@ const PermissionCodec = t.union([
   t.literal("import"),
 ]);
 
-const SheetConfigCodec = t.intersection([
+const codecSheetConfig = t.intersection([
   t.strict({
-    fields: t.array(FieldCodec),
+    fields: t.array(codecField),
     name: t.string,
   }),
   t.partial({
-    access: t.array(PermissionCodec),
-    actions: t.array(CustomActionCodec),
+    access: t.array(codecPermission),
+    actions: t.array(codecCustomAction),
     allowAdditionalFields: t.boolean,
     description: t.string,
     metadata: t.UnknownRecord,
@@ -119,23 +121,27 @@ const SheetConfigCodec = t.intersection([
   }),
 ]);
 
-export const SheetIdCodec = new t.Type<string, string, unknown>(
+export interface SheetId extends Newtype<{ readonly SheetId: unique symbol }, string> {}
+
+export const isoSheetId: Iso<SheetId, string> = iso<SheetId>();
+
+export const codecSheetId = new t.Type<SheetId, SheetId, unknown>(
   "SheetId",
-  (input: unknown): input is string => {
+  (input: unknown): input is SheetId => {
     return typeof input === "string" && /^us_sh_\w{8}$/g.test(input);
   },
   (input, context) => {
     return typeof input === "string" && /^us_sh_\w{8}$/g.test(input)
-      ? t.success(input)
+      ? t.success(isoSheetId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const SheetCodec = t.intersection([
+export const codecSheet = t.intersection([
   t.strict({
-    id: SheetIdCodec,
-    config: SheetConfigCodec,
+    id: codecSheetId,
+    config: codecSheetConfig,
     createdAt: t.string,
     name: t.string,
     updatedAt: t.string,
@@ -160,9 +166,8 @@ export const SheetCodec = t.intersection([
 //       Types
 // ==================
 
-export type Permission = t.TypeOf<typeof PermissionCodec>;
-export type Sheet = Readonly<t.TypeOf<typeof SheetCodec>>;
-export type SheetId = Readonly<t.TypeOf<typeof SheetIdCodec>>;
+export type Permission = t.TypeOf<typeof codecPermission>;
+export type Sheet = Readonly<t.TypeOf<typeof codecSheet>>;
 export type Sheets = ReadonlyArray<Sheet>;
 export type CreateSheetInput = Omit<Sheet, "id">;
 export type UpdateSheetInput = Partial<Sheet>;
@@ -196,7 +201,7 @@ export function createSheet(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(SheetCodec)),
+    RTE.chain(decodeWith(codecSheet)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -256,7 +261,7 @@ export function getSheet(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(SheetCodec)),
+    RTE.chain(decodeWith(codecSheet)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -287,7 +292,7 @@ export function listSheets(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(SheetCodec))),
+    RTE.chain(decodeWith(t.array(codecSheet))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -317,7 +322,7 @@ export function updateSheet(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(SheetCodec)),
+    RTE.chain(decodeWith(codecSheet)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

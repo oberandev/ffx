@@ -7,8 +7,15 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { EnvironmentId } from "../src/lib/environments.mjs";
-import { CreateSheetInput, Sheet, Sheets, SheetCodec, SheetIdCodec } from "../src/lib/sheets.mjs";
+import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
+import {
+  CreateSheetInput,
+  Sheet,
+  Sheets,
+  codecSheet,
+  codecSheetId,
+  isoSheetId,
+} from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -16,7 +23,7 @@ function randomId(): IO.IO<string> {
 
 function _mkMockSheet(): IO.IO<Sheet> {
   return IO.of({
-    id: SheetIdCodec.encode(`us_sh_${randomId()()}`),
+    id: isoSheetId.wrap(`us_sh_${randomId()()}`),
     config: {
       access: faker.helpers.arrayElements(["*", "add", "delete", "edit", "import"]),
       actions: [
@@ -102,21 +109,21 @@ function _mkMockSheet(): IO.IO<Sheet> {
 describe("sheets", () => {
   describe("[Codecs]", () => {
     it("Sheet", () => {
-      const decoded = pipe(_mkMockSheet()(), SheetCodec.decode);
+      const decoded = pipe(_mkMockSheet()(), codecSheet.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
 
     it("SheetId", () => {
-      const encoded = SheetIdCodec.encode(`us_sh_${randomId()()}`);
+      const encoded = isoSheetId.wrap(`us_sh_${randomId()()}`);
 
-      expect(SheetIdCodec.is(encoded)).toBe(true);
+      expect(codecSheetId.is(encoded)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: EnvironmentId = "environmentId";
+    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

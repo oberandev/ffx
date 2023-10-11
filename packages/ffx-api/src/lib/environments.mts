@@ -4,6 +4,8 @@ import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { Iso } from "monocle-ts";
+import { Newtype, iso } from "newtype-ts";
 
 import {
   ApiReader,
@@ -18,40 +20,48 @@ import {
 //   Runtime codecs
 // ==================
 
-const AuthenticationLinkCodec = t.union([t.literal("shared_link"), t.literal("magic_link")]);
+const codecAuthenticationLink = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
-export const EnvironmentIdCodec = new t.Type<string, string, unknown>(
+export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique symbol }, string> {}
+
+export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
+
+export const codecEnvironmentId = new t.Type<EnvironmentId, EnvironmentId, unknown>(
   "EnvironmentId",
-  (input: unknown): input is string => {
+  (input: unknown): input is EnvironmentId => {
     return typeof input === "string" && /^us_env_\w{8}$/g.test(input);
   },
   (input, context) => {
     return typeof input === "string" && /^us_env_\w{8}$/g.test(input)
-      ? t.success(input)
+      ? t.success(isoEnvironmentId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const AccountIdCodec = new t.Type<string, string, unknown>(
+export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }, string> {}
+
+export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
+
+export const codecAccountId = new t.Type<AccountId, AccountId, unknown>(
   "AccountId",
-  (input: unknown): input is string => {
+  (input: unknown): input is AccountId => {
     return typeof input === "string" && /^us_acc_\w{8}$/g.test(input);
   },
   (input, context) => {
     return typeof input === "string" && /^us_acc_\w{8}$/g.test(input)
-      ? t.success(input)
+      ? t.success(isoAccountId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const EnvironmentCodec = t.intersection([
+export const codecEnvironment = t.intersection([
   t.strict({
-    id: EnvironmentIdCodec,
-    accountId: AccountIdCodec,
+    id: codecEnvironmentId,
+    accountId: codecAccountId,
     features: t.UnknownRecord,
-    guestAuthentication: t.array(AuthenticationLinkCodec),
+    guestAuthentication: t.array(codecAuthenticationLink),
     isProd: t.boolean,
     metadata: t.UnknownRecord,
     name: t.string,
@@ -66,9 +76,7 @@ export const EnvironmentCodec = t.intersection([
 //       Types
 // ==================
 
-export type AccountId = Readonly<t.TypeOf<typeof AccountIdCodec>>;
-export type Environment = Readonly<t.TypeOf<typeof EnvironmentCodec>>;
-export type EnvironmentId = Readonly<t.TypeOf<typeof EnvironmentIdCodec>>;
+export type Environment = Readonly<t.TypeOf<typeof codecEnvironment>>;
 export type Environments = ReadonlyArray<Environment>;
 export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
 export type UpdateEnvironmentInput = Pick<Environment, "id"> &
@@ -103,7 +111,7 @@ export function createEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(EnvironmentCodec)),
+    RTE.chain(decodeWith(codecEnvironment)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -163,7 +171,7 @@ export function getEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(EnvironmentCodec)),
+    RTE.chain(decodeWith(codecEnvironment)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -194,7 +202,7 @@ export function listEnvironments(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(EnvironmentCodec))),
+    RTE.chain(decodeWith(t.array(codecEnvironment))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -228,7 +236,7 @@ export function updateEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(EnvironmentCodec)),
+    RTE.chain(decodeWith(codecEnvironment)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

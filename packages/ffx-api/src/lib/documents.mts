@@ -4,8 +4,10 @@ import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { Iso } from "monocle-ts";
+import { Newtype, iso } from "newtype-ts";
 
-import { EnvironmentIdCodec } from "./environments.mjs";
+import { codecEnvironmentId } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -19,49 +21,60 @@ import {
 //   Runtime codecs
 // ==================
 
-export const DocumentIdCodec = new t.Type<string, string, unknown>(
+export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol }, string> {}
+
+export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
+
+export const codecDocumentId = new t.Type<DocumentId, DocumentId, unknown>(
   "DocumentId",
-  (input: unknown): input is string => {
+  (input: unknown): input is DocumentId => {
     return typeof input === "string" && /^us_dc_\w{8}$/g.test(input);
   },
   (input, context) => {
     return typeof input === "string" && /^us_dc_\w{8}$/g.test(input)
-      ? t.success(input)
+      ? t.success(isoDocumentId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const SpaceIdCodec = new t.Type<string, string, unknown>(
+export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, string> {}
+
+export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
+
+export const codecSpaceId = new t.Type<SpaceId, SpaceId, unknown>(
   "SpaceId",
-  (input: unknown): input is string => {
+  (input: unknown): input is SpaceId => {
     return typeof input === "string" && /^us_sp_\w{8}$/g.test(input);
   },
   (input, context) => {
     return typeof input === "string" && /^us_sp_\w{8}$/g.test(input)
-      ? t.success(input)
+      ? t.success(isoSpaceId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const DocumentCodec = t.strict({
-  id: DocumentIdCodec,
-  body: t.string,
-  environmentId: EnvironmentIdCodec,
-  spaceId: SpaceIdCodec,
-  title: t.string,
-});
+export const codecDocument = t.intersection([
+  t.strict({
+    id: codecDocumentId,
+    body: t.string,
+    environmentId: codecEnvironmentId,
+    spaceId: codecSpaceId,
+    title: t.string,
+  }),
+  t.partial({
+    treatments: t.array(t.string),
+  }),
+]);
 
 // ==================
 //       Types
 // ==================
 
-export type Document = Readonly<t.TypeOf<typeof DocumentCodec>>;
-export type DocumentId = t.TypeOf<typeof DocumentIdCodec>;
+export type Document = Readonly<t.TypeOf<typeof codecDocument>>;
 export type Documents = ReadonlyArray<Document>;
-export type SpaceId = t.TypeOf<typeof SpaceIdCodec>;
-export type CreateDocumentInput = Pick<Document, "body" | "spaceId" | "title">;
+export type CreateDocumentInput = Pick<Document, "body" | "spaceId" | "title" | "treatments">;
 export type DeleteDocumentInput = Pick<Document, "id" | "spaceId">;
 export type GetDocumentInput = Pick<Document, "id" | "spaceId">;
 export type UpdateDocumentInput = Omit<Document, "environmentId">;
@@ -95,7 +108,7 @@ export function createDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(DocumentCodec)),
+    RTE.chain(decodeWith(codecDocument)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -155,7 +168,7 @@ export function getDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(DocumentCodec)),
+    RTE.chain(decodeWith(codecDocument)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -185,7 +198,7 @@ export function listDocuments(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(DocumentCodec))),
+    RTE.chain(decodeWith(t.array(codecDocument))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -219,7 +232,7 @@ export function updateDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(DocumentCodec)),
+    RTE.chain(decodeWith(codecDocument)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

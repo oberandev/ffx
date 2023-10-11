@@ -4,10 +4,12 @@ import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { Iso } from "monocle-ts";
+import { Newtype, iso } from "newtype-ts";
 
-import { SpaceIdCodec } from "./documents.mjs";
-import { EnvironmentIdCodec } from "./environments.mjs";
-import { CustomActionCodec, SheetCodec } from "./sheets.mjs";
+import { codecSpaceId } from "./documents.mjs";
+import { codecEnvironmentId } from "./environments.mjs";
+import { codecCustomAction, codecSheet } from "./sheets.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -21,34 +23,38 @@ import {
 //   Runtime codecs
 // ==================
 
-export const WorkbookIdCodec = new t.Type<string, string, unknown>(
+export interface WorkbookId extends Newtype<{ readonly WorkbookId: unique symbol }, string> {}
+
+export const isoWorkbookId: Iso<WorkbookId, string> = iso<WorkbookId>();
+
+export const codecWorkbookId = new t.Type<WorkbookId, WorkbookId, unknown>(
   "WorkbookId",
-  (input: unknown): input is string => {
+  (input: unknown): input is WorkbookId => {
     return typeof input === "string" && /^us_wb_\w{8}$/g.test(input);
   },
   (input, context) => {
     return typeof input === "string" && /^us_wb_\w{8}$/g.test(input)
-      ? t.success(input)
+      ? t.success(isoWorkbookId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const WorkbookCodec = t.intersection([
+export const codecWorkbook = t.intersection([
   t.strict({
-    id: WorkbookIdCodec,
+    id: codecWorkbookId,
     createdAt: t.string,
-    environmentId: EnvironmentIdCodec,
+    environmentId: codecEnvironmentId,
     name: t.string,
-    spaceId: SpaceIdCodec,
+    spaceId: codecSpaceId,
     updatedAt: t.string,
   }),
   t.partial({
-    actions: t.array(CustomActionCodec),
+    actions: t.array(codecCustomAction),
     labels: t.array(t.string),
     metadata: t.UnknownRecord,
     namespace: t.string,
-    sheets: t.array(SheetCodec),
+    sheets: t.array(codecSheet),
   }),
 ]);
 
@@ -56,8 +62,7 @@ export const WorkbookCodec = t.intersection([
 //       Types
 // ==================
 
-export type Workbook = Readonly<t.TypeOf<typeof WorkbookCodec>>;
-export type WorkbookId = Readonly<t.TypeOf<typeof WorkbookIdCodec>>;
+export type Workbook = Readonly<t.TypeOf<typeof codecWorkbook>>;
 export type Workbooks = ReadonlyArray<Workbook>;
 export type CreateWorkbookInput = Omit<Workbook, "id">;
 export type UpdateWorkbookInput = Partial<Workbook>;
@@ -91,7 +96,7 @@ export function createWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(WorkbookCodec)),
+    RTE.chain(decodeWith(codecWorkbook)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -151,7 +156,7 @@ export function getWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(WorkbookCodec)),
+    RTE.chain(decodeWith(codecWorkbook)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -182,7 +187,7 @@ export function listWorkbooks(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(WorkbookCodec))),
+    RTE.chain(decodeWith(t.array(codecWorkbook))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -212,7 +217,7 @@ export function updateWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(WorkbookCodec)),
+    RTE.chain(decodeWith(codecWorkbook)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

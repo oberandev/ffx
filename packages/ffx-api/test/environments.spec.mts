@@ -8,11 +8,13 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import {
-  AccountIdCodec,
   Environment,
-  EnvironmentCodec,
   EnvironmentId,
-  EnvironmentIdCodec,
+  codecAccountId,
+  codecEnvironment,
+  codecEnvironmentId,
+  isoAccountId,
+  isoEnvironmentId,
 } from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
@@ -21,8 +23,8 @@ function randomId(): IO.IO<string> {
 
 function _mkMockEnvironment(): IO.IO<Environment> {
   return IO.of({
-    id: EnvironmentIdCodec.encode(`us_env_${randomId()()}`),
-    accountId: AccountIdCodec.encode(`us_acc_${randomId()()}`),
+    id: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
+    accountId: isoAccountId.wrap(`us_acc_${randomId()()}`),
     features: {},
     guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
     isProd: faker.helpers.arrayElement([false, true]),
@@ -34,27 +36,27 @@ function _mkMockEnvironment(): IO.IO<Environment> {
 describe("environments", () => {
   describe("[Codecs]", () => {
     it("Environment", () => {
-      const decoded = pipe(_mkMockEnvironment()(), EnvironmentCodec.decode);
+      const decoded = pipe(_mkMockEnvironment()(), codecEnvironment.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
 
     it("EnvironmentId", () => {
-      const encoded = EnvironmentIdCodec.encode(`us_env_${randomId()()}`);
+      const encoded = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
 
-      expect(EnvironmentIdCodec.is(encoded)).toBe(true);
+      expect(codecEnvironmentId.is(encoded)).toBe(true);
     });
 
     it("AccountId", () => {
-      const encoded = AccountIdCodec.encode(`us_acc_${randomId()()}`);
+      const encoded = isoAccountId.wrap(`us_acc_${randomId()()}`);
 
-      expect(AccountIdCodec.is(encoded)).toBe(true);
+      expect(codecAccountId.is(encoded)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: EnvironmentId = "environmentId";
+    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

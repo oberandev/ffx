@@ -7,14 +7,15 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { SpaceIdCodec } from "../src/lib/documents.mjs";
-import { EnvironmentId, EnvironmentIdCodec } from "../src/lib/environments.mjs";
+import { isoSpaceId } from "../src/lib/documents.mjs";
+import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 import {
   CreateWorkbookInput,
   Workbook,
-  WorkbookCodec,
-  WorkbookIdCodec,
   Workbooks,
+  codecWorkbook,
+  codecWorkbookId,
+  isoWorkbookId,
 } from "../src/lib/workbooks.mjs";
 
 function randomId(): IO.IO<string> {
@@ -23,16 +24,16 @@ function randomId(): IO.IO<string> {
 
 function _mkMockWorkbook(): IO.IO<Workbook> {
   return IO.of({
-    id: WorkbookIdCodec.encode(`us_wb_${randomId()()}`),
+    id: isoWorkbookId.wrap(`us_wb_${randomId()()}`),
     actions: [],
     createdAt: faker.date.past().toISOString(),
-    environmentId: EnvironmentIdCodec.encode(`us_env_${randomId()()}`),
+    environmentId: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
     labels: [faker.lorem.word()],
     metadata: {},
     name: faker.lorem.word(),
     namespace: faker.lorem.word(),
     sheets: [],
-    spaceId: SpaceIdCodec.encode(`us_sp_${randomId()()}`),
+    spaceId: isoSpaceId.wrap(`us_sp_${randomId()()}`),
     updatedAt: faker.date.past().toISOString(),
   });
 }
@@ -40,21 +41,21 @@ function _mkMockWorkbook(): IO.IO<Workbook> {
 describe("sheets", () => {
   describe("[Codecs]", () => {
     it("Sheet", () => {
-      const decoded = pipe(_mkMockWorkbook()(), WorkbookCodec.decode);
+      const decoded = pipe(_mkMockWorkbook()(), codecWorkbook.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
 
     it("WorkbookId", () => {
-      const encoded = WorkbookIdCodec.encode(`us_wb_${randomId()()}`);
+      const encoded = isoWorkbookId.wrap(`us_wb_${randomId()()}`);
 
-      expect(WorkbookIdCodec.is(encoded)).toBe(true);
+      expect(codecWorkbookId.is(encoded)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: EnvironmentId = "environmentId";
+    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

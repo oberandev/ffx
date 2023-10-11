@@ -7,8 +7,15 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Document, DocumentCodec, DocumentIdCodec, SpaceIdCodec } from "../src/lib/documents.mjs";
-import { EnvironmentId, EnvironmentIdCodec } from "../src/lib/environments.mjs";
+import {
+  Document,
+  codecDocument,
+  codecDocumentId,
+  codecSpaceId,
+  isoDocumentId,
+  isoSpaceId,
+} from "../src/lib/documents.mjs";
+import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -16,38 +23,39 @@ function randomId(): IO.IO<string> {
 
 function _mkMockDocument(): IO.IO<Document> {
   return IO.of({
-    id: DocumentIdCodec.encode(`us_dc_${randomId()()}`),
+    id: isoDocumentId.wrap(`us_dc_${randomId()()}`),
     body: faker.lorem.paragraphs(2),
+    environmentId: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
+    spaceId: isoSpaceId.wrap(`us_sp_${randomId()()}`),
     title: faker.lorem.words(2),
-    environmentId: EnvironmentIdCodec.encode(`us_env_${randomId()()}`),
-    spaceId: SpaceIdCodec.encode(`us_sp_${randomId()()}`),
+    treatments: [faker.lorem.word()],
   });
 }
 
 describe("documents", () => {
   describe("[Codecs]", () => {
     it("Document", () => {
-      const decoded = pipe(_mkMockDocument()(), DocumentCodec.decode);
+      const decoded = pipe(_mkMockDocument()(), codecDocument.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
 
     it("DocumentId", () => {
-      const encoded = DocumentIdCodec.encode(`us_dc_${randomId()()}`);
+      const encoded = isoDocumentId.wrap(`us_dc_${randomId()()}`);
 
-      expect(DocumentIdCodec.is(encoded)).toBe(true);
+      expect(codecDocumentId.is(encoded)).toBe(true);
     });
 
     it("SpaceId", () => {
-      const encoded = SpaceIdCodec.encode(`us_sp_${randomId()()}`);
+      const encoded = isoSpaceId.wrap(`us_sp_${randomId()()}`);
 
-      expect(SpaceIdCodec.is(encoded)).toBe(true);
+      expect(codecSpaceId.is(encoded)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: EnvironmentId = "environmentId";
+    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

@@ -7,8 +7,8 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Agent, AgentCodec, AgentIdCodec, Agents, CreateAgentInput } from "../src/lib/agents.mjs";
-import { EnvironmentId } from "../src/lib/environments.mjs";
+import { Agent, Agents, codecAgent, codecAgentId, isoAgentId } from "../src/lib/agents.mjs";
+import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -16,7 +16,7 @@ function randomId(): IO.IO<string> {
 
 function _mkMockAgent(): IO.IO<Agent> {
   return IO.of({
-    id: AgentIdCodec.encode(`us_ag_${randomId()()}`),
+    id: isoAgentId.wrap(`us_ag_${randomId()()}`),
     compiler: "js",
     source: faker.lorem.paragraphs(2),
     topics: ["agent:created"],
@@ -26,26 +26,28 @@ function _mkMockAgent(): IO.IO<Agent> {
 describe("agents", () => {
   describe("[Codecs]", () => {
     it("Agent", () => {
-      const decoded = pipe(_mkMockAgent()(), AgentCodec.decode);
+      const decoded = pipe(_mkMockAgent()(), codecAgent.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
 
     it("AgentId", () => {
-      const encoded = AgentIdCodec.encode(`us_ag_${randomId()()}`);
+      const encoded = isoAgentId.wrap(`us_ag_${randomId()()}`);
 
-      expect(AgentIdCodec.is(encoded)).toBe(true);
+      expect(codecAgentId.is(encoded)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: EnvironmentId = "environmentId";
+    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 
     it("should handle failure when creating an Agent", async () => {
       // setup
+      const mockAgent: Agent = _mkMockAgent()();
+
       const restHandlers = [
         rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
           return res(
@@ -66,7 +68,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.create({} as CreateAgentInput);
+      const resp = await client.agents.create(mockAgent);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
