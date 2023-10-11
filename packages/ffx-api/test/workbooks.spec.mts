@@ -335,7 +335,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting WorkbookId at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting WorkbookIdFromString at 0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -427,7 +429,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual(["Expecting WorkbookId at 0.0.id but instead got: null"]),
+          expect(reasons).toStrictEqual([
+            "Expecting WorkbookIdFromString at 0.0.id but instead got: null",
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -542,7 +546,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting WorkbookId at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting WorkbookIdFromString at 0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 

@@ -103,7 +103,7 @@ describe("agents", () => {
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([
-            `Expecting AgentId at id but instead got: "bogus_agent_id"`,
+            `Expecting AgentIdFromString at id but instead got: "bogus_agent_id"`,
           ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));

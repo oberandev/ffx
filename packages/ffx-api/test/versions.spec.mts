@@ -110,7 +110,7 @@ describe("versions", () => {
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([
-            `Expecting VersionId at versionId but instead got: "bogus_version_id"`,
+            `Expecting VersionIdFromString at versionId but instead got: "bogus_version_id"`,
           ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));

@@ -126,7 +126,7 @@ describe("documents", () => {
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([
-            `Expecting DocumentId at 0.id but instead got: "bogus_document_id"`,
+            `Expecting DocumentIdFromString at 0.id but instead got: "bogus_document_id"`,
           ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
@@ -335,7 +335,9 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting SpaceIdFromString at 0.spaceId but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -437,7 +439,9 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.0.spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting SpaceIdFromString at 0.0.spaceId but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -548,7 +552,9 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting SpaceIdFromString at 0.spaceId but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
