@@ -21,13 +21,13 @@ import {
 //   Runtime codecs
 // ==================
 
-const codecAuthenticationLink = t.union([t.literal("shared_link"), t.literal("magic_link")]);
+const AuthLinkC = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
 export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique symbol }, string> {}
 
 export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
 
-export const codecEnvironmentId = new t.Type<EnvironmentId>(
+export const EnvironmentIdC = new t.Type<EnvironmentId>(
   "EnvironmentIdFromString",
   (input: unknown): input is EnvironmentId => {
     return Str.isString(input) && /^us_env_\w{8}$/g.test(input);
@@ -44,7 +44,7 @@ export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }
 
 export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
 
-export const codecAccountId = new t.Type<AccountId>(
+export const AccountIdC = new t.Type<AccountId>(
   "AccountIdFromString",
   (input: unknown): input is AccountId => {
     return Str.isString(input) && /^us_acc_\w{8}$/g.test(input);
@@ -57,12 +57,12 @@ export const codecAccountId = new t.Type<AccountId>(
   t.identity,
 );
 
-export const codecEnvironment = t.intersection([
+export const EnvironmentC = t.intersection([
   t.type({
-    id: codecEnvironmentId,
-    accountId: codecAccountId,
+    id: EnvironmentIdC,
+    accountId: AccountIdC,
     features: t.UnknownRecord,
-    guestAuthentication: t.array(codecAuthenticationLink),
+    guestAuthentication: t.array(AuthLinkC),
     isProd: t.boolean,
     metadata: t.UnknownRecord,
     name: t.string,
@@ -77,7 +77,7 @@ export const codecEnvironment = t.intersection([
 //       Types
 // ==================
 
-export type Environment = Readonly<t.TypeOf<typeof codecEnvironment>>;
+export type Environment = Readonly<t.TypeOf<typeof EnvironmentC>>;
 export type Environments = ReadonlyArray<Environment>;
 export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
 export type UpdateEnvironmentInput = Partial<Omit<Environment, "accountId" | "features" | "id">>;
@@ -111,7 +111,7 @@ export function createEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecEnvironment)),
+    RTE.chain(decodeWith(EnvironmentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -171,7 +171,7 @@ export function getEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecEnvironment)),
+    RTE.chain(decodeWith(EnvironmentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -202,7 +202,7 @@ export function listEnvironments(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecEnvironment))),
+    RTE.chain(decodeWith(t.array(EnvironmentC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -233,7 +233,7 @@ export function updateEnvironment(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecEnvironment)),
+    RTE.chain(decodeWith(EnvironmentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

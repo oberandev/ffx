@@ -21,7 +21,7 @@ import {
 //   Runtime codecs
 // ==================
 
-const codecEventTopic = t.union([
+const EventTopicC = t.union([
   t.literal("agent:created"),
   t.literal("agent:deleted"),
   t.literal("agent:updated"),
@@ -62,7 +62,7 @@ export interface AgentId extends Newtype<{ readonly AgentId: unique symbol }, st
 
 export const isoAgentId: Iso<AgentId, string> = iso<AgentId>();
 
-export const codecAgentId = new t.Type<AgentId>(
+export const AgentIdC = new t.Type<AgentId>(
   "AgentIdFromString",
   (input: unknown): input is AgentId => {
     return Str.isString(input) && /^us_ag_\w{8}$/g.test(input);
@@ -75,20 +75,20 @@ export const codecAgentId = new t.Type<AgentId>(
   t.identity,
 );
 
-export const codecAgent = t.type({
-  id: codecAgentId,
+export const AgentC = t.type({
+  id: AgentIdC,
   compiler: t.literal("js"),
   source: t.string,
-  topics: t.array(codecEventTopic),
+  topics: t.array(EventTopicC),
 });
 
 // ==================
 //       Types
 // ==================
 
-export type Agent = Readonly<t.TypeOf<typeof codecAgent>>;
+export type Agent = Readonly<t.TypeOf<typeof AgentC>>;
 export type Agents = ReadonlyArray<Agent>;
-export type EventTopic = Readonly<t.TypeOf<typeof codecEventTopic>>;
+export type EventTopic = Readonly<t.TypeOf<typeof EventTopicC>>;
 export type CreateAgentInput = Omit<Agent, "id">;
 
 // ==================
@@ -123,7 +123,7 @@ export function createAgent(
       );
     }),
     RTE.map((resp) => resp.data),
-    RTE.chain(decodeWith(codecAgent)),
+    RTE.chain(decodeWith(AgentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -189,7 +189,7 @@ export function getAgent(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecAgent)),
+    RTE.chain(decodeWith(AgentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -223,7 +223,7 @@ export function listAgents(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecAgent))),
+    RTE.chain(decodeWith(t.array(AgentC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

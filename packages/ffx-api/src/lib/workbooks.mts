@@ -8,9 +8,9 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { codecSpaceId } from "./documents.mjs";
-import { codecEnvironmentId } from "./environments.mjs";
-import { codecCustomAction, codecSheet } from "./sheets.mjs";
+import { SpaceIdC } from "./documents.mjs";
+import { EnvironmentIdC } from "./environments.mjs";
+import { CustomActionC, SheetC } from "./sheets.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -28,7 +28,7 @@ export interface WorkbookId extends Newtype<{ readonly WorkbookId: unique symbol
 
 export const isoWorkbookId: Iso<WorkbookId, string> = iso<WorkbookId>();
 
-export const codecWorkbookId = new t.Type<WorkbookId>(
+export const WorkbookIdC = new t.Type<WorkbookId>(
   "WorkbookIdFromString",
   (input: unknown): input is WorkbookId => {
     return Str.isString(input) && /^us_wb_\w{8}$/g.test(input);
@@ -41,21 +41,21 @@ export const codecWorkbookId = new t.Type<WorkbookId>(
   t.identity,
 );
 
-export const codecWorkbook = t.intersection([
+export const WorkbookC = t.intersection([
   t.type({
-    id: codecWorkbookId,
+    id: WorkbookIdC,
     createdAt: t.string,
-    environmentId: codecEnvironmentId,
+    environmentId: EnvironmentIdC,
     name: t.string,
-    spaceId: codecSpaceId,
+    spaceId: SpaceIdC,
     updatedAt: t.string,
   }),
   t.partial({
-    actions: t.array(codecCustomAction),
+    actions: t.array(CustomActionC),
     labels: t.array(t.string),
     metadata: t.UnknownRecord,
     namespace: t.string,
-    sheets: t.array(codecSheet),
+    sheets: t.array(SheetC),
   }),
 ]);
 
@@ -63,7 +63,7 @@ export const codecWorkbook = t.intersection([
 //       Types
 // ==================
 
-export type Workbook = Readonly<t.TypeOf<typeof codecWorkbook>>;
+export type Workbook = Readonly<t.TypeOf<typeof WorkbookC>>;
 export type Workbooks = ReadonlyArray<Workbook>;
 export type CreateWorkbookInput = Omit<Workbook, "id" | "createdAt" | "updatedAt">;
 export type UpdateWorkbookInput = Partial<Omit<Workbook, "id" | "createdAt" | "updatedAt">>;
@@ -97,7 +97,7 @@ export function createWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecWorkbook)),
+    RTE.chain(decodeWith(WorkbookC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -157,7 +157,7 @@ export function getWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecWorkbook)),
+    RTE.chain(decodeWith(WorkbookC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -188,7 +188,7 @@ export function listWorkbooks(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecWorkbook))),
+    RTE.chain(decodeWith(t.array(WorkbookC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -219,7 +219,7 @@ export function updateWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecWorkbook)),
+    RTE.chain(decodeWith(WorkbookC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

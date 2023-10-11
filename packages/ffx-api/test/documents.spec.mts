@@ -9,9 +9,9 @@ import { match } from "ts-pattern";
 import mkApiClient from "../src/index.mjs";
 import {
   Document,
-  codecDocument,
-  codecDocumentId,
-  codecSpaceId,
+  DocumentC,
+  DocumentIdC,
+  SpaceIdC,
   isoDocumentId,
   isoSpaceId,
 } from "../src/lib/documents.mjs";
@@ -35,7 +35,7 @@ function _mkMockDocument(): IO.IO<Document> {
 describe("documents", () => {
   describe("[Codecs]", () => {
     it("Document", () => {
-      const decoded = pipe(_mkMockDocument()(), codecDocument.decode);
+      const decoded = pipe(_mkMockDocument()(), DocumentC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -43,13 +43,13 @@ describe("documents", () => {
     it("DocumentId", () => {
       const encoded = isoDocumentId.wrap(`us_dc_${randomId()()}`);
 
-      expect(codecDocumentId.is(encoded)).toBe(true);
+      expect(DocumentIdC.is(encoded)).toBe(true);
     });
 
     it("SpaceId", () => {
       const encoded = isoSpaceId.wrap(`us_sp_${randomId()()}`);
 
-      expect(codecSpaceId.is(encoded)).toBe(true);
+      expect(SpaceIdC.is(encoded)).toBe(true);
     });
   });
 

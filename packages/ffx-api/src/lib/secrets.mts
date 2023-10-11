@@ -8,8 +8,8 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { SpaceId, codecSpaceId } from "./documents.mjs";
-import { EnvironmentId, codecEnvironmentId } from "./environments.mjs";
+import { SpaceId, SpaceIdC } from "./documents.mjs";
+import { EnvironmentId, EnvironmentIdC } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -27,7 +27,7 @@ export interface SecretId extends Newtype<{ readonly SecretId: unique symbol }, 
 
 export const isoSecretId: Iso<SecretId, string> = iso<SecretId>();
 
-export const codecSecretId = new t.Type<SecretId>(
+export const SecretIdC = new t.Type<SecretId>(
   "SecretIdFromString",
   (input: unknown): input is SecretId => {
     return Str.isString(input) && /^us_sec_\w{8}$/g.test(input);
@@ -40,15 +40,15 @@ export const codecSecretId = new t.Type<SecretId>(
   t.identity,
 );
 
-export const codecSecret = t.intersection([
+export const SecretC = t.intersection([
   t.type({
-    id: codecSecretId,
-    environmentId: codecEnvironmentId,
+    id: SecretIdC,
+    environmentId: EnvironmentIdC,
     name: t.string,
     value: t.string,
   }),
   t.partial({
-    spaceId: codecSpaceId,
+    spaceId: SpaceIdC,
   }),
 ]);
 
@@ -56,7 +56,7 @@ export const codecSecret = t.intersection([
 //       Types
 // ==================
 
-export type Secret = Readonly<t.TypeOf<typeof codecSecret>>;
+export type Secret = Readonly<t.TypeOf<typeof SecretC>>;
 export type Secrets = ReadonlyArray<Secret>;
 export type CreateSecretInput = Omit<Secret, "id">;
 
@@ -89,7 +89,7 @@ export function createSecret(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecSecret)),
+    RTE.chain(decodeWith(SecretC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -154,7 +154,7 @@ export function listSecrets(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecSecret))),
+    RTE.chain(decodeWith(t.array(SecretC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

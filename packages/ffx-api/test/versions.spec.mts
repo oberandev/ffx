@@ -9,7 +9,7 @@ import { match } from "ts-pattern";
 import mkApiClient from "../src/index.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 import { SheetId, isoSheetId } from "../src/lib/sheets.mjs";
-import { Version, VersionId, codecVersion, isoVersionId } from "../src/lib/versions.mjs";
+import { Version, VersionC, VersionId, isoVersionId } from "../src/lib/versions.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -24,7 +24,7 @@ function _mkMockVersion(): IO.IO<Version> {
 describe("versions", () => {
   describe("[Codecs]", () => {
     it("Version", () => {
-      const decoded = pipe(_mkMockVersion()(), codecVersion.decode);
+      const decoded = pipe(_mkMockVersion()(), VersionC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });

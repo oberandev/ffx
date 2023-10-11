@@ -8,11 +8,11 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import {
+  AccountIdC,
   Environment,
+  EnvironmentC,
   EnvironmentId,
-  codecAccountId,
-  codecEnvironment,
-  codecEnvironmentId,
+  EnvironmentIdC,
   isoAccountId,
   isoEnvironmentId,
 } from "../src/lib/environments.mjs";
@@ -36,7 +36,7 @@ function _mkMockEnvironment(): IO.IO<Environment> {
 describe("environments", () => {
   describe("[Codecs]", () => {
     it("Environment", () => {
-      const decoded = pipe(_mkMockEnvironment()(), codecEnvironment.decode);
+      const decoded = pipe(_mkMockEnvironment()(), EnvironmentC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -44,13 +44,13 @@ describe("environments", () => {
     it("EnvironmentId", () => {
       const encoded = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
 
-      expect(codecEnvironmentId.is(encoded)).toBe(true);
+      expect(EnvironmentIdC.is(encoded)).toBe(true);
     });
 
     it("AccountId", () => {
       const encoded = isoAccountId.wrap(`us_acc_${randomId()()}`);
 
-      expect(codecAccountId.is(encoded)).toBe(true);
+      expect(AccountIdC.is(encoded)).toBe(true);
     });
   });
 

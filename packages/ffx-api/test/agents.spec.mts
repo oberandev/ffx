@@ -7,7 +7,7 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Agent, Agents, codecAgent, codecAgentId, isoAgentId } from "../src/lib/agents.mjs";
+import { Agent, AgentC, AgentIdC, Agents, isoAgentId } from "../src/lib/agents.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
@@ -26,7 +26,7 @@ function _mkMockAgent(): IO.IO<Agent> {
 describe("agents", () => {
   describe("[Codecs]", () => {
     it("Agent", () => {
-      const decoded = pipe(_mkMockAgent()(), codecAgent.decode);
+      const decoded = pipe(_mkMockAgent()(), AgentC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -34,7 +34,7 @@ describe("agents", () => {
     it("AgentId", () => {
       const encoded = isoAgentId.wrap(`us_ag_${randomId()()}`);
 
-      expect(codecAgentId.is(encoded)).toBe(true);
+      expect(AgentIdC.is(encoded)).toBe(true);
     });
   });
 

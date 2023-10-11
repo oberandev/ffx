@@ -21,7 +21,7 @@ import {
 //   Runtime codecs
 // ==================
 
-export const codecCustomAction = t.intersection([
+export const CustomActionC = t.intersection([
   t.type({
     label: t.string,
   }),
@@ -79,7 +79,7 @@ export const codecCustomAction = t.intersection([
   }),
 ]);
 
-const codecField = t.intersection([
+const FieldC = t.intersection([
   t.type({
     key: t.string,
     type: t.string,
@@ -98,7 +98,7 @@ const codecField = t.intersection([
   }),
 ]);
 
-const codecPermission = t.union([
+const PermissionC = t.union([
   t.literal("*"),
   t.literal("add"),
   t.literal("delete"),
@@ -106,14 +106,14 @@ const codecPermission = t.union([
   t.literal("import"),
 ]);
 
-const codecSheetConfig = t.intersection([
+const SheetConfigC = t.intersection([
   t.type({
-    fields: t.array(codecField),
+    fields: t.array(FieldC),
     name: t.string,
   }),
   t.partial({
-    access: t.array(codecPermission),
-    actions: t.array(codecCustomAction),
+    access: t.array(PermissionC),
+    actions: t.array(CustomActionC),
     allowAdditionalFields: t.boolean,
     description: t.string,
     metadata: t.UnknownRecord,
@@ -126,7 +126,7 @@ export interface SheetId extends Newtype<{ readonly SheetId: unique symbol }, st
 
 export const isoSheetId: Iso<SheetId, string> = iso<SheetId>();
 
-export const codecSheetId = new t.Type<SheetId>(
+export const SheetIdC = new t.Type<SheetId>(
   "SheetIdFromString",
   (input: unknown): input is SheetId => {
     return Str.isString(input) && /^us_sh_\w{8}$/g.test(input);
@@ -139,10 +139,10 @@ export const codecSheetId = new t.Type<SheetId>(
   t.identity,
 );
 
-export const codecSheet = t.intersection([
+export const SheetC = t.intersection([
   t.type({
-    id: codecSheetId,
-    config: codecSheetConfig,
+    id: SheetIdC,
+    config: SheetConfigC,
     createdAt: t.string,
     name: t.string,
     updatedAt: t.string,
@@ -167,8 +167,8 @@ export const codecSheet = t.intersection([
 //       Types
 // ==================
 
-export type Permission = t.TypeOf<typeof codecPermission>;
-export type Sheet = Readonly<t.TypeOf<typeof codecSheet>>;
+export type Permission = t.TypeOf<typeof PermissionC>;
+export type Sheet = Readonly<t.TypeOf<typeof SheetC>>;
 export type Sheets = ReadonlyArray<Sheet>;
 
 // ==================
@@ -230,7 +230,7 @@ export function getSheet(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecSheet)),
+    RTE.chain(decodeWith(SheetC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -261,7 +261,7 @@ export function listSheets(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecSheet))),
+    RTE.chain(decodeWith(t.array(SheetC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

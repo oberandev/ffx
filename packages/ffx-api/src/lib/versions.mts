@@ -26,7 +26,7 @@ export interface VersionId extends Newtype<{ readonly VersionId: unique symbol }
 
 export const isoVersionId: Iso<VersionId, string> = iso<VersionId>();
 
-export const codecVersionId = new t.Type<VersionId>(
+export const VersionIdC = new t.Type<VersionId>(
   "VersionIdFromString",
   (input: unknown): input is VersionId => {
     return Str.isString(input) && /^us_vr_\w{8}$/g.test(input);
@@ -39,15 +39,15 @@ export const codecVersionId = new t.Type<VersionId>(
   t.identity,
 );
 
-export const codecVersion = t.type({
-  versionId: codecVersionId,
+export const VersionC = t.type({
+  versionId: VersionIdC,
 });
 
 // ==================
 //       Types
 // ==================
 
-export type Version = Readonly<t.TypeOf<typeof codecVersion>>;
+export type Version = Readonly<t.TypeOf<typeof VersionC>>;
 
 // ==================
 //       Main
@@ -83,7 +83,7 @@ export function createVersion(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecVersion)),
+    RTE.chain(decodeWith(VersionC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

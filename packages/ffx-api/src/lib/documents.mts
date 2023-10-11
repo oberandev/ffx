@@ -8,7 +8,7 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { codecEnvironmentId } from "./environments.mjs";
+import { EnvironmentIdC } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -26,7 +26,7 @@ export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol
 
 export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
 
-export const codecDocumentId = new t.Type<DocumentId>(
+export const DocumentIdC = new t.Type<DocumentId>(
   "DocumentIdFromString",
   (input: unknown): input is DocumentId => {
     return Str.isString(input) && /^us_dc_\w{8}$/g.test(input);
@@ -43,7 +43,7 @@ export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, st
 
 export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
 
-export const codecSpaceId = new t.Type<SpaceId>(
+export const SpaceIdC = new t.Type<SpaceId>(
   "SpaceIdFromString",
   (input: unknown): input is SpaceId => {
     return Str.isString(input) && /^us_sp_\w{8}$/g.test(input);
@@ -56,12 +56,12 @@ export const codecSpaceId = new t.Type<SpaceId>(
   t.identity,
 );
 
-export const codecDocument = t.intersection([
+export const DocumentC = t.intersection([
   t.type({
-    id: codecDocumentId,
+    id: DocumentIdC,
     body: t.string,
-    environmentId: codecEnvironmentId,
-    spaceId: codecSpaceId,
+    environmentId: EnvironmentIdC,
+    spaceId: SpaceIdC,
     title: t.string,
   }),
   t.partial({
@@ -73,7 +73,7 @@ export const codecDocument = t.intersection([
 //       Types
 // ==================
 
-export type Document = Readonly<t.TypeOf<typeof codecDocument>>;
+export type Document = Readonly<t.TypeOf<typeof DocumentC>>;
 export type Documents = ReadonlyArray<Document>;
 export type CreateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
 export type UpdateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
@@ -108,7 +108,7 @@ export function createDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecDocument)),
+    RTE.chain(decodeWith(DocumentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -170,7 +170,7 @@ export function getDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecDocument)),
+    RTE.chain(decodeWith(DocumentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -200,7 +200,7 @@ export function listDocuments(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecDocument))),
+    RTE.chain(decodeWith(t.array(DocumentC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -232,7 +232,7 @@ export function updateDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecDocument)),
+    RTE.chain(decodeWith(DocumentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

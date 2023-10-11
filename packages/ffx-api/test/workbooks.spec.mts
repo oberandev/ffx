@@ -10,11 +10,10 @@ import mkApiClient from "../src/index.mjs";
 import { isoSpaceId } from "../src/lib/documents.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 import {
-  CreateWorkbookInput,
   Workbook,
+  WorkbookC,
+  WorkbookIdC,
   Workbooks,
-  codecWorkbook,
-  codecWorkbookId,
   isoWorkbookId,
 } from "../src/lib/workbooks.mjs";
 
@@ -41,7 +40,7 @@ function _mkMockWorkbook(): IO.IO<Workbook> {
 describe("sheets", () => {
   describe("[Codecs]", () => {
     it("Sheet", () => {
-      const decoded = pipe(_mkMockWorkbook()(), codecWorkbook.decode);
+      const decoded = pipe(_mkMockWorkbook()(), WorkbookC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -49,7 +48,7 @@ describe("sheets", () => {
     it("WorkbookId", () => {
       const encoded = isoWorkbookId.wrap(`us_wb_${randomId()()}`);
 
-      expect(codecWorkbookId.is(encoded)).toBe(true);
+      expect(WorkbookIdC.is(encoded)).toBe(true);
     });
   });
 
