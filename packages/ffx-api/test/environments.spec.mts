@@ -8,11 +8,11 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import {
+  AccountIdFromString,
   Environment,
+  EnvironmentC,
   EnvironmentId,
-  codecAccountId,
-  codecEnvironment,
-  codecEnvironmentId,
+  EnvironmentIdFromString,
   isoAccountId,
   isoEnvironmentId,
 } from "../src/lib/environments.mjs";
@@ -36,7 +36,7 @@ function _mkMockEnvironment(): IO.IO<Environment> {
 describe("environments", () => {
   describe("[Codecs]", () => {
     it("Environment", () => {
-      const decoded = pipe(_mkMockEnvironment()(), codecEnvironment.decode);
+      const decoded = pipe(_mkMockEnvironment()(), EnvironmentC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -44,13 +44,13 @@ describe("environments", () => {
     it("EnvironmentId", () => {
       const encoded = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
 
-      expect(codecEnvironmentId.is(encoded)).toBe(true);
+      expect(EnvironmentIdFromString.is(encoded)).toBe(true);
     });
 
     it("AccountId", () => {
       const encoded = isoAccountId.wrap(`us_acc_${randomId()()}`);
 
-      expect(codecAccountId.is(encoded)).toBe(true);
+      expect(AccountIdFromString.is(encoded)).toBe(true);
     });
   });
 
@@ -136,7 +136,9 @@ describe("environments", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting EnvironmentId at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting EnvironmentIdFromString at 0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -340,7 +342,7 @@ describe("environments", () => {
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([
-            `Expecting AccountId at 0.accountId but instead got: null`,
+            `Expecting AccountIdFromString at 0.accountId but instead got: null`,
           ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
@@ -439,7 +441,7 @@ describe("environments", () => {
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([
-            `Expecting EnvironmentId at 0.0.id but instead got: null`,
+            `Expecting EnvironmentIdFromString at 0.0.id but instead got: null`,
           ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
@@ -551,7 +553,9 @@ describe("environments", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting EnvironmentId at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting EnvironmentIdFromString at 0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 

@@ -33,8 +33,18 @@ import {
   listEnvironments,
   updateEnvironment,
 } from "./lib/environments.mjs";
+import {
+  CreateSecretInput,
+  Secret,
+  SecretId,
+  Secrets,
+  createSecret,
+  deleteSecret,
+  listSecrets,
+} from "./lib/secrets.mjs";
 import { Sheet, SheetId, Sheets, deleteSheet, getSheet, listSheets } from "./lib/sheets.mjs";
 import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/types.mjs";
+import { Version, VersionId, createVersion } from "./lib/versions.mjs";
 import {
   CreateWorkbookInput,
   UpdateWorkbookInput,
@@ -94,12 +104,28 @@ interface ApiClient {
       input: UpdateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
   };
+  secrets: {
+    create: (input: CreateSecretInput) => Promise<DecoderErrors | HttpError | Successful<Secret>>;
+    delete: (
+      secretId: SecretId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    list: (
+      environmentId: EnvironmentId,
+      spaceId?: SpaceId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Secrets>>;
+  };
   sheets: {
     delete: (
       sheetId: SheetId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     get: (sheetId: SheetId) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
+  };
+  versions: {
+    create: (
+      sheetId: SheetId,
+      parentVersionId: VersionId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Version>>;
   };
   workbooks: {
     create: (
@@ -149,10 +175,18 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       list: () => listEnvironments()(reader)(),
       update: (environmentId, input) => updateEnvironment(environmentId, input)(reader)(),
     },
+    secrets: {
+      create: (input) => createSecret(input)(reader)(),
+      delete: (secretId) => deleteSecret(secretId)(reader)(),
+      list: (environmentId, spaceId) => listSecrets(environmentId, spaceId)(reader)(),
+    },
     sheets: {
       delete: (sheetId) => deleteSheet(sheetId)(reader)(),
       get: (sheetId) => getSheet(sheetId)(reader)(),
       list: () => listSheets()(reader)(),
+    },
+    versions: {
+      create: (sheetId, parentVersionId) => createVersion(sheetId, parentVersionId)(reader)(),
     },
     workbooks: {
       create: (input) => createWorkbook(input)(reader)(),
@@ -181,5 +215,7 @@ export {
   isoAccountId,
   isoEnvironmentId,
 } from "./lib/environments.mjs";
+export { Secret, Secrets, SecretId, isoSecretId } from "./lib/secrets.mjs";
 export { Permission, Sheet, Sheets, SheetId, isoSheetId } from "./lib/sheets.mjs";
+export { Version, VersionId, isoVersionId } from "./lib/versions.mjs";
 export { Workbook, Workbooks, WorkbookId, isoWorkbookId } from "./lib/workbooks.mjs";

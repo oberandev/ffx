@@ -10,11 +10,10 @@ import mkApiClient from "../src/index.mjs";
 import { isoSpaceId } from "../src/lib/documents.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 import {
-  CreateWorkbookInput,
   Workbook,
+  WorkbookC,
+  WorkbookIdFromString,
   Workbooks,
-  codecWorkbook,
-  codecWorkbookId,
   isoWorkbookId,
 } from "../src/lib/workbooks.mjs";
 
@@ -41,7 +40,7 @@ function _mkMockWorkbook(): IO.IO<Workbook> {
 describe("sheets", () => {
   describe("[Codecs]", () => {
     it("Sheet", () => {
-      const decoded = pipe(_mkMockWorkbook()(), codecWorkbook.decode);
+      const decoded = pipe(_mkMockWorkbook()(), WorkbookC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
@@ -49,7 +48,7 @@ describe("sheets", () => {
     it("WorkbookId", () => {
       const encoded = isoWorkbookId.wrap(`us_wb_${randomId()()}`);
 
-      expect(codecWorkbookId.is(encoded)).toBe(true);
+      expect(WorkbookIdFromString.is(encoded)).toBe(true);
     });
   });
 
@@ -336,7 +335,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting WorkbookId at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting WorkbookIdFromString at 0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -428,7 +429,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual(["Expecting WorkbookId at 0.0.id but instead got: null"]),
+          expect(reasons).toStrictEqual([
+            "Expecting WorkbookIdFromString at 0.0.id but instead got: null",
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -543,7 +546,9 @@ describe("sheets", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting WorkbookId at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting WorkbookIdFromString at 0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 

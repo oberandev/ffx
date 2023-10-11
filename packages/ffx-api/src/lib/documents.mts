@@ -2,12 +2,13 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { codecEnvironmentId } from "./environments.mjs";
+import { EnvironmentIdFromString } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -25,13 +26,13 @@ export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol
 
 export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
 
-export const codecDocumentId = new t.Type<DocumentId, DocumentId, unknown>(
-  "DocumentId",
+export const DocumentIdFromString = new t.Type<DocumentId>(
+  "DocumentIdFromString",
   (input: unknown): input is DocumentId => {
-    return typeof input === "string" && /^us_dc_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_dc_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_dc_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_dc_\w{8}$/g.test(input)
       ? t.success(isoDocumentId.wrap(input))
       : t.failure(input, context);
   },
@@ -42,40 +43,47 @@ export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, st
 
 export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
 
-export const codecSpaceId = new t.Type<SpaceId, SpaceId, unknown>(
-  "SpaceId",
+export const SpaceIdFromString = new t.Type<SpaceId>(
+  "SpaceIdFromString",
   (input: unknown): input is SpaceId => {
-    return typeof input === "string" && /^us_sp_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_sp_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input)
       ? t.success(isoSpaceId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,
 );
 
-export const codecDocument = t.intersection([
-  t.type({
-    id: codecDocumentId,
-    body: t.string,
-    environmentId: codecEnvironmentId,
-    spaceId: codecSpaceId,
-    title: t.string,
-  }),
-  t.partial({
-    treatments: t.array(t.string),
-  }),
-]);
+export const DocumentC = t.intersection(
+  [
+    t.type({
+      id: DocumentIdFromString,
+      body: t.string,
+      environmentId: EnvironmentIdFromString,
+      spaceId: SpaceIdFromString,
+      title: t.string,
+    }),
+    t.partial({
+      treatments: t.array(t.string),
+    }),
+  ],
+  "DocumentC",
+);
 
 // ==================
 //       Types
 // ==================
 
-export type Document = Readonly<t.TypeOf<typeof codecDocument>>;
+export type Document = Readonly<t.TypeOf<typeof DocumentC>>;
 export type Documents = ReadonlyArray<Document>;
 export type CreateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
 export type UpdateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
+
+// ==================
+//       Main
+// ==================
 
 /**
  * Create a `Document`.
@@ -103,7 +111,7 @@ export function createDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecDocument)),
+    RTE.chain(decodeWith(DocumentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -165,7 +173,7 @@ export function getDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecDocument)),
+    RTE.chain(decodeWith(DocumentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -195,7 +203,7 @@ export function listDocuments(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(codecDocument))),
+    RTE.chain(decodeWith(t.array(DocumentC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -227,7 +235,7 @@ export function updateDocument(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecDocument)),
+    RTE.chain(decodeWith(DocumentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
