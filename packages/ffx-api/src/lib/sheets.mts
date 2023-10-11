@@ -169,42 +169,10 @@ export const codecSheet = t.intersection([
 export type Permission = t.TypeOf<typeof codecPermission>;
 export type Sheet = Readonly<t.TypeOf<typeof codecSheet>>;
 export type Sheets = ReadonlyArray<Sheet>;
-export type CreateSheetInput = Omit<Sheet, "id">;
-export type UpdateSheetInput = Partial<Sheet>;
 
 // ==================
 //       Main
 // ==================
-
-/**
- * Create a `Sheet`.
- *
- * @since 0.1.0
- */
-export function createSheet(
-  input: CreateSheetInput,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Sheet>> {
-  return pipe(
-    RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
-      return RTE.fromTaskEither(
-        TE.tryCatch(
-          () => {
-            return axios.post(`${r.baseUrl}/sheets`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
-          (reason: unknown) => reason as AxiosError,
-        ),
-      );
-    }),
-    RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecSheet)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
-  );
-}
 
 /**
  * Delete a `Sheet`.
@@ -293,36 +261,6 @@ export function listSheets(): RT.ReaderTask<
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.array(codecSheet))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
-  );
-}
-
-/**
- * Update a `Sheet`.
- *
- * @since 0.1.0
- */
-export function updateSheet(
-  input: UpdateSheetInput,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Sheet>> {
-  return pipe(
-    RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
-      return RTE.fromTaskEither(
-        TE.tryCatch(
-          () => {
-            return axios.patch(`${r.baseUrl}/sheets/${input.id}`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
-          (reason: unknown) => reason as AxiosError,
-        ),
-      );
-    }),
-    RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(codecSheet)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }

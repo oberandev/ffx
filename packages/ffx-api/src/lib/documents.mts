@@ -74,10 +74,8 @@ export const codecDocument = t.intersection([
 
 export type Document = Readonly<t.TypeOf<typeof codecDocument>>;
 export type Documents = ReadonlyArray<Document>;
-export type CreateDocumentInput = Pick<Document, "body" | "spaceId" | "title" | "treatments">;
-export type DeleteDocumentInput = Pick<Document, "id" | "spaceId">;
-export type GetDocumentInput = Pick<Document, "id" | "spaceId">;
-export type UpdateDocumentInput = Omit<Document, "environmentId">;
+export type CreateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
+export type UpdateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
 
 /**
  * Create a `Document`.
@@ -85,6 +83,7 @@ export type UpdateDocumentInput = Omit<Document, "environmentId">;
  * @since 0.1.0
  */
 export function createDocument(
+  spaceId: SpaceId,
   input: CreateDocumentInput,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Document>> {
   return pipe(
@@ -93,15 +92,11 @@ export function createDocument(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.post(
-              `${r.baseUrl}/spaces/${input.spaceId}/documents`,
-              { body: input.body, title: input.title },
-              {
-                headers: {
-                  "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-                },
+            return axios.post(`${r.baseUrl}/spaces/${spaceId}/documents`, input, {
+              headers: {
+                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
-            );
+            });
           },
           (reason: unknown) => reason as AxiosError,
         ),
@@ -119,7 +114,8 @@ export function createDocument(
  * @since 0.1.0
  */
 export function deleteDocument(
-  input: DeleteDocumentInput,
+  documentId: DocumentId,
+  spaceId: SpaceId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -127,7 +123,7 @@ export function deleteDocument(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.delete(`${r.baseUrl}/spaces/${input.spaceId}/documents/${input.id}`, {
+            return axios.delete(`${r.baseUrl}/spaces/${spaceId}/documents/${documentId}`, {
               headers: {
                 "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
@@ -149,7 +145,8 @@ export function deleteDocument(
  * @since 0.1.0
  */
 export function getDocument(
-  input: GetDocumentInput,
+  documentId: DocumentId,
+  spaceId: SpaceId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Document>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -157,7 +154,7 @@ export function getDocument(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.get(`${r.baseUrl}/spaces/${input.spaceId}/documents/${input.id}`, {
+            return axios.get(`${r.baseUrl}/spaces/${spaceId}/documents/${documentId}`, {
               headers: {
                 "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
@@ -209,6 +206,8 @@ export function listDocuments(
  * @since 0.1.0
  */
 export function updateDocument(
+  documentId: DocumentId,
+  spaceId: SpaceId,
   input: UpdateDocumentInput,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Document>> {
   return pipe(
@@ -217,15 +216,11 @@ export function updateDocument(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.patch(
-              `${r.baseUrl}/spaces/${input.spaceId}/documents/${input.id}`,
-              { body: input.body, title: input.title },
-              {
-                headers: {
-                  "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-                },
+            return axios.patch(`${r.baseUrl}/spaces/${spaceId}/documents/${documentId}`, input, {
+              headers: {
+                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
-            );
+            });
           },
           (reason: unknown) => reason as AxiosError,
         ),

@@ -10,11 +10,10 @@ import {
 } from "./lib/agents.mjs";
 import {
   CreateDocumentInput,
-  DeleteDocumentInput,
   Document,
+  DocumentId,
   Documents,
   SpaceId,
-  GetDocumentInput,
   UpdateDocumentInput,
   createDocument,
   deleteDocument,
@@ -34,18 +33,7 @@ import {
   listEnvironments,
   updateEnvironment,
 } from "./lib/environments.mjs";
-import {
-  CreateSheetInput,
-  Sheet,
-  SheetId,
-  Sheets,
-  UpdateSheetInput,
-  createSheet,
-  deleteSheet,
-  getSheet,
-  listSheets,
-  updateSheet,
-} from "./lib/sheets.mjs";
+import { Sheet, SheetId, Sheets, deleteSheet, getSheet, listSheets } from "./lib/sheets.mjs";
 import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/types.mjs";
 import {
   CreateWorkbookInput,
@@ -72,14 +60,21 @@ interface ApiClient {
   };
   documents: {
     create: (
+      spaceId: SpaceId,
       input: CreateDocumentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
     delete: (
-      input: DeleteDocumentInput,
+      documentId: DocumentId,
+      spaceId: SpaceId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (input: GetDocumentInput) => Promise<DecoderErrors | HttpError | Successful<Document>>;
+    get: (
+      documentId: DocumentId,
+      spaceId: SpaceId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
     list: (spaceId: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Documents>>;
     update: (
+      documentId: DocumentId,
+      spaceId: SpaceId,
       input: UpdateDocumentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Document>>;
   };
@@ -95,17 +90,16 @@ interface ApiClient {
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Environments>>;
     update: (
+      environmentId: EnvironmentId,
       input: UpdateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
   };
   sheets: {
-    create: (input: CreateSheetInput) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
     delete: (
       sheetId: SheetId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     get: (sheetId: SheetId) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
-    update: (input: UpdateSheetInput) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
   };
   workbooks: {
     create: (
@@ -117,6 +111,7 @@ interface ApiClient {
     get: (workbookId: WorkbookId) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Workbooks>>;
     update: (
+      workbookId: WorkbookId,
       input: UpdateWorkbookInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
   };
@@ -141,32 +136,50 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       list: () => listAgents()(reader)(),
     },
     documents: {
-      create: (input) => createDocument(input)(reader)(),
-      delete: (input) => deleteDocument(input)(reader)(),
-      get: (input) => getDocument(input)(reader)(),
+      create: (spaceId, input) => createDocument(spaceId, input)(reader)(),
+      delete: (documentId, spaceId) => deleteDocument(documentId, spaceId)(reader)(),
+      get: (documentId, spaceId) => getDocument(documentId, spaceId)(reader)(),
       list: (spaceId) => listDocuments(spaceId)(reader)(),
-      update: (input) => updateDocument(input)(reader)(),
+      update: (documentId, spaceId, input) => updateDocument(documentId, spaceId, input)(reader)(),
     },
     environments: {
       create: (input) => createEnvironment(input)(reader)(),
       delete: (environmentId) => deleteEnvironment(environmentId)(reader)(),
       get: (environmentId) => getEnvironment(environmentId)(reader)(),
       list: () => listEnvironments()(reader)(),
-      update: (input) => updateEnvironment(input)(reader)(),
+      update: (environmentId, input) => updateEnvironment(environmentId, input)(reader)(),
     },
     sheets: {
-      create: (input) => createSheet(input)(reader)(),
       delete: (sheetId) => deleteSheet(sheetId)(reader)(),
       get: (sheetId) => getSheet(sheetId)(reader)(),
       list: () => listSheets()(reader)(),
-      update: (input) => updateSheet(input)(reader)(),
     },
     workbooks: {
       create: (input) => createWorkbook(input)(reader)(),
       delete: (workbookId) => deleteWorkbook(workbookId)(reader)(),
       get: (workbookId) => getWorkbook(workbookId)(reader)(),
       list: () => listWorkbooks()(reader)(),
-      update: (input) => updateWorkbook(input)(reader)(),
+      update: (workbookId, input) => updateWorkbook(workbookId, input)(reader)(),
     },
   };
 }
+
+export { Agent, Agents, AgentId, EventTopic, isoAgentId } from "./lib/agents.mjs";
+export {
+  Document,
+  Documents,
+  DocumentId,
+  SpaceId,
+  isoDocumentId,
+  isoSpaceId,
+} from "./lib/documents.mjs";
+export {
+  AccountId,
+  Environment,
+  Environments,
+  EnvironmentId,
+  isoAccountId,
+  isoEnvironmentId,
+} from "./lib/environments.mjs";
+export { Permission, Sheet, Sheets, SheetId, isoSheetId } from "./lib/sheets.mjs";
+export { Workbook, Workbooks, WorkbookId, isoWorkbookId } from "./lib/workbooks.mjs";

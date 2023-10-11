@@ -501,7 +501,14 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.environments.update(mockEnvironment.id, {
+        guestAuthentication: mockEnvironment.guestAuthentication,
+        isProd: mockEnvironment.isProd,
+        metadata: mockEnvironment.metadata,
+        name: mockEnvironment.name,
+        namespaces: mockEnvironment.namespaces,
+        translationsPath: mockEnvironment.translationsPath,
+      });
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -533,7 +540,14 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.environments.update(mockEnvironment.id, {
+        guestAuthentication: mockEnvironment.guestAuthentication,
+        isProd: mockEnvironment.isProd,
+        metadata: mockEnvironment.metadata,
+        name: mockEnvironment.name,
+        namespaces: mockEnvironment.namespaces,
+        translationsPath: mockEnvironment.translationsPath,
+      });
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -564,7 +578,14 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.environments.update(mockEnvironment.id, {
+        guestAuthentication: mockEnvironment.guestAuthentication,
+        isProd: mockEnvironment.isProd,
+        metadata: mockEnvironment.metadata,
+        name: mockEnvironment.name,
+        namespaces: mockEnvironment.namespaces,
+        translationsPath: mockEnvironment.translationsPath,
+      });
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))

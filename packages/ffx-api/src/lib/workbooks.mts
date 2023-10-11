@@ -64,8 +64,8 @@ export const codecWorkbook = t.intersection([
 
 export type Workbook = Readonly<t.TypeOf<typeof codecWorkbook>>;
 export type Workbooks = ReadonlyArray<Workbook>;
-export type CreateWorkbookInput = Omit<Workbook, "id">;
-export type UpdateWorkbookInput = Partial<Workbook>;
+export type CreateWorkbookInput = Omit<Workbook, "id" | "createdAt" | "updatedAt">;
+export type UpdateWorkbookInput = Partial<Omit<Workbook, "id" | "createdAt" | "updatedAt">>;
 
 // ==================
 //       Main
@@ -198,6 +198,7 @@ export function listWorkbooks(): RT.ReaderTask<
  * @since 0.1.0
  */
 export function updateWorkbook(
+  workbookId: WorkbookId,
   input: UpdateWorkbookInput,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
   return pipe(
@@ -206,7 +207,7 @@ export function updateWorkbook(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.patch(`${r.baseUrl}/workbooks/${input.id}`, input, {
+            return axios.patch(`${r.baseUrl}/workbooks/${workbookId}`, input, {
               headers: {
                 "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },

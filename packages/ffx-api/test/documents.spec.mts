@@ -83,9 +83,8 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.create({
+      const resp = await client.documents.create(mockDocument.spaceId, {
         body: mockDocument.body,
-        spaceId: mockDocument.spaceId,
         title: mockDocument.title,
       });
 
@@ -119,16 +118,15 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.create({
+      const resp = await client.documents.create(mockDocument.spaceId, {
         body: mockDocument.body,
-        spaceId: mockDocument.spaceId,
         title: mockDocument.title,
       });
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
           expect(reasons).toStrictEqual([
-            `Expecting DocumentId at id but instead got: "bogus_document_id"`,
+            `Expecting DocumentId at 0.id but instead got: "bogus_document_id"`,
           ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
@@ -151,9 +149,8 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.create({
+      const resp = await client.documents.create(mockDocument.spaceId, {
         body: mockDocument.body,
-        spaceId: mockDocument.spaceId,
         title: mockDocument.title,
       });
 
@@ -192,10 +189,7 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.delete({
-        id: mockDocument.id,
-        spaceId: mockDocument.spaceId,
-      });
+      const resp = await client.documents.delete(mockDocument.id, mockDocument.spaceId);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -229,10 +223,7 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.delete({
-        id: mockDocument.id,
-        spaceId: mockDocument.spaceId,
-      });
+      const resp = await client.documents.delete(mockDocument.id, mockDocument.spaceId);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -268,10 +259,7 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.delete({
-        id: mockDocument.id,
-        spaceId: mockDocument.spaceId,
-      });
+      const resp = await client.documents.delete(mockDocument.id, mockDocument.spaceId);
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
@@ -308,10 +296,7 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.get({
-        id: mockDocument.id,
-        spaceId: mockDocument.spaceId,
-      });
+      const resp = await client.documents.get(mockDocument.id, mockDocument.spaceId);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -346,14 +331,11 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.get({
-        id: mockDocument.id,
-        spaceId: mockDocument.spaceId,
-      });
+      const resp = await client.documents.get(mockDocument.id, mockDocument.spaceId);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SpaceId at spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.spaceId but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -383,10 +365,7 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.get({
-        id: mockDocument.id,
-        spaceId: mockDocument.spaceId,
-      });
+      const resp = await client.documents.get(mockDocument.id, mockDocument.spaceId);
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockDocument))
@@ -458,7 +437,7 @@ describe("documents", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.0.spaceId but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -522,7 +501,11 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.update(mockDocument);
+      const resp = await client.documents.update(mockDocument.id, mockDocument.spaceId, {
+        body: mockDocument.body,
+        title: mockDocument.title,
+        treatments: mockDocument.treatments,
+      });
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -557,11 +540,15 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.update(mockDocument);
+      const resp = await client.documents.update(mockDocument.id, mockDocument.spaceId, {
+        body: mockDocument.body,
+        title: mockDocument.title,
+        treatments: mockDocument.treatments,
+      });
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SpaceId at spaceId but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting SpaceId at 0.spaceId but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -591,7 +578,11 @@ describe("documents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.documents.update(mockDocument);
+      const resp = await client.documents.update(mockDocument.id, mockDocument.spaceId, {
+        body: mockDocument.body,
+        title: mockDocument.title,
+        treatments: mockDocument.treatments,
+      });
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockDocument))

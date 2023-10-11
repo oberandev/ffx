@@ -61,6 +61,8 @@ describe("sheets", () => {
 
     it("should handle failure when creating a Workbook", async () => {
       // setup
+      const mockWorkbook: Workbook = _mkMockWorkbook()();
+
       const restHandlers = [
         rest.post(`${baseUrl}/workbooks`, (_req, res, ctx) => {
           return res(
@@ -81,7 +83,16 @@ describe("sheets", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.workbooks.create({} as CreateWorkbookInput);
+      const resp = await client.workbooks.create({
+        actions: mockWorkbook.actions,
+        environmentId: mockWorkbook.environmentId,
+        labels: mockWorkbook.labels,
+        metadata: mockWorkbook.metadata,
+        name: mockWorkbook.name,
+        namespace: mockWorkbook.namespace,
+        sheets: mockWorkbook.sheets,
+        spaceId: mockWorkbook.spaceId,
+      });
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -113,7 +124,16 @@ describe("sheets", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.workbooks.create(mockWorkbook);
+      const resp = await client.workbooks.create({
+        actions: mockWorkbook.actions,
+        environmentId: mockWorkbook.environmentId,
+        labels: mockWorkbook.labels,
+        metadata: mockWorkbook.metadata,
+        name: mockWorkbook.name,
+        namespace: mockWorkbook.namespace,
+        sheets: mockWorkbook.sheets,
+        spaceId: mockWorkbook.spaceId,
+      });
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -139,7 +159,16 @@ describe("sheets", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.workbooks.create(mockWorkbook);
+      const resp = await client.workbooks.create({
+        actions: mockWorkbook.actions,
+        environmentId: mockWorkbook.environmentId,
+        labels: mockWorkbook.labels,
+        metadata: mockWorkbook.metadata,
+        name: mockWorkbook.name,
+        namespace: mockWorkbook.namespace,
+        sheets: mockWorkbook.sheets,
+        spaceId: mockWorkbook.spaceId,
+      });
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
@@ -460,7 +489,16 @@ describe("sheets", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.workbooks.update(mockWorkbook);
+      const resp = await client.workbooks.update(mockWorkbook.id, {
+        actions: mockWorkbook.actions,
+        environmentId: mockWorkbook.environmentId,
+        labels: mockWorkbook.labels,
+        metadata: mockWorkbook.metadata,
+        name: mockWorkbook.name,
+        namespace: mockWorkbook.namespace,
+        sheets: mockWorkbook.sheets,
+        spaceId: mockWorkbook.spaceId,
+      });
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -492,7 +530,16 @@ describe("sheets", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.workbooks.update(mockWorkbook);
+      const resp = await client.workbooks.update(mockWorkbook.id, {
+        actions: mockWorkbook.actions,
+        environmentId: mockWorkbook.environmentId,
+        labels: mockWorkbook.labels,
+        metadata: mockWorkbook.metadata,
+        name: mockWorkbook.name,
+        namespace: mockWorkbook.namespace,
+        sheets: mockWorkbook.sheets,
+        spaceId: mockWorkbook.spaceId,
+      });
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -523,7 +570,16 @@ describe("sheets", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.workbooks.update(mockWorkbook);
+      const resp = await client.workbooks.update(mockWorkbook.id, {
+        actions: mockWorkbook.actions,
+        environmentId: mockWorkbook.environmentId,
+        labels: mockWorkbook.labels,
+        metadata: mockWorkbook.metadata,
+        name: mockWorkbook.name,
+        namespace: mockWorkbook.namespace,
+        sheets: mockWorkbook.sheets,
+        spaceId: mockWorkbook.spaceId,
+      });
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))

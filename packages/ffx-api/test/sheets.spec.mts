@@ -8,14 +8,7 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import {
-  CreateSheetInput,
-  Sheet,
-  Sheets,
-  codecSheet,
-  codecSheetId,
-  isoSheetId,
-} from "../src/lib/sheets.mjs";
+import { Sheet, Sheets, codecSheet, codecSheetId, isoSheetId } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -126,96 +119,6 @@ describe("sheets", () => {
     const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
-    it("should handle failure when creating a Sheet", async () => {
-      // setup
-      const restHandlers = [
-        rest.post(`${baseUrl}/sheets`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.sheets.create({} as CreateSheetInput);
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when creating a Sheet", async () => {
-      // setup
-      const mockSheet: Sheet = _mkMockSheet()();
-
-      const restHandlers = [
-        rest.post(`${baseUrl}/sheets`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockSheet,
-                name: undefined,
-              },
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.sheets.create(mockSheet);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.name but instead got: undefined`]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully creating a Sheet", async () => {
-      // setup
-      const mockSheet: Sheet = _mkMockSheet()();
-
-      const restHandlers = [
-        rest.post(`${baseUrl}/sheets`, (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({ data: mockSheet }));
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.sheets.create(mockSheet);
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheet))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
 
     it("should handle failure when deleting a Sheet", async () => {
       // setup
@@ -499,103 +402,6 @@ describe("sheets", () => {
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheets))
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle failure when updating a Sheet", async () => {
-      // setup
-      const mockSheet: Sheet = _mkMockSheet()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.sheets.update(mockSheet);
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when updating a Sheet", async () => {
-      // setup
-      const mockSheet: Sheet = _mkMockSheet()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockSheet,
-                id: null,
-              },
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.sheets.update(mockSheet);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting SheetId at 0.id but instead got: null`]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully updating a Sheet", async () => {
-      // setup
-      const mockSheet: Sheet = _mkMockSheet()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockSheet,
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.sheets.update(mockSheet);
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheet))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
       // teardown
       server.close();

@@ -79,8 +79,7 @@ export const codecEnvironment = t.intersection([
 export type Environment = Readonly<t.TypeOf<typeof codecEnvironment>>;
 export type Environments = ReadonlyArray<Environment>;
 export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
-export type UpdateEnvironmentInput = Pick<Environment, "id"> &
-  Partial<Omit<Environment, "accountId" | "features">>;
+export type UpdateEnvironmentInput = Partial<Omit<Environment, "accountId" | "features" | "id">>;
 
 // ==================
 //       Main
@@ -213,6 +212,7 @@ export function listEnvironments(): RT.ReaderTask<
  * @since 0.1.0
  */
 export function updateEnvironment(
+  environmentId: EnvironmentId,
   input: UpdateEnvironmentInput,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environment>> {
   return pipe(
@@ -221,15 +221,11 @@ export function updateEnvironment(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.patch(
-              `${r.baseUrl}/environments/${input.id}`,
-              { ...input, id: undefined },
-              {
-                headers: {
-                  "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-                },
+            return axios.patch(`${r.baseUrl}/environments/${environmentId}`, input, {
+              headers: {
+                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
-            );
+            });
           },
           (reason: unknown) => reason as AxiosError,
         ),
