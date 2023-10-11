@@ -26,7 +26,7 @@ export interface VersionId extends Newtype<{ readonly VersionId: unique symbol }
 
 export const isoVersionId: Iso<VersionId, string> = iso<VersionId>();
 
-export const VersionIdC = new t.Type<VersionId>(
+export const VersionIdFromString = new t.Type<VersionId>(
   "VersionIdFromString",
   (input: unknown): input is VersionId => {
     return Str.isString(input) && /^us_vr_\w{8}$/g.test(input);
@@ -40,7 +40,7 @@ export const VersionIdC = new t.Type<VersionId>(
 );
 
 export const VersionC = t.type({
-  versionId: VersionIdC,
+  versionId: VersionIdFromString,
 });
 
 // ==================

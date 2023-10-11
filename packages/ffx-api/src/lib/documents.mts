@@ -8,7 +8,7 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { EnvironmentIdC } from "./environments.mjs";
+import { EnvironmentIdFromString } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -26,7 +26,7 @@ export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol
 
 export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
 
-export const DocumentIdC = new t.Type<DocumentId>(
+export const DocumentIdFromString = new t.Type<DocumentId>(
   "DocumentIdFromString",
   (input: unknown): input is DocumentId => {
     return Str.isString(input) && /^us_dc_\w{8}$/g.test(input);
@@ -43,7 +43,7 @@ export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, st
 
 export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
 
-export const SpaceIdC = new t.Type<SpaceId>(
+export const SpaceIdFromString = new t.Type<SpaceId>(
   "SpaceIdFromString",
   (input: unknown): input is SpaceId => {
     return Str.isString(input) && /^us_sp_\w{8}$/g.test(input);
@@ -56,18 +56,21 @@ export const SpaceIdC = new t.Type<SpaceId>(
   t.identity,
 );
 
-export const DocumentC = t.intersection([
-  t.type({
-    id: DocumentIdC,
-    body: t.string,
-    environmentId: EnvironmentIdC,
-    spaceId: SpaceIdC,
-    title: t.string,
-  }),
-  t.partial({
-    treatments: t.array(t.string),
-  }),
-]);
+export const DocumentC = t.intersection(
+  [
+    t.type({
+      id: DocumentIdFromString,
+      body: t.string,
+      environmentId: EnvironmentIdFromString,
+      spaceId: SpaceIdFromString,
+      title: t.string,
+    }),
+    t.partial({
+      treatments: t.array(t.string),
+    }),
+  ],
+  "DocumentC",
+);
 
 // ==================
 //       Types

@@ -21,48 +21,51 @@ import {
 //   Runtime codecs
 // ==================
 
-const EventTopicC = t.union([
-  t.literal("agent:created"),
-  t.literal("agent:deleted"),
-  t.literal("agent:updated"),
-  t.literal("commit:completed"),
-  t.literal("commit:created"),
-  t.literal("commit:updated"),
-  t.literal("document:created"),
-  t.literal("document:deleted"),
-  t.literal("document:updated"),
-  t.literal("file:created"),
-  t.literal("file:deleted"),
-  t.literal("file:updated"),
-  t.literal("job:completed"),
-  t.literal("job:created"),
-  t.literal("job:deleted"),
-  t.literal("job:failed"),
-  t.literal("job:outcome-acknowledged"),
-  t.literal("job:ready"),
-  t.literal("job:scheduled"),
-  t.literal("job:updated"),
-  t.literal("layer:created"),
-  t.literal("records:created"),
-  t.literal("records:deleted"),
-  t.literal("records:updated"),
-  t.literal("sheet:created"),
-  t.literal("sheet:deleted"),
-  t.literal("sheet:updated"),
-  t.literal("snapshot:created"),
-  t.literal("space:created"),
-  t.literal("space:deleted"),
-  t.literal("space:updated"),
-  t.literal("workbook:created"),
-  t.literal("workbook:deleted"),
-  t.literal("workbook:updated"),
-]);
+const EventTopicC = t.union(
+  [
+    t.literal("agent:created"),
+    t.literal("agent:deleted"),
+    t.literal("agent:updated"),
+    t.literal("commit:completed"),
+    t.literal("commit:created"),
+    t.literal("commit:updated"),
+    t.literal("document:created"),
+    t.literal("document:deleted"),
+    t.literal("document:updated"),
+    t.literal("file:created"),
+    t.literal("file:deleted"),
+    t.literal("file:updated"),
+    t.literal("job:completed"),
+    t.literal("job:created"),
+    t.literal("job:deleted"),
+    t.literal("job:failed"),
+    t.literal("job:outcome-acknowledged"),
+    t.literal("job:ready"),
+    t.literal("job:scheduled"),
+    t.literal("job:updated"),
+    t.literal("layer:created"),
+    t.literal("records:created"),
+    t.literal("records:deleted"),
+    t.literal("records:updated"),
+    t.literal("sheet:created"),
+    t.literal("sheet:deleted"),
+    t.literal("sheet:updated"),
+    t.literal("snapshot:created"),
+    t.literal("space:created"),
+    t.literal("space:deleted"),
+    t.literal("space:updated"),
+    t.literal("workbook:created"),
+    t.literal("workbook:deleted"),
+    t.literal("workbook:updated"),
+  ],
+  "EventTopicC",
+);
 
 export interface AgentId extends Newtype<{ readonly AgentId: unique symbol }, string> {}
 
 export const isoAgentId: Iso<AgentId, string> = iso<AgentId>();
 
-export const AgentIdC = new t.Type<AgentId>(
+export const AgentIdFromString = new t.Type<AgentId>(
   "AgentIdFromString",
   (input: unknown): input is AgentId => {
     return Str.isString(input) && /^us_ag_\w{8}$/g.test(input);
@@ -75,12 +78,15 @@ export const AgentIdC = new t.Type<AgentId>(
   t.identity,
 );
 
-export const AgentC = t.type({
-  id: AgentIdC,
-  compiler: t.literal("js"),
-  source: t.string,
-  topics: t.array(EventTopicC),
-});
+export const AgentC = t.type(
+  {
+    id: AgentIdFromString,
+    compiler: t.literal("js"),
+    source: t.string,
+    topics: t.array(EventTopicC),
+  },
+  "AgentC",
+);
 
 // ==================
 //       Types

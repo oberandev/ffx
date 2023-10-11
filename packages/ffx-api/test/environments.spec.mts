@@ -8,11 +8,11 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import {
-  AccountIdC,
+  AccountIdFromString,
   Environment,
   EnvironmentC,
   EnvironmentId,
-  EnvironmentIdC,
+  EnvironmentIdFromString,
   isoAccountId,
   isoEnvironmentId,
 } from "../src/lib/environments.mjs";
@@ -44,13 +44,13 @@ describe("environments", () => {
     it("EnvironmentId", () => {
       const encoded = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
 
-      expect(EnvironmentIdC.is(encoded)).toBe(true);
+      expect(EnvironmentIdFromString.is(encoded)).toBe(true);
     });
 
     it("AccountId", () => {
       const encoded = isoAccountId.wrap(`us_acc_${randomId()()}`);
 
-      expect(AccountIdC.is(encoded)).toBe(true);
+      expect(AccountIdFromString.is(encoded)).toBe(true);
     });
   });
 

@@ -27,7 +27,7 @@ export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique 
 
 export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
 
-export const EnvironmentIdC = new t.Type<EnvironmentId>(
+export const EnvironmentIdFromString = new t.Type<EnvironmentId>(
   "EnvironmentIdFromString",
   (input: unknown): input is EnvironmentId => {
     return Str.isString(input) && /^us_env_\w{8}$/g.test(input);
@@ -44,7 +44,7 @@ export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }
 
 export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
 
-export const AccountIdC = new t.Type<AccountId>(
+export const AccountIdFromString = new t.Type<AccountId>(
   "AccountIdFromString",
   (input: unknown): input is AccountId => {
     return Str.isString(input) && /^us_acc_\w{8}$/g.test(input);
@@ -57,21 +57,24 @@ export const AccountIdC = new t.Type<AccountId>(
   t.identity,
 );
 
-export const EnvironmentC = t.intersection([
-  t.type({
-    id: EnvironmentIdC,
-    accountId: AccountIdC,
-    features: t.UnknownRecord,
-    guestAuthentication: t.array(AuthLinkC),
-    isProd: t.boolean,
-    metadata: t.UnknownRecord,
-    name: t.string,
-  }),
-  t.partial({
-    namespaces: t.array(t.string),
-    translationsPath: t.string,
-  }),
-]);
+export const EnvironmentC = t.intersection(
+  [
+    t.type({
+      id: EnvironmentIdFromString,
+      accountId: AccountIdFromString,
+      features: t.UnknownRecord,
+      guestAuthentication: t.array(AuthLinkC),
+      isProd: t.boolean,
+      metadata: t.UnknownRecord,
+      name: t.string,
+    }),
+    t.partial({
+      namespaces: t.array(t.string),
+      translationsPath: t.string,
+    }),
+  ],
+  "EnvironmentC",
+);
 
 // ==================
 //       Types

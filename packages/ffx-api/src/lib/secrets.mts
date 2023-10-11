@@ -8,8 +8,8 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { SpaceId, SpaceIdC } from "./documents.mjs";
-import { EnvironmentId, EnvironmentIdC } from "./environments.mjs";
+import { SpaceId, SpaceIdFromString } from "./documents.mjs";
+import { EnvironmentId, EnvironmentIdFromString } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -27,7 +27,7 @@ export interface SecretId extends Newtype<{ readonly SecretId: unique symbol }, 
 
 export const isoSecretId: Iso<SecretId, string> = iso<SecretId>();
 
-export const SecretIdC = new t.Type<SecretId>(
+export const SecretIdFromString = new t.Type<SecretId>(
   "SecretIdFromString",
   (input: unknown): input is SecretId => {
     return Str.isString(input) && /^us_sec_\w{8}$/g.test(input);
@@ -40,17 +40,20 @@ export const SecretIdC = new t.Type<SecretId>(
   t.identity,
 );
 
-export const SecretC = t.intersection([
-  t.type({
-    id: SecretIdC,
-    environmentId: EnvironmentIdC,
-    name: t.string,
-    value: t.string,
-  }),
-  t.partial({
-    spaceId: SpaceIdC,
-  }),
-]);
+export const SecretC = t.intersection(
+  [
+    t.type({
+      id: SecretIdFromString,
+      environmentId: EnvironmentIdFromString,
+      name: t.string,
+      value: t.string,
+    }),
+    t.partial({
+      spaceId: SpaceIdFromString,
+    }),
+  ],
+  "SecretC",
+);
 
 // ==================
 //       Types

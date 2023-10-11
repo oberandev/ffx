@@ -10,8 +10,8 @@ import mkApiClient from "../src/index.mjs";
 import {
   Document,
   DocumentC,
-  DocumentIdC,
-  SpaceIdC,
+  DocumentIdFromString,
+  SpaceIdFromString,
   isoDocumentId,
   isoSpaceId,
 } from "../src/lib/documents.mjs";
@@ -43,13 +43,13 @@ describe("documents", () => {
     it("DocumentId", () => {
       const encoded = isoDocumentId.wrap(`us_dc_${randomId()()}`);
 
-      expect(DocumentIdC.is(encoded)).toBe(true);
+      expect(DocumentIdFromString.is(encoded)).toBe(true);
     });
 
     it("SpaceId", () => {
       const encoded = isoSpaceId.wrap(`us_sp_${randomId()()}`);
 
-      expect(SpaceIdC.is(encoded)).toBe(true);
+      expect(SpaceIdFromString.is(encoded)).toBe(true);
     });
   });
 

@@ -8,7 +8,7 @@ import { match } from "ts-pattern";
 
 import mkApiClient, { isoSpaceId } from "../src/index.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { Secret, SecretC, SecretId, SecretIdC, isoSecretId } from "../src/lib/secrets.mjs";
+import { Secret, SecretC, SecretId, SecretIdFromString, isoSecretId } from "../src/lib/secrets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -35,7 +35,7 @@ describe("documents", () => {
     it("SecretId", () => {
       const encoded: SecretId = isoSecretId.wrap(`us_sec_${randomId()()}`);
 
-      expect(SecretIdC.is(encoded)).toBe(true);
+      expect(SecretIdFromString.is(encoded)).toBe(true);
     });
   });
 

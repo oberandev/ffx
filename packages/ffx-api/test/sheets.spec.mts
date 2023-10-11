@@ -8,7 +8,7 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { Sheet, SheetC, SheetIdC, Sheets, isoSheetId } from "../src/lib/sheets.mjs";
+import { Sheet, SheetC, SheetIdFromString, Sheets, isoSheetId } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -110,7 +110,7 @@ describe("sheets", () => {
     it("SheetId", () => {
       const encoded = isoSheetId.wrap(`us_sh_${randomId()()}`);
 
-      expect(SheetIdC.is(encoded)).toBe(true);
+      expect(SheetIdFromString.is(encoded)).toBe(true);
     });
   });
 

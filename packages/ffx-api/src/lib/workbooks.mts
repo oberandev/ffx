@@ -8,8 +8,8 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { SpaceIdC } from "./documents.mjs";
-import { EnvironmentIdC } from "./environments.mjs";
+import { SpaceIdFromString } from "./documents.mjs";
+import { EnvironmentIdFromString } from "./environments.mjs";
 import { CustomActionC, SheetC } from "./sheets.mjs";
 import {
   ApiReader,
@@ -28,7 +28,7 @@ export interface WorkbookId extends Newtype<{ readonly WorkbookId: unique symbol
 
 export const isoWorkbookId: Iso<WorkbookId, string> = iso<WorkbookId>();
 
-export const WorkbookIdC = new t.Type<WorkbookId>(
+export const WorkbookIdFromString = new t.Type<WorkbookId>(
   "WorkbookIdFromString",
   (input: unknown): input is WorkbookId => {
     return Str.isString(input) && /^us_wb_\w{8}$/g.test(input);
@@ -41,23 +41,26 @@ export const WorkbookIdC = new t.Type<WorkbookId>(
   t.identity,
 );
 
-export const WorkbookC = t.intersection([
-  t.type({
-    id: WorkbookIdC,
-    createdAt: t.string,
-    environmentId: EnvironmentIdC,
-    name: t.string,
-    spaceId: SpaceIdC,
-    updatedAt: t.string,
-  }),
-  t.partial({
-    actions: t.array(CustomActionC),
-    labels: t.array(t.string),
-    metadata: t.UnknownRecord,
-    namespace: t.string,
-    sheets: t.array(SheetC),
-  }),
-]);
+export const WorkbookC = t.intersection(
+  [
+    t.type({
+      id: WorkbookIdFromString,
+      createdAt: t.string,
+      environmentId: EnvironmentIdFromString,
+      name: t.string,
+      spaceId: SpaceIdFromString,
+      updatedAt: t.string,
+    }),
+    t.partial({
+      actions: t.array(CustomActionC),
+      labels: t.array(t.string),
+      metadata: t.UnknownRecord,
+      namespace: t.string,
+      sheets: t.array(SheetC),
+    }),
+  ],
+  "WorkbookC",
+);
 
 // ==================
 //       Types

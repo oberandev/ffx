@@ -12,7 +12,7 @@ import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 import {
   Workbook,
   WorkbookC,
-  WorkbookIdC,
+  WorkbookIdFromString,
   Workbooks,
   isoWorkbookId,
 } from "../src/lib/workbooks.mjs";
@@ -48,7 +48,7 @@ describe("sheets", () => {
     it("WorkbookId", () => {
       const encoded = isoWorkbookId.wrap(`us_wb_${randomId()()}`);
 
-      expect(WorkbookIdC.is(encoded)).toBe(true);
+      expect(WorkbookIdFromString.is(encoded)).toBe(true);
     });
   });
 

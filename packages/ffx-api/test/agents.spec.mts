@@ -7,7 +7,7 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Agent, AgentC, AgentIdC, Agents, isoAgentId } from "../src/lib/agents.mjs";
+import { Agent, AgentC, AgentIdFromString, Agents, isoAgentId } from "../src/lib/agents.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
@@ -34,7 +34,7 @@ describe("agents", () => {
     it("AgentId", () => {
       const encoded = isoAgentId.wrap(`us_ag_${randomId()()}`);
 
-      expect(AgentIdC.is(encoded)).toBe(true);
+      expect(AgentIdFromString.is(encoded)).toBe(true);
     });
   });
 
