@@ -7,34 +7,110 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Agent, AgentC, AgentIdC, Agents, isoAgentId } from "../src/lib/agents.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
+import { Sheet, SheetC, SheetIdC, Sheets, isoSheetId } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
 }
 
-function _mkMockAgent(): IO.IO<Agent> {
+function _mkMockSheet(): IO.IO<Sheet> {
   return IO.of({
-    id: isoAgentId.wrap(`us_ag_${randomId()()}`),
-    compiler: "js",
-    source: faker.lorem.paragraphs(2),
-    topics: ["agent:created"],
+    id: isoSheetId.wrap(`us_sh_${randomId()()}`),
+    config: {
+      access: faker.helpers.arrayElements(["*", "add", "delete", "edit", "import"]),
+      actions: [
+        {
+          confirm: faker.helpers.arrayElement([false, true]),
+          description: faker.lorem.words(3),
+          icon: faker.lorem.word(),
+          inputForm: {
+            fields: [
+              {
+                config: {
+                  options: {
+                    color: faker.lorem.word(),
+                    description: faker.lorem.words(3),
+                    icon: faker.lorem.word(),
+                    label: faker.lorem.word(),
+                    meta: {},
+                    value: faker.helpers.arrayElement([
+                      faker.helpers.arrayElement([false, true]),
+                      faker.number.int(),
+                      faker.lorem.word(),
+                    ]),
+                  },
+                },
+                constraints: [{ type: "required" }],
+                description: faker.lorem.words(3),
+                key: faker.lorem.word(),
+                label: faker.lorem.word(),
+                type: faker.helpers.arrayElement([
+                  "boolean",
+                  "enum",
+                  "number",
+                  "string",
+                  "textarea",
+                ]),
+              },
+            ],
+            type: "simple",
+          },
+          label: faker.lorem.word(),
+          mode: faker.helpers.arrayElement(["background", "foreground"]),
+          operation: faker.lorem.word(),
+          primary: faker.helpers.arrayElement([false, true]),
+          requireAllValid: faker.helpers.arrayElement([false, true]),
+          requireSelection: faker.helpers.arrayElement([false, true]),
+          schedule: faker.helpers.arrayElement(["daily", "hourly", "weekly"]),
+          tooltip: faker.lorem.word(),
+        },
+      ],
+      allowAdditionalFields: faker.helpers.arrayElement([false, true]),
+      description: faker.lorem.words(3),
+      fields: [
+        {
+          constraints: [{ type: "required" }],
+          description: faker.lorem.words(3),
+          key: faker.lorem.word(),
+          label: faker.lorem.word(),
+          metadata: {},
+          readonly: faker.helpers.arrayElement([false, true]),
+          treatments: [faker.lorem.word()],
+          type: faker.lorem.word(),
+        },
+      ],
+      metadata: {},
+      name: faker.lorem.word(),
+      readonly: faker.helpers.arrayElement([false, true]),
+      slug: faker.lorem.word(),
+    },
+    countRecords: {
+      error: faker.number.int({ min: 0 }),
+      errorsByField: {},
+      total: faker.number.int({ min: 0 }),
+      valid: faker.number.int({ min: 0 }),
+    },
+    createdAt: faker.date.past().toISOString(),
+    name: faker.lorem.word(),
+    namespace: faker.lorem.word(),
+    updatedAt: faker.date.past().toISOString(),
+    workbookId: `us_wb_${randomId()()}`,
   });
 }
 
-describe("agents", () => {
+describe("sheets", () => {
   describe("[Codecs]", () => {
-    it("Agent", () => {
-      const decoded = pipe(_mkMockAgent()(), AgentC.decode);
+    it("Sheet", () => {
+      const decoded = pipe(_mkMockSheet()(), SheetC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
 
-    it("AgentId", () => {
-      const encoded = isoAgentId.wrap(`us_ag_${randomId()()}`);
+    it("SheetId", () => {
+      const encoded = isoSheetId.wrap(`us_sh_${randomId()()}`);
 
-      expect(AgentIdC.is(encoded)).toBe(true);
+      expect(SheetIdC.is(encoded)).toBe(true);
     });
   });
 
@@ -44,12 +120,12 @@ describe("agents", () => {
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 
-    it("should handle failure when creating an Agent", async () => {
+    it("should handle failure when deleting a Sheet", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
+        rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -68,7 +144,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.create(mockAgent);
+      const resp = await client.sheets.delete(mockSheet.id);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -78,104 +154,12 @@ describe("agents", () => {
       server.close();
     });
 
-    it("should handle decoder errors when creating an Agent", async () => {
+    it("should handle decoder errors when deleting a Sheet", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              ...mockAgent,
-              id: "bogus_agent_id",
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.agents.create(mockAgent);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting AgentId at id but instead got: "bogus_agent_id"`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully creating an Agent", async () => {
-      // setup
-      const mockAgent: Agent = _mkMockAgent()();
-
-      const restHandlers = [
-        rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json(mockAgent));
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.agents.create(mockAgent);
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockAgent))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle failure when deleting an Agent", async () => {
-      // setup
-      const mockAgent: Agent = _mkMockAgent()();
-
-      const restHandlers = [
-        rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.agents.delete(mockAgent.id);
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when deleting an Agent", async () => {
-      // setup
-      const mockAgent: Agent = _mkMockAgent()();
-
-      const restHandlers = [
-        rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+        rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -191,7 +175,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.delete(mockAgent.id);
+      const resp = await client.sheets.delete(mockSheet.id);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -203,12 +187,12 @@ describe("agents", () => {
       server.close();
     });
 
-    it("should handle successfully deleting an Agent", async () => {
+    it("should handle successfully deleting a Sheet", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+        rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -224,7 +208,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.delete(mockAgent.id);
+      const resp = await client.sheets.delete(mockSheet.id);
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
@@ -234,12 +218,12 @@ describe("agents", () => {
       server.close();
     });
 
-    it("should handle failure when fetching an Agent", async () => {
+    it("should handle failure when fetching a Sheet", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -258,7 +242,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.get(mockAgent.id);
+      const resp = await client.sheets.get(mockSheet.id);
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -268,18 +252,18 @@ describe("agents", () => {
       server.close();
     });
 
-    it("should handle decoder errors when fetching an Agent", async () => {
+    it("should handle decoder errors when fetching a Sheet", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
               data: {
-                ...mockAgent,
-                compiler: "ts",
+                ...mockSheet,
+                id: null,
               },
             }),
           );
@@ -290,11 +274,11 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.get(mockAgent.id);
+      const resp = await client.sheets.get(mockSheet.id);
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting "js" at compiler but instead got: "ts"`]),
+          expect(reasons).toStrictEqual([`Expecting SheetId at 0.id but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -302,16 +286,16 @@ describe("agents", () => {
       server.close();
     });
 
-    it("should handle successfully fetching an Agent", async () => {
+    it("should handle successfully fetching a Sheet", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
-              data: mockAgent,
+              data: mockSheet,
             }),
           );
         }),
@@ -321,20 +305,20 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.get(mockAgent.id);
+      const resp = await client.sheets.get(mockSheet.id);
 
       match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockAgent))
+        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheet))
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown
       server.close();
     });
 
-    it("should handle failure when fetching all Agents", async () => {
+    it("should handle failure when fetching all Sheets", async () => {
       // setup
       const restHandlers = [
-        rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -353,7 +337,7 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.list();
+      const resp = await client.sheets.list();
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -363,16 +347,16 @@ describe("agents", () => {
       server.close();
     });
 
-    it("should handle decoder errors when fetching all Agents", async () => {
+    it("should handle decoder errors when fetching all Sheets", async () => {
       // setup
-      const mockAgent: Agent = _mkMockAgent()();
+      const mockSheet: Sheet = _mkMockSheet()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
-              data: [{ ...mockAgent, source: null }],
+              data: [{ ...mockSheet, id: null }],
             }),
           );
         }),
@@ -382,11 +366,11 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.list();
+      const resp = await client.sheets.list();
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual(["Expecting string at 0.source but instead got: null"]),
+          expect(reasons).toStrictEqual(["Expecting SheetId at 0.0.id but instead got: null"]),
         )
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
@@ -394,16 +378,16 @@ describe("agents", () => {
       server.close();
     });
 
-    it("should handle successfully fetching all Agents", async () => {
+    it("should handle successfully fetching all Sheets", async () => {
       // setup
-      const mockAgents: Agents = Array.from({ length: 2 }, () => _mkMockAgent()());
+      const mockSheets: Sheets = Array.from({ length: 2 }, () => _mkMockSheet()());
 
       const restHandlers = [
-        rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
+        rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
-              data: mockAgents,
+              data: mockSheets,
             }),
           );
         }),
@@ -413,10 +397,10 @@ describe("agents", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.agents.list();
+      const resp = await client.sheets.list();
 
       match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockAgents))
+        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheets))
         .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
       // teardown

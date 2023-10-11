@@ -7,7 +7,15 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { Environment, EnvironmentCodec } from "../src/lib/environments.mjs";
+import {
+  AccountIdC,
+  Environment,
+  EnvironmentC,
+  EnvironmentId,
+  EnvironmentIdC,
+  isoAccountId,
+  isoEnvironmentId,
+} from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -15,8 +23,8 @@ function randomId(): IO.IO<string> {
 
 function _mkMockEnvironment(): IO.IO<Environment> {
   return IO.of({
-    id: `us_env${randomId()()}`,
-    accountId: `us_act${randomId()()}`,
+    id: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
+    accountId: isoAccountId.wrap(`us_acc_${randomId()()}`),
     features: {},
     guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
     isProd: faker.helpers.arrayElement([false, true]),
@@ -26,17 +34,29 @@ function _mkMockEnvironment(): IO.IO<Environment> {
 }
 
 describe("environments", () => {
-  describe("[Decoders]", () => {
+  describe("[Codecs]", () => {
     it("Environment", () => {
-      const decoded = pipe(_mkMockEnvironment()(), EnvironmentCodec.decode);
+      const decoded = pipe(_mkMockEnvironment()(), EnvironmentC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
+    });
+
+    it("EnvironmentId", () => {
+      const encoded = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
+
+      expect(EnvironmentIdC.is(encoded)).toBe(true);
+    });
+
+    it("AccountId", () => {
+      const encoded = isoAccountId.wrap(`us_acc_${randomId()()}`);
+
+      expect(AccountIdC.is(encoded)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: string = "environmentId";
+    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 
@@ -116,7 +136,7 @@ describe("environments", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting EnvironmentId at 0.id but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -304,7 +324,7 @@ describe("environments", () => {
             ctx.json({
               data: {
                 ...mockEnvironment,
-                id: null,
+                accountId: null,
               },
             }),
           );
@@ -319,7 +339,9 @@ describe("environments", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting AccountId at 0.accountId but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -416,7 +438,9 @@ describe("environments", () => {
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([
+            `Expecting EnvironmentId at 0.0.id but instead got: null`,
+          ]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -477,7 +501,14 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.environments.update(mockEnvironment.id, {
+        guestAuthentication: mockEnvironment.guestAuthentication,
+        isProd: mockEnvironment.isProd,
+        metadata: mockEnvironment.metadata,
+        name: mockEnvironment.name,
+        namespaces: mockEnvironment.namespaces,
+        translationsPath: mockEnvironment.translationsPath,
+      });
 
       match(resp)
         .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -509,11 +540,18 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.environments.update(mockEnvironment.id, {
+        guestAuthentication: mockEnvironment.guestAuthentication,
+        isProd: mockEnvironment.isProd,
+        metadata: mockEnvironment.metadata,
+        name: mockEnvironment.name,
+        namespaces: mockEnvironment.namespaces,
+        translationsPath: mockEnvironment.translationsPath,
+      });
 
       match(resp)
         .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.id but instead got: null`]),
+          expect(reasons).toStrictEqual([`Expecting EnvironmentId at 0.id but instead got: null`]),
         )
         .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
@@ -540,7 +578,14 @@ describe("environments", () => {
       server.listen({ onUnhandledRequest: "error" });
 
       // test
-      const resp = await client.environments.update(mockEnvironment);
+      const resp = await client.environments.update(mockEnvironment.id, {
+        guestAuthentication: mockEnvironment.guestAuthentication,
+        isProd: mockEnvironment.isProd,
+        metadata: mockEnvironment.metadata,
+        name: mockEnvironment.name,
+        namespaces: mockEnvironment.namespaces,
+        translationsPath: mockEnvironment.translationsPath,
+      });
 
       match(resp)
         .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))

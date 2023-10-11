@@ -2,8 +2,11 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { Iso } from "monocle-ts";
+import { Newtype, iso } from "newtype-ts";
 
 import {
   ApiReader,
@@ -18,7 +21,7 @@ import {
 //   Runtime codecs
 // ==================
 
-const EventTopicCodec = t.union([
+const EventTopicC = t.union([
   t.literal("agent:created"),
   t.literal("agent:deleted"),
   t.literal("agent:updated"),
@@ -55,21 +58,42 @@ const EventTopicCodec = t.union([
   t.literal("workbook:updated"),
 ]);
 
-export const AgentCodec = t.type({
-  id: t.string,
+export interface AgentId extends Newtype<{ readonly AgentId: unique symbol }, string> {}
+
+export const isoAgentId: Iso<AgentId, string> = iso<AgentId>();
+
+export const AgentIdC = new t.Type<AgentId>(
+  "AgentIdFromString",
+  (input: unknown): input is AgentId => {
+    return Str.isString(input) && /^us_ag_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_ag_\w{8}$/g.test(input)
+      ? t.success(isoAgentId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+export const AgentC = t.type({
+  id: AgentIdC,
   compiler: t.literal("js"),
   source: t.string,
-  topics: t.array(EventTopicCodec),
+  topics: t.array(EventTopicC),
 });
 
 // ==================
 //       Types
 // ==================
 
-export type EventTopic = Readonly<t.TypeOf<typeof EventTopicCodec>>;
-export type Agent = Readonly<t.TypeOf<typeof AgentCodec>>;
+export type Agent = Readonly<t.TypeOf<typeof AgentC>>;
 export type Agents = ReadonlyArray<Agent>;
+export type EventTopic = Readonly<t.TypeOf<typeof EventTopicC>>;
 export type CreateAgentInput = Omit<Agent, "id">;
+
+// ==================
+//       Main
+// ==================
 
 /**
  * Create an `Agent`.
@@ -99,7 +123,7 @@ export function createAgent(
       );
     }),
     RTE.map((resp) => resp.data),
-    RTE.chain(decodeWith(AgentCodec)),
+    RTE.chain(decodeWith(AgentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -110,7 +134,7 @@ export function createAgent(
  * @since 0.1.0
  */
 export function deleteAgent(
-  agentId: string,
+  agentId: AgentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -143,7 +167,7 @@ export function deleteAgent(
  * @since 0.1.0
  */
 export function getAgent(
-  agentId: string,
+  agentId: AgentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Agent>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -165,7 +189,7 @@ export function getAgent(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(AgentCodec)),
+    RTE.chain(decodeWith(AgentC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
@@ -199,7 +223,7 @@ export function listAgents(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(AgentCodec))),
+    RTE.chain(decodeWith(t.array(AgentC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
