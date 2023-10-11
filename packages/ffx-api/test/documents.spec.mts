@@ -55,7 +55,7 @@ describe("documents", () => {
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
+    const environmentId: EnvironmentId = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

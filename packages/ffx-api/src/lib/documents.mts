@@ -77,6 +77,10 @@ export type Documents = ReadonlyArray<Document>;
 export type CreateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
 export type UpdateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
 
+// ==================
+//       Main
+// ==================
+
 /**
  * Create a `Document`.
  *

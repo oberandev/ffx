@@ -90,6 +90,10 @@ export type Agents = ReadonlyArray<Agent>;
 export type EventTopic = Readonly<t.TypeOf<typeof codecEventTopic>>;
 export type CreateAgentInput = Omit<Agent, "id">;
 
+// ==================
+//       Main
+// ==================
+
 /**
  * Create an `Agent`.
  *
