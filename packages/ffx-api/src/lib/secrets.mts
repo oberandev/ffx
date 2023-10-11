@@ -2,13 +2,14 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { codecSpaceId, SpaceId } from "./documents.mjs";
-import { codecEnvironmentId, EnvironmentId } from "./environments.mjs";
+import { SpaceId, codecSpaceId } from "./documents.mjs";
+import { EnvironmentId, codecEnvironmentId } from "./environments.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -27,12 +28,12 @@ export interface SecretId extends Newtype<{ readonly SecretId: unique symbol }, 
 export const isoSecretId: Iso<SecretId, string> = iso<SecretId>();
 
 export const codecSecretId = new t.Type<SecretId>(
-  "SecretId",
+  "SecretIdFromString",
   (input: unknown): input is SecretId => {
-    return typeof input === "string" && /^us_sec_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_sec_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_sec_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_sec_\w{8}$/g.test(input)
       ? t.success(isoSecretId.wrap(input))
       : t.failure(input, context);
   },

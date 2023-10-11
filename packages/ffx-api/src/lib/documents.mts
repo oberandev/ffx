@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { Iso } from "monocle-ts";
@@ -26,12 +27,12 @@ export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol
 export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
 
 export const codecDocumentId = new t.Type<DocumentId>(
-  "DocumentId",
+  "DocumentIdFromString",
   (input: unknown): input is DocumentId => {
-    return typeof input === "string" && /^us_dc_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_dc_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_dc_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_dc_\w{8}$/g.test(input)
       ? t.success(isoDocumentId.wrap(input))
       : t.failure(input, context);
   },
@@ -43,12 +44,12 @@ export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, st
 export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
 
 export const codecSpaceId = new t.Type<SpaceId>(
-  "SpaceId",
+  "SpaceIdFromString",
   (input: unknown): input is SpaceId => {
-    return typeof input === "string" && /^us_sp_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_sp_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input)
       ? t.success(isoSpaceId.wrap(input))
       : t.failure(input, context);
   },

@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { Iso } from "monocle-ts";
@@ -126,12 +127,12 @@ export interface SheetId extends Newtype<{ readonly SheetId: unique symbol }, st
 export const isoSheetId: Iso<SheetId, string> = iso<SheetId>();
 
 export const codecSheetId = new t.Type<SheetId>(
-  "SheetId",
+  "SheetIdFromString",
   (input: unknown): input is SheetId => {
-    return typeof input === "string" && /^us_sh_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_sh_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_sh_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_sh_\w{8}$/g.test(input)
       ? t.success(isoSheetId.wrap(input))
       : t.failure(input, context);
   },

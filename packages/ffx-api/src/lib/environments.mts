@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
+import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { Iso } from "monocle-ts";
@@ -27,12 +28,12 @@ export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique 
 export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
 
 export const codecEnvironmentId = new t.Type<EnvironmentId>(
-  "EnvironmentId",
+  "EnvironmentIdFromString",
   (input: unknown): input is EnvironmentId => {
-    return typeof input === "string" && /^us_env_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_env_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_env_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_env_\w{8}$/g.test(input)
       ? t.success(isoEnvironmentId.wrap(input))
       : t.failure(input, context);
   },
@@ -44,12 +45,12 @@ export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }
 export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
 
 export const codecAccountId = new t.Type<AccountId>(
-  "AccountId",
+  "AccountIdFromString",
   (input: unknown): input is AccountId => {
-    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input);
+    return Str.isString(input) && /^us_acc_\w{8}$/g.test(input);
   },
   (input, context) => {
-    return typeof input === "string" && /^us_acc_\w{8}$/g.test(input)
+    return Str.isString(input) && /^us_acc_\w{8}$/g.test(input)
       ? t.success(isoAccountId.wrap(input))
       : t.failure(input, context);
   },
