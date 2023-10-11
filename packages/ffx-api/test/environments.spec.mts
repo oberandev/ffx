@@ -11,6 +11,7 @@ import {
   AccountIdCodec,
   Environment,
   EnvironmentCodec,
+  EnvironmentId,
   EnvironmentIdCodec,
 } from "../src/lib/environments.mjs";
 
@@ -53,7 +54,7 @@ describe("environments", () => {
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: string = "environmentId";
+    const environmentId: EnvironmentId = "environmentId";
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

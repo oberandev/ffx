@@ -8,7 +8,7 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import { SpaceIdCodec } from "../src/lib/documents.mjs";
-import { EnvironmentIdCodec } from "../src/lib/environments.mjs";
+import { EnvironmentId, EnvironmentIdCodec } from "../src/lib/environments.mjs";
 import {
   CreateWorkbookInput,
   Workbook,
@@ -54,7 +54,7 @@ describe("sheets", () => {
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: string = "environmentId";
+    const environmentId: EnvironmentId = "environmentId";
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

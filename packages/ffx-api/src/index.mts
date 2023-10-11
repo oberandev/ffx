@@ -122,7 +122,7 @@ interface ApiClient {
   };
 }
 
-export default function mkApiClient(secret: string, environmentId: string): ApiClient {
+export default function mkApiClient(secret: string, environmentId: EnvironmentId): ApiClient {
   const reader: ApiReader = {
     baseUrl: "https://platform.flatfile.com/api/v1",
     environmentId,

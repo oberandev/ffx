@@ -8,7 +8,7 @@ import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
 import { Document, DocumentCodec, DocumentIdCodec, SpaceIdCodec } from "../src/lib/documents.mjs";
-import { EnvironmentIdCodec } from "../src/lib/environments.mjs";
+import { EnvironmentId, EnvironmentIdCodec } from "../src/lib/environments.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -47,7 +47,7 @@ describe("documents", () => {
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: string = "environmentId";
+    const environmentId: EnvironmentId = "environmentId";
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 

@@ -60,7 +60,6 @@ export const DocumentCodec = t.strict({
 export type Document = Readonly<t.TypeOf<typeof DocumentCodec>>;
 export type DocumentId = t.TypeOf<typeof DocumentIdCodec>;
 export type Documents = ReadonlyArray<Document>;
-export type EnvironmentId = t.TypeOf<typeof EnvironmentIdCodec>;
 export type SpaceId = t.TypeOf<typeof SpaceIdCodec>;
 export type CreateDocumentInput = Pick<Document, "body" | "spaceId" | "title">;
 export type DeleteDocumentInput = Pick<Document, "id" | "spaceId">;

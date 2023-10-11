@@ -7,6 +7,7 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
+import { EnvironmentId } from "../src/lib/environments.mjs";
 import { CreateSheetInput, Sheet, Sheets, SheetCodec, SheetIdCodec } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
@@ -115,7 +116,7 @@ describe("sheets", () => {
 
   describe("[Mocks]", () => {
     const secret: string = "secret";
-    const environmentId: string = "environmentId";
+    const environmentId: EnvironmentId = "environmentId";
     const client = mkApiClient(secret, environmentId);
     const baseUrl: string = "https://platform.flatfile.com/api/v1";
 
