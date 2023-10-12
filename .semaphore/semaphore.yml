@@ -60,4 +60,4 @@ blocks:
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
             - pnpm nx affected -t test --base=main --head=HEAD
-            - ./codecov sha=$SEMAPHORE_GIT_PR_SHA
+            - ./codecov -C ${SEMAPHORE_GIT_PR_SHA}
