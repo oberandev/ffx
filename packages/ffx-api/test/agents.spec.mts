@@ -6,17 +6,13 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient from "../src/index.mjs";
-import { Agent, AgentC, AgentIdFromString, Agents, isoAgentId } from "../src/lib/agents.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
+import { baseUrl, client, mkAgentId } from "./helpers.mjs";
+import { Agent, AgentC, Agents } from "../src/lib/agents.mjs";
+import { AgentIdFromString } from "../src/lib/ids.mjs";
 
 function _mkMockAgent(): IO.IO<Agent> {
   return IO.of({
-    id: isoAgentId.wrap(`us_ag_${randomId()()}`),
+    id: mkAgentId()(),
     compiler: "js",
     source: faker.lorem.paragraphs(2),
     topics: ["agent:created"],
@@ -32,18 +28,13 @@ describe("agents", () => {
     });
 
     it("AgentId", () => {
-      const encoded = isoAgentId.wrap(`us_ag_${randomId()()}`);
+      const brandedT = mkAgentId()();
 
-      expect(AgentIdFromString.is(encoded)).toBe(true);
+      expect(AgentIdFromString.is(brandedT)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
     it("should handle failure when creating an Agent", async () => {
       // setup
       const mockAgent: Agent = _mkMockAgent()();

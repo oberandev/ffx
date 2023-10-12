@@ -6,27 +6,16 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient from "../src/index.mjs";
-import {
-  Document,
-  DocumentC,
-  DocumentIdFromString,
-  SpaceIdFromString,
-  isoDocumentId,
-  isoSpaceId,
-} from "../src/lib/documents.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
+import { baseUrl, client, mkDocumentId, mkEnvironmentId, mkSpaceId } from "./helpers.mjs";
+import { Document, DocumentC } from "../src/lib/documents.mjs";
+import { DocumentIdFromString, SpaceIdFromString } from "../src/lib/ids.mjs";
 
 function _mkMockDocument(): IO.IO<Document> {
   return IO.of({
-    id: isoDocumentId.wrap(`us_dc_${randomId()()}`),
+    id: mkDocumentId()(),
     body: faker.lorem.paragraphs(2),
-    environmentId: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
-    spaceId: isoSpaceId.wrap(`us_sp_${randomId()()}`),
+    environmentId: mkEnvironmentId()(),
+    spaceId: mkSpaceId()(),
     title: faker.lorem.words(2),
     treatments: [faker.lorem.word()],
   });
@@ -41,24 +30,19 @@ describe("documents", () => {
     });
 
     it("DocumentId", () => {
-      const encoded = isoDocumentId.wrap(`us_dc_${randomId()()}`);
+      const brandedT = mkDocumentId()();
 
-      expect(DocumentIdFromString.is(encoded)).toBe(true);
+      expect(DocumentIdFromString.is(brandedT)).toBe(true);
     });
 
     it("SpaceId", () => {
-      const encoded = isoSpaceId.wrap(`us_sp_${randomId()()}`);
+      const brandedT = mkSpaceId()();
 
-      expect(SpaceIdFromString.is(encoded)).toBe(true);
+      expect(SpaceIdFromString.is(brandedT)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
     it("should handle failure when creating a Document", async () => {
       // setup
       const mockDocument: Document = _mkMockDocument()();

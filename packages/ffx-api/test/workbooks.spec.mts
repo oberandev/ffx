@@ -6,58 +6,42 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient from "../src/index.mjs";
-import { isoSpaceId } from "../src/lib/documents.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import {
-  Workbook,
-  WorkbookC,
-  WorkbookIdFromString,
-  Workbooks,
-  isoWorkbookId,
-} from "../src/lib/workbooks.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
+import { baseUrl, client, mkEnvironmentId, mkSpaceId, mkWorkbookId } from "./helpers.mjs";
+import { WorkbookIdFromString } from "../src/lib/ids.mjs";
+import { Workbook, WorkbookC, Workbooks } from "../src/lib/workbooks.mjs";
 
 function _mkMockWorkbook(): IO.IO<Workbook> {
   return IO.of({
-    id: isoWorkbookId.wrap(`us_wb_${randomId()()}`),
+    id: mkWorkbookId()(),
     actions: [],
     createdAt: faker.date.past().toISOString(),
-    environmentId: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
+    environmentId: mkEnvironmentId()(),
     labels: [faker.lorem.word()],
     metadata: {},
     name: faker.lorem.word(),
     namespace: faker.lorem.word(),
     sheets: [],
-    spaceId: isoSpaceId.wrap(`us_sp_${randomId()()}`),
+    spaceId: mkSpaceId()(),
     updatedAt: faker.date.past().toISOString(),
   });
 }
 
-describe("sheets", () => {
+describe("workbooks", () => {
   describe("[Codecs]", () => {
-    it("Sheet", () => {
+    it("Workbook", () => {
       const decoded = pipe(_mkMockWorkbook()(), WorkbookC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
     });
 
     it("WorkbookId", () => {
-      const encoded = isoWorkbookId.wrap(`us_wb_${randomId()()}`);
+      const brandedT = mkWorkbookId()();
 
-      expect(WorkbookIdFromString.is(encoded)).toBe(true);
+      expect(WorkbookIdFromString.is(brandedT)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
     it("should handle failure when creating a Workbook", async () => {
       // setup
       const mockWorkbook: Workbook = _mkMockWorkbook()();
@@ -88,7 +72,6 @@ describe("sheets", () => {
         labels: mockWorkbook.labels,
         metadata: mockWorkbook.metadata,
         name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
         spaceId: mockWorkbook.spaceId,
       });
@@ -129,7 +112,6 @@ describe("sheets", () => {
         labels: mockWorkbook.labels,
         metadata: mockWorkbook.metadata,
         name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
         spaceId: mockWorkbook.spaceId,
       });
@@ -164,7 +146,6 @@ describe("sheets", () => {
         labels: mockWorkbook.labels,
         metadata: mockWorkbook.metadata,
         name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
         spaceId: mockWorkbook.spaceId,
       });
@@ -498,7 +479,6 @@ describe("sheets", () => {
         labels: mockWorkbook.labels,
         metadata: mockWorkbook.metadata,
         name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
         spaceId: mockWorkbook.spaceId,
       });
@@ -539,7 +519,6 @@ describe("sheets", () => {
         labels: mockWorkbook.labels,
         metadata: mockWorkbook.metadata,
         name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
         spaceId: mockWorkbook.spaceId,
       });
@@ -581,7 +560,6 @@ describe("sheets", () => {
         labels: mockWorkbook.labels,
         metadata: mockWorkbook.metadata,
         name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
         spaceId: mockWorkbook.spaceId,
       });

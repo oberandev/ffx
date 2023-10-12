@@ -6,24 +6,13 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient from "../src/index.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { SheetId, isoSheetId } from "../src/lib/sheets.mjs";
-import {
-  Version,
-  VersionC,
-  VersionId,
-  VersionIdFromString,
-  isoVersionId,
-} from "../src/lib/versions.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
+import { baseUrl, client, mkSheetId, mkVersionId } from "./helpers.mjs";
+import { SheetId, VersionId, VersionIdFromString } from "../src/lib/ids.mjs";
+import { Version, VersionC } from "../src/lib/versions.mjs";
 
 function _mkMockVersion(): IO.IO<Version> {
   return IO.of({
-    versionId: isoVersionId.wrap(`us_vr_${randomId()()}`),
+    versionId: mkVersionId()(),
   });
 }
 
@@ -36,22 +25,17 @@ describe("versions", () => {
     });
 
     it("VersionId", () => {
-      const encoded = isoVersionId.wrap(`us_vr_${randomId()()}`);
+      const brandedT = mkVersionId()();
 
-      expect(VersionIdFromString.is(encoded)).toBe(true);
+      expect(VersionIdFromString.is(brandedT)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
     it("should handle failure when creating a Version", async () => {
       // setup
-      const sheetId: SheetId = isoSheetId.wrap(`us_sh_${randomId()()}`);
-      const parentVersionId: VersionId = isoVersionId.wrap(`us_vr_${randomId()()}`);
+      const sheetId: SheetId = mkSheetId()();
+      const parentVersionId: VersionId = mkVersionId()();
 
       const restHandlers = [
         rest.post(`${baseUrl}/versions`, (_req, res, ctx) => {
@@ -85,8 +69,8 @@ describe("versions", () => {
 
     it("should handle decoder errors when creating a Version", async () => {
       // setup
-      const sheetId: SheetId = isoSheetId.wrap(`us_sh_${randomId()()}`);
-      const parentVersionId: VersionId = isoVersionId.wrap(`us_vr_${randomId()()}`);
+      const sheetId: SheetId = mkSheetId()();
+      const parentVersionId: VersionId = mkVersionId()();
 
       const restHandlers = [
         rest.post(`${baseUrl}/versions`, (_req, res, ctx) => {
@@ -121,8 +105,8 @@ describe("versions", () => {
 
     it("should handle successfully creating a Version", async () => {
       // setup
-      const sheetId: SheetId = isoSheetId.wrap(`us_sh_${randomId()()}`);
-      const parentVersionId: VersionId = isoVersionId.wrap(`us_vr_${randomId()()}`);
+      const sheetId: SheetId = mkSheetId()();
+      const parentVersionId: VersionId = mkVersionId()();
       const mockVersion: Version = _mkMockVersion()();
 
       const restHandlers = [
