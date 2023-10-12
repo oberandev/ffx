@@ -2,13 +2,10 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
-import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
-import { Iso } from "monocle-ts";
-import { Newtype, iso } from "newtype-ts";
 
-import { SheetId } from "./sheets.mjs";
+import { SheetId, VersionId, VersionIdFromString } from "./ids.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -21,23 +18,6 @@ import {
 // ==================
 //   Runtime codecs
 // ==================
-
-export interface VersionId extends Newtype<{ readonly VersionId: unique symbol }, string> {}
-
-export const isoVersionId: Iso<VersionId, string> = iso<VersionId>();
-
-export const VersionIdFromString = new t.Type<VersionId>(
-  "VersionIdFromString",
-  (input: unknown): input is VersionId => {
-    return Str.isString(input) && /^us_vr_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_vr_\w{8}$/g.test(input)
-      ? t.success(isoVersionId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
 
 export const VersionC = t.type({
   versionId: VersionIdFromString,

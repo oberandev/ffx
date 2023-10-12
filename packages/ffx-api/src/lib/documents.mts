@@ -2,13 +2,16 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
-import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
-import { Iso } from "monocle-ts";
-import { Newtype, iso } from "newtype-ts";
 
-import { EnvironmentIdFromString } from "./environments.mjs";
+import {
+  DocumentId,
+  DocumentIdFromString,
+  EnvironmentIdFromString,
+  SpaceId,
+  SpaceIdFromString,
+} from "./ids.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -22,54 +25,29 @@ import {
 //   Runtime codecs
 // ==================
 
-export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol }, string> {}
+export const DocumentC = t.intersection([
+  t.type({
+    id: DocumentIdFromString,
+    body: t.string,
+    environmentId: EnvironmentIdFromString,
+    spaceId: SpaceIdFromString,
+    title: t.string,
+  }),
+  t.partial({
+    treatments: t.array(t.string),
+  }),
+]);
 
-export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
-
-export const DocumentIdFromString = new t.Type<DocumentId>(
-  "DocumentIdFromString",
-  (input: unknown): input is DocumentId => {
-    return Str.isString(input) && /^us_dc_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_dc_\w{8}$/g.test(input)
-      ? t.success(isoDocumentId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
-
-export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, string> {}
-
-export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
-
-export const SpaceIdFromString = new t.Type<SpaceId>(
-  "SpaceIdFromString",
-  (input: unknown): input is SpaceId => {
-    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input)
-      ? t.success(isoSpaceId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
-
-export const DocumentC = t.intersection(
-  [
+const CreateDocumentInputC = t.exact(
+  t.intersection([
     t.type({
-      id: DocumentIdFromString,
       body: t.string,
-      environmentId: EnvironmentIdFromString,
-      spaceId: SpaceIdFromString,
       title: t.string,
     }),
     t.partial({
       treatments: t.array(t.string),
     }),
-  ],
-  "DocumentC",
+  ]),
 );
 
 // ==================
@@ -78,8 +56,8 @@ export const DocumentC = t.intersection(
 
 export type Document = Readonly<t.TypeOf<typeof DocumentC>>;
 export type Documents = ReadonlyArray<Document>;
-export type CreateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
-export type UpdateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
+export type CreateDocumentInput = Readonly<t.TypeOf<typeof CreateDocumentInputC>>;
+export type UpdateDocumentInput = Readonly<t.TypeOf<typeof CreateDocumentInputC>>;
 
 // ==================
 //       Main
