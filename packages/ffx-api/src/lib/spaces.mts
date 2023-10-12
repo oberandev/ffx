@@ -27,47 +27,58 @@ import {
 //   Runtime codecs
 // ==================
 
-export const SpaceC = t.intersection(
-  [
-    t.type({
-      id: SpaceIdFromString,
-      createdAt: t.string,
-      environmentId: EnvironmentIdFromString,
-      guestAuthentication: t.array(AuthLinkC),
+export const SpaceC = t.intersection([
+  t.type({
+    id: SpaceIdFromString,
+    createdAt: t.string,
+    environmentId: EnvironmentIdFromString,
+    guestAuthentication: t.array(AuthLinkC),
+    name: t.string,
+    updatedAt: t.string,
+  }),
+  t.partial({
+    access: t.array(PermissionC),
+    accessToken: t.string,
+    actions: t.array(CustomActionC),
+    archivedAt: t.string,
+    autoConfigure: t.boolean,
+    createdByUserId: UserIdFromString,
+    displayOrder: t.number,
+    filesCount: t.number,
+    guestLink: t.array(t.string),
+    isCollaborative: t.boolean,
+    labels: t.array(t.string),
+    metadata: t.UnknownRecord,
+    namespace: t.string,
+    primaryWorkbookId: WorkbookIdFromString,
+    size: t.type({
+      id: t.string,
       name: t.string,
-      updatedAt: t.string,
+      numFiles: t.number,
+      numUsers: t.number,
+      pdv: t.number,
     }),
-    t.partial({
-      access: t.array(PermissionC),
-      accessToken: t.string,
-      actions: t.array(CustomActionC),
-      archivedAt: t.string,
-      autoConfigure: t.boolean,
-      createdByUserId: UserIdFromString,
-      displayOrder: t.number,
-      filesCount: t.number,
-      guestLink: t.array(t.string),
-      isCollaborative: t.boolean,
-      labels: t.array(t.string),
-      metadata: t.UnknownRecord,
-      namespace: t.string,
-      primaryWorkbookId: WorkbookIdFromString,
-      size: t.type(
-        {
-          id: t.string,
-          name: t.string,
-          numFiles: t.number,
-          numUsers: t.number,
-          pdv: t.number,
-        },
-        "SpaceSizeC",
-      ),
-      translationsPath: t.string,
-      upgradedAt: t.string,
-      workbooksCount: t.number,
-    }),
-  ],
-  "SpaceC",
+    translationsPath: t.string,
+    upgradedAt: t.string,
+    workbooksCount: t.number,
+  }),
+]);
+
+const CreateSpaceInputC = t.exact(
+  t.partial({
+    access: t.array(PermissionC),
+    actions: t.array(CustomActionC),
+    autoConfigure: t.boolean,
+    displayOrder: t.number,
+    environmentId: EnvironmentIdFromString,
+    guestAuthentication: t.array(AuthLinkC),
+    labels: t.array(t.string),
+    metadata: t.UnknownRecord,
+    name: t.string,
+    namespace: t.string,
+    primaryWorkbookId: WorkbookIdFromString,
+    translationsPath: t.string,
+  }),
 );
 
 // ==================
@@ -76,8 +87,8 @@ export const SpaceC = t.intersection(
 
 export type Space = Readonly<t.TypeOf<typeof SpaceC>>;
 export type Spaces = ReadonlyArray<Space>;
-export type CreateSpaceInput = Partial<Omit<Space, "id">>;
-export type UpdateSpaceInput = Partial<Omit<Space, "id">>;
+export type CreateSpaceInput = Readonly<t.TypeOf<typeof CreateSpaceInputC>>;
+export type UpdateSpaceInput = CreateSpaceInput;
 
 // ==================
 //       Main

@@ -25,25 +25,38 @@ import {
 //   Runtime codecs
 // ==================
 
-export const WorkbookC = t.intersection(
-  [
+export const WorkbookC = t.intersection([
+  t.type({
+    id: WorkbookIdFromString,
+    createdAt: t.string,
+    environmentId: EnvironmentIdFromString,
+    name: t.string,
+    spaceId: SpaceIdFromString,
+    updatedAt: t.string,
+  }),
+  t.partial({
+    actions: t.array(CustomActionC),
+    labels: t.array(t.string),
+    metadata: t.UnknownRecord,
+    namespace: t.string,
+    sheets: t.array(SheetC),
+  }),
+]);
+
+const CreateWorkbookInputC = t.exact(
+  t.intersection([
     t.type({
-      id: WorkbookIdFromString,
-      createdAt: t.string,
-      environmentId: EnvironmentIdFromString,
       name: t.string,
-      spaceId: SpaceIdFromString,
-      updatedAt: t.string,
     }),
     t.partial({
       actions: t.array(CustomActionC),
+      environmentId: EnvironmentIdFromString,
       labels: t.array(t.string),
       metadata: t.UnknownRecord,
-      namespace: t.string,
       sheets: t.array(SheetC),
+      spaceId: SpaceIdFromString,
     }),
-  ],
-  "WorkbookC",
+  ]),
 );
 
 // ==================
@@ -52,9 +65,8 @@ export const WorkbookC = t.intersection(
 
 export type Workbook = Readonly<t.TypeOf<typeof WorkbookC>>;
 export type Workbooks = ReadonlyArray<Workbook>;
-// export type CreateWorkbookInput = Omit<Workbook, "id" | "createdAt" | "updatedAt">;
-export type CreateWorkbookInput = Omit<Workbook, "id" | "createdAt" | "updatedAt">;
-export type UpdateWorkbookInput = Partial<Omit<Workbook, "id" | "createdAt" | "updatedAt">>;
+export type CreateWorkbookInput = Readonly<t.TypeOf<typeof CreateWorkbookInputC>>;
+export type UpdateWorkbookInput = Partial<CreateWorkbookInput>;
 
 // ==================
 //       Main

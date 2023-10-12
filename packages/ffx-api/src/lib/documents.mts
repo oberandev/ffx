@@ -25,20 +25,29 @@ import {
 //   Runtime codecs
 // ==================
 
-export const DocumentC = t.intersection(
-  [
+export const DocumentC = t.intersection([
+  t.type({
+    id: DocumentIdFromString,
+    body: t.string,
+    environmentId: EnvironmentIdFromString,
+    spaceId: SpaceIdFromString,
+    title: t.string,
+  }),
+  t.partial({
+    treatments: t.array(t.string),
+  }),
+]);
+
+const CreateDocumentInputC = t.exact(
+  t.intersection([
     t.type({
-      id: DocumentIdFromString,
       body: t.string,
-      environmentId: EnvironmentIdFromString,
-      spaceId: SpaceIdFromString,
       title: t.string,
     }),
     t.partial({
       treatments: t.array(t.string),
     }),
-  ],
-  "DocumentC",
+  ]),
 );
 
 // ==================
@@ -47,8 +56,8 @@ export const DocumentC = t.intersection(
 
 export type Document = Readonly<t.TypeOf<typeof DocumentC>>;
 export type Documents = ReadonlyArray<Document>;
-export type CreateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
-export type UpdateDocumentInput = Pick<Document, "body" | "title" | "treatments">;
+export type CreateDocumentInput = Readonly<t.TypeOf<typeof CreateDocumentInputC>>;
+export type UpdateDocumentInput = Readonly<t.TypeOf<typeof CreateDocumentInputC>>;
 
 // ==================
 //       Main

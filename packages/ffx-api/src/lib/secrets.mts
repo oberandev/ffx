@@ -26,10 +26,21 @@ import {
 //   Runtime codecs
 // ==================
 
-export const SecretC = t.intersection(
-  [
+export const SecretC = t.intersection([
+  t.type({
+    id: SecretIdFromString,
+    environmentId: EnvironmentIdFromString,
+    name: t.string,
+    value: t.string,
+  }),
+  t.partial({
+    spaceId: SpaceIdFromString,
+  }),
+]);
+
+const CreateSecretInputC = t.exact(
+  t.intersection([
     t.type({
-      id: SecretIdFromString,
       environmentId: EnvironmentIdFromString,
       name: t.string,
       value: t.string,
@@ -37,8 +48,7 @@ export const SecretC = t.intersection(
     t.partial({
       spaceId: SpaceIdFromString,
     }),
-  ],
-  "SecretC",
+  ]),
 );
 
 // ==================
@@ -47,7 +57,7 @@ export const SecretC = t.intersection(
 
 export type Secret = Readonly<t.TypeOf<typeof SecretC>>;
 export type Secrets = ReadonlyArray<Secret>;
-export type CreateSecretInput = Omit<Secret, "id">;
+export type CreateSecretInput = Readonly<t.TypeOf<typeof CreateSecretInputC>>;
 
 // ==================
 //       Main

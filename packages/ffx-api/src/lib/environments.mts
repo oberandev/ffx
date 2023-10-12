@@ -21,23 +21,35 @@ import {
 
 export const AuthLinkC = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
-export const EnvironmentC = t.intersection(
-  [
+export const EnvironmentC = t.intersection([
+  t.type({
+    id: EnvironmentIdFromString,
+    accountId: AccountIdFromString,
+    features: t.UnknownRecord,
+    guestAuthentication: t.array(AuthLinkC),
+    isProd: t.boolean,
+    metadata: t.UnknownRecord,
+    name: t.string,
+  }),
+  t.partial({
+    namespaces: t.array(t.string),
+    translationsPath: t.string,
+  }),
+]);
+
+const CreateEnvironmentInputC = t.exact(
+  t.intersection([
     t.type({
-      id: EnvironmentIdFromString,
-      accountId: AccountIdFromString,
-      features: t.UnknownRecord,
-      guestAuthentication: t.array(AuthLinkC),
       isProd: t.boolean,
-      metadata: t.UnknownRecord,
       name: t.string,
     }),
     t.partial({
+      guestAuthentication: t.array(AuthLinkC),
+      metadata: t.UnknownRecord,
       namespaces: t.array(t.string),
       translationsPath: t.string,
     }),
-  ],
-  "EnvironmentC",
+  ]),
 );
 
 // ==================
@@ -46,8 +58,8 @@ export const EnvironmentC = t.intersection(
 
 export type Environment = Readonly<t.TypeOf<typeof EnvironmentC>>;
 export type Environments = ReadonlyArray<Environment>;
-export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
-export type UpdateEnvironmentInput = Partial<Omit<Environment, "accountId" | "features" | "id">>;
+export type CreateEnvironmentInput = Readonly<t.TypeOf<typeof CreateEnvironmentInputC>>;
+export type UpdateEnvironmentInput = Partial<CreateEnvironmentInput>;
 
 // ==================
 //       Main
