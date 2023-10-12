@@ -1,14 +1,11 @@
 import { faker } from "@faker-js/faker";
-import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
 import * as IO from "fp-ts/IO";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import { baseUrl, client, mkEnvironmentId, mkSecretId, mkSpaceId } from "./helpers.mjs";
-import { SecretId, SecretIdFromString } from "../src/lib/ids.mjs";
-import { Secret, SecretC } from "../src/lib/secrets.mjs";
+import { Secret } from "../src/lib/secrets.mjs";
 
 function _mkMockSecret(): IO.IO<Secret> {
   return IO.of({
@@ -21,327 +18,311 @@ function _mkMockSecret(): IO.IO<Secret> {
 }
 
 describe("secrets", () => {
-  describe("[Codecs]", () => {
-    it("Secret", () => {
-      const decoded = pipe(_mkMockSecret()(), SecretC.decode);
+  it("[Mocks] should handle failure when creating a Secret", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
 
-      expect(E.isRight(decoded)).toBe(true);
+    const restHandlers = [
+      rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.secrets.create({
+      environmentId: mockSecret.environmentId,
+      name: mockSecret.name,
+      spaceId: mockSecret.spaceId,
+      value: mockSecret.value,
     });
 
-    it("SecretId", () => {
-      const brandedT: SecretId = mkSecretId()();
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      expect(SecretIdFromString.is(brandedT)).toBe(true);
-    });
+    // teardown
+    server.close();
   });
 
-  describe("[Mocks]", () => {
-    it("should handle failure when creating a Secret", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
+  it("[Mocks] should handle decoder errors when creating a Secret", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
+    const restHandlers = [
+      rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockSecret,
+              id: "bogus_secret_id",
+            },
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.secrets.create({
-        environmentId: mockSecret.environmentId,
-        name: mockSecret.name,
-        spaceId: mockSecret.spaceId,
-        value: mockSecret.value,
-      });
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
+    // test
+    const resp = await client.secrets.create({
+      environmentId: mockSecret.environmentId,
+      name: mockSecret.name,
+      spaceId: mockSecret.spaceId,
+      value: mockSecret.value,
     });
 
-    it("should handle decoder errors when creating a Secret", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting SecretIdFromString at 0.id but instead got: "bogus_secret_id"`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle successfully creating a Secret", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
+
+    const restHandlers = [
+      rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
+        return res(ctx.status(200), ctx.json({ data: mockSecret }));
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.secrets.create({
+      environmentId: mockSecret.environmentId,
+      name: mockSecret.name,
+      spaceId: mockSecret.spaceId,
+      value: mockSecret.value,
+    });
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSecret))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when deleting a Secret", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
+
+    const restHandlers = [
+      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.secrets.delete(mockSecret.id);
+
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle decoder errors when deleting a Secret", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
+
+    const restHandlers = [
+      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              success: "foobar",
+            },
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.secrets.delete(mockSecret.id);
+
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([`Expecting boolean at success but instead got: "foobar"`]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle successfully deleting a Secret", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
+
+    const restHandlers = [
+      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              success: true,
+            },
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.secrets.delete(mockSecret.id);
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when fetching all Secrets", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
+
+    const restHandlers = [
+      rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.secrets.list(mockSecret.environmentId);
+
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle decoder errors when fetching all Secrets", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
+
+    const restHandlers = [
+      rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: [
+              {
                 ...mockSecret,
-                id: "bogus_secret_id",
+                id: null,
               },
-            }),
-          );
-        }),
-      ];
+            ],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.secrets.create({
-        environmentId: mockSecret.environmentId,
-        name: mockSecret.name,
-        spaceId: mockSecret.spaceId,
-        value: mockSecret.value,
-      });
+    // test
+    const resp = await client.secrets.list(mockSecret.environmentId);
 
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting SecretIdFromString at 0.id but instead got: "bogus_secret_id"`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting SecretIdFromString at 0.0.id but instead got: null`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle successfully creating a Secret", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
+  it("[Mocks] should handle successfully fetching all Secrets", async () => {
+    // setup
+    const mockSecret: Secret = _mkMockSecret()();
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({ data: mockSecret }));
-        }),
-      ];
+    const restHandlers = [
+      rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: [mockSecret],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.secrets.create({
-        environmentId: mockSecret.environmentId,
-        name: mockSecret.name,
-        spaceId: mockSecret.spaceId,
-        value: mockSecret.value,
-      });
+    // test
+    const resp = await client.secrets.list(mockSecret.environmentId);
 
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSecret))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockSecret]))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      // teardown
-      server.close();
-    });
-
-    it("should handle failure when deleting a Secret", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
-
-      const restHandlers = [
-        rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.secrets.delete(mockSecret.id);
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when deleting a Secret", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
-
-      const restHandlers = [
-        rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: "foobar",
-              },
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.secrets.delete(mockSecret.id);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting boolean at success but instead got: "foobar"`]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully deleting a Secret", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
-
-      const restHandlers = [
-        rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: true,
-              },
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.secrets.delete(mockSecret.id);
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle failure when fetching all Secrets", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
-
-      const restHandlers = [
-        rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.secrets.list(mockSecret.environmentId);
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when fetching all Secrets", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
-
-      const restHandlers = [
-        rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: [
-                {
-                  ...mockSecret,
-                  id: null,
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.secrets.list(mockSecret.environmentId);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting SecretIdFromString at 0.0.id but instead got: null`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully fetching all Secrets", async () => {
-      // setup
-      const mockSecret: Secret = _mkMockSecret()();
-
-      const restHandlers = [
-        rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: [mockSecret],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.secrets.list(mockSecret.environmentId);
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockSecret]))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
   });
 });

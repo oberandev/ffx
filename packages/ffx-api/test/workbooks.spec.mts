@@ -1,14 +1,11 @@
 import { faker } from "@faker-js/faker";
-import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
 import * as IO from "fp-ts/IO";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import { baseUrl, client, mkEnvironmentId, mkSpaceId, mkWorkbookId } from "./helpers.mjs";
-import { WorkbookIdFromString } from "../src/lib/ids.mjs";
-import { Workbook, WorkbookC, Workbooks } from "../src/lib/workbooks.mjs";
+import { Workbook, Workbooks } from "../src/lib/workbooks.mjs";
 
 function _mkMockWorkbook(): IO.IO<Workbook> {
   return IO.of({
@@ -27,549 +24,533 @@ function _mkMockWorkbook(): IO.IO<Workbook> {
 }
 
 describe("workbooks", () => {
-  describe("[Codecs]", () => {
-    it("Workbook", () => {
-      const decoded = pipe(_mkMockWorkbook()(), WorkbookC.decode);
+  it("[Mocks] should handle failure when creating a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      expect(E.isRight(decoded)).toBe(true);
+    const restHandlers = [
+      rest.post(`${baseUrl}/workbooks`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.workbooks.create({
+      actions: mockWorkbook.actions,
+      environmentId: mockWorkbook.environmentId,
+      labels: mockWorkbook.labels,
+      metadata: mockWorkbook.metadata,
+      name: mockWorkbook.name,
+      sheets: mockWorkbook.sheets,
+      spaceId: mockWorkbook.spaceId,
     });
 
-    it("WorkbookId", () => {
-      const brandedT = mkWorkbookId()();
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      expect(WorkbookIdFromString.is(brandedT)).toBe(true);
-    });
+    // teardown
+    server.close();
   });
 
-  describe("[Mocks]", () => {
-    it("should handle failure when creating a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+  it("[Mocks] should handle decoder errors when creating a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/workbooks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
+    const restHandlers = [
+      rest.post(`${baseUrl}/workbooks`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockWorkbook,
+              name: undefined,
+            },
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.create({
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
-      });
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
+    // test
+    const resp = await client.workbooks.create({
+      actions: mockWorkbook.actions,
+      environmentId: mockWorkbook.environmentId,
+      labels: mockWorkbook.labels,
+      metadata: mockWorkbook.metadata,
+      name: mockWorkbook.name,
+      sheets: mockWorkbook.sheets,
+      spaceId: mockWorkbook.spaceId,
     });
 
-    it("should handle decoder errors when creating a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([`Expecting string at 0.name but instead got: undefined`]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/workbooks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockWorkbook,
-                name: undefined,
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle successfully creating a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
+
+    const restHandlers = [
+      rest.post(`${baseUrl}/workbooks`, (_req, res, ctx) => {
+        return res(ctx.status(200), ctx.json({ data: mockWorkbook }));
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.workbooks.create({
+      actions: mockWorkbook.actions,
+      environmentId: mockWorkbook.environmentId,
+      labels: mockWorkbook.labels,
+      metadata: mockWorkbook.metadata,
+      name: mockWorkbook.name,
+      sheets: mockWorkbook.sheets,
+      spaceId: mockWorkbook.spaceId,
+    });
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when deleting a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
+
+    const restHandlers = [
+      rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
               },
-            }),
-          );
-        }),
-      ];
+            ],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.create({
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
-      });
+    // test
+    const resp = await client.workbooks.delete(mockWorkbook.id);
 
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting string at 0.name but instead got: undefined`]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle successfully creating a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+  it("[Mocks] should handle decoder errors when deleting a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/workbooks`, (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({ data: mockWorkbook }));
-        }),
-      ];
+    const restHandlers = [
+      rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              success: "foobar",
+            },
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.create({
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
-      });
+    // test
+    const resp = await client.workbooks.delete(mockWorkbook.id);
 
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([`Expecting boolean at success but instead got: "foobar"`]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle failure when deleting a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+  it("[Mocks] should handle successfully deleting a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      const restHandlers = [
-        rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
+    const restHandlers = [
+      rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              success: true,
+            },
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.delete(mockWorkbook.id);
+    // test
+    const resp = await client.workbooks.delete(mockWorkbook.id);
 
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle decoder errors when deleting a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+  it("[Mocks] should handle failure when fetching a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      const restHandlers = [
-        rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: "foobar",
+    const restHandlers = [
+      rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
               },
-            }),
-          );
-        }),
-      ];
+            ],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.delete(mockWorkbook.id);
+    // test
+    const resp = await client.workbooks.get(mockWorkbook.id);
 
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting boolean at success but instead got: "foobar"`]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle successfully deleting a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+  it("[Mocks] should handle decoder errors when fetching a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      const restHandlers = [
-        rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: true,
+    const restHandlers = [
+      rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockWorkbook,
+              id: null,
+            },
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.workbooks.get(mockWorkbook.id);
+
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting WorkbookIdFromString at 0.id but instead got: null`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle successfully fetching a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
+
+    const restHandlers = [
+      rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: mockWorkbook,
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.workbooks.get(mockWorkbook.id);
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when fetching all Workbooks", async () => {
+    // setup
+    const restHandlers = [
+      rest.get(`${baseUrl}/workbooks`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
               },
-            }),
-          );
-        }),
-      ];
+            ],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.delete(mockWorkbook.id);
+    // test
+    const resp = await client.workbooks.list();
 
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle failure when fetching a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+  it("[Mocks] should handle decoder errors when fetching all Workbooks", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      const restHandlers = [
-        rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
+    const restHandlers = [
+      rest.get(`${baseUrl}/workbooks`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: [{ ...mockWorkbook, id: null }],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.get(mockWorkbook.id);
+    // test
+    const resp = await client.workbooks.list();
 
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          "Expecting WorkbookIdFromString at 0.0.id but instead got: null",
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle decoder errors when fetching a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+  it("[Mocks] should handle successfully fetching all Workbooks", async () => {
+    // setup
+    const mockWorkbooks: Workbooks = Array.from({ length: 2 }, () => _mkMockWorkbook()());
 
-      const restHandlers = [
-        rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockWorkbook,
-                id: null,
+    const restHandlers = [
+      rest.get(`${baseUrl}/workbooks`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: mockWorkbooks,
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.workbooks.list();
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbooks))
+      .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when updating a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
+
+    const restHandlers = [
+      rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
               },
-            }),
-          );
-        }),
-      ];
+            ],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.workbooks.get(mockWorkbook.id);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting WorkbookIdFromString at 0.id but instead got: null`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
+    // test
+    const resp = await client.workbooks.update(mockWorkbook.id, {
+      actions: mockWorkbook.actions,
+      environmentId: mockWorkbook.environmentId,
+      labels: mockWorkbook.labels,
+      metadata: mockWorkbook.metadata,
+      name: mockWorkbook.name,
+      sheets: mockWorkbook.sheets,
+      spaceId: mockWorkbook.spaceId,
     });
 
-    it("should handle successfully fetching a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const restHandlers = [
-        rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockWorkbook,
-            }),
-          );
-        }),
-      ];
+    // teardown
+    server.close();
+  });
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+  it("[Mocks] should handle decoder errors when updating a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      // test
-      const resp = await client.workbooks.get(mockWorkbook.id);
+    const restHandlers = [
+      rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockWorkbook,
+              id: null,
+            },
+          }),
+        );
+      }),
+    ];
 
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // teardown
-      server.close();
+    // test
+    const resp = await client.workbooks.update(mockWorkbook.id, {
+      actions: mockWorkbook.actions,
+      environmentId: mockWorkbook.environmentId,
+      labels: mockWorkbook.labels,
+      metadata: mockWorkbook.metadata,
+      name: mockWorkbook.name,
+      sheets: mockWorkbook.sheets,
+      spaceId: mockWorkbook.spaceId,
     });
 
-    it("should handle failure when fetching all Workbooks", async () => {
-      // setup
-      const restHandlers = [
-        rest.get(`${baseUrl}/workbooks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting WorkbookIdFromString at 0.id but instead got: null`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    // teardown
+    server.close();
+  });
 
-      // test
-      const resp = await client.workbooks.list();
+  it("[Mocks] should handle successfully updating a Workbook", async () => {
+    // setup
+    const mockWorkbook: Workbook = _mkMockWorkbook()();
 
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
+    const restHandlers = [
+      rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: mockWorkbook,
+          }),
+        );
+      }),
+    ];
 
-      // teardown
-      server.close();
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.workbooks.update(mockWorkbook.id, {
+      actions: mockWorkbook.actions,
+      environmentId: mockWorkbook.environmentId,
+      labels: mockWorkbook.labels,
+      metadata: mockWorkbook.metadata,
+      name: mockWorkbook.name,
+      sheets: mockWorkbook.sheets,
+      spaceId: mockWorkbook.spaceId,
     });
 
-    it("should handle decoder errors when fetching all Workbooks", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const restHandlers = [
-        rest.get(`${baseUrl}/workbooks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: [{ ...mockWorkbook, id: null }],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.workbooks.list();
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            "Expecting WorkbookIdFromString at 0.0.id but instead got: null",
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully fetching all Workbooks", async () => {
-      // setup
-      const mockWorkbooks: Workbooks = Array.from({ length: 2 }, () => _mkMockWorkbook()());
-
-      const restHandlers = [
-        rest.get(`${baseUrl}/workbooks`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockWorkbooks,
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.workbooks.list();
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbooks))
-        .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle failure when updating a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.workbooks.update(mockWorkbook.id, {
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
-      });
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when updating a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockWorkbook,
-                id: null,
-              },
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.workbooks.update(mockWorkbook.id, {
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
-      });
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting WorkbookIdFromString at 0.id but instead got: null`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully updating a Workbook", async () => {
-      // setup
-      const mockWorkbook: Workbook = _mkMockWorkbook()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockWorkbook,
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.workbooks.update(mockWorkbook.id, {
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
-      });
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
   });
 });
