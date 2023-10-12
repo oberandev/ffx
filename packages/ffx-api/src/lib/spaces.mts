@@ -5,13 +5,15 @@ import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 
+import { AuthLinkC } from "./environments.mjs";
 import {
   EnvironmentIdFromString,
+  SpaceId,
   SpaceIdFromString,
-  WorkbookId,
+  UserIdFromString,
   WorkbookIdFromString,
 } from "./ids.mjs";
-import { CustomActionC, SheetC } from "./sheets.mjs";
+import { CustomActionC, PermissionC } from "./sheets.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -25,90 +27,80 @@ import {
 //   Runtime codecs
 // ==================
 
-export const WorkbookC = t.intersection([
+export const SpaceC = t.intersection([
   t.type({
-    id: WorkbookIdFromString,
+    id: SpaceIdFromString,
     createdAt: t.string,
     environmentId: EnvironmentIdFromString,
+    guestAuthentication: t.array(AuthLinkC),
     name: t.string,
-    spaceId: SpaceIdFromString,
     updatedAt: t.string,
   }),
   t.partial({
+    access: t.array(PermissionC),
+    accessToken: t.string,
     actions: t.array(CustomActionC),
+    archivedAt: t.string,
+    autoConfigure: t.boolean,
+    createdByUserId: UserIdFromString,
+    displayOrder: t.number,
+    filesCount: t.number,
+    guestLink: t.array(t.string),
+    isCollaborative: t.boolean,
     labels: t.array(t.string),
     metadata: t.UnknownRecord,
     namespace: t.string,
-    sheets: t.array(SheetC),
+    primaryWorkbookId: WorkbookIdFromString,
+    size: t.type({
+      id: t.string,
+      name: t.string,
+      numFiles: t.number,
+      numUsers: t.number,
+      pdv: t.number,
+    }),
+    translationsPath: t.string,
+    upgradedAt: t.string,
+    workbooksCount: t.number,
   }),
 ]);
 
-const CreateWorkbookInputC = t.exact(
-  t.intersection([
-    t.type({
-      name: t.string,
-    }),
-    t.partial({
-      actions: t.array(CustomActionC),
-      environmentId: EnvironmentIdFromString,
-      labels: t.array(t.string),
-      metadata: t.UnknownRecord,
-      sheets: t.array(SheetC),
-      spaceId: SpaceIdFromString,
-    }),
-  ]),
+const CreateSpaceInputC = t.exact(
+  t.partial({
+    access: t.array(PermissionC),
+    actions: t.array(CustomActionC),
+    autoConfigure: t.boolean,
+    displayOrder: t.number,
+    environmentId: EnvironmentIdFromString,
+    guestAuthentication: t.array(AuthLinkC),
+    labels: t.array(t.string),
+    metadata: t.UnknownRecord,
+    name: t.string,
+    namespace: t.string,
+    primaryWorkbookId: WorkbookIdFromString,
+    translationsPath: t.string,
+  }),
 );
 
 // ==================
 //       Types
 // ==================
 
-export type Workbook = Readonly<t.TypeOf<typeof WorkbookC>>;
-export type Workbooks = ReadonlyArray<Workbook>;
-export type CreateWorkbookInput = Readonly<t.TypeOf<typeof CreateWorkbookInputC>>;
-export type UpdateWorkbookInput = Partial<CreateWorkbookInput>;
+export type Space = Readonly<t.TypeOf<typeof SpaceC>>;
+export type Spaces = ReadonlyArray<Space>;
+export type CreateSpaceInput = Readonly<t.TypeOf<typeof CreateSpaceInputC>>;
+export type UpdateSpaceInput = CreateSpaceInput;
 
 // ==================
 //       Main
 // ==================
 
 /**
- * Create a `Workbook`.
+ * Archive a `Space`.
  *
  * @since 0.1.0
  */
-export function createWorkbook(
-  input: CreateWorkbookInput,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
-  return pipe(
-    RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
-      return RTE.fromTaskEither(
-        TE.tryCatch(
-          () => {
-            return axios.post(`${r.baseUrl}/workbooks`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
-          (reason: unknown) => reason as AxiosError,
-        ),
-      );
-    }),
-    RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(WorkbookC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
-  );
-}
-
-/**
- * Delete a `Workbook`.
- *
- * @since 0.1.0
- */
-export function deleteWorkbook(
-  workbookId: WorkbookId,
+export function archiveSpace(
+  spaceId: SpaceId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -116,7 +108,7 @@ export function deleteWorkbook(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.delete(`${r.baseUrl}/workbooks/${workbookId}`, {
+            return axios.post(`${r.baseUrl}/spaces/${spaceId}/archive`, {
               headers: {
                 "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
@@ -133,20 +125,20 @@ export function deleteWorkbook(
 }
 
 /**
- * Get a `Workbook`.
+ * Create a `Space`.
  *
  * @since 0.1.0
  */
-export function getWorkbook(
-  workbookId: WorkbookId,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
+export function createSpace(
+  input: CreateSpaceInput,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Space>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain((r) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.get(`${r.baseUrl}/workbooks/${workbookId}`, {
+            return axios.post(`${r.baseUrl}/spaces`, input, {
               headers: {
                 "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
@@ -157,19 +149,79 @@ export function getWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(WorkbookC)),
+    RTE.chain(decodeWith(SpaceC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
 
 /**
- * Get a list of `Workbook`s.
+ * Delete a `Space`.
  *
  * @since 0.1.0
  */
-export function listWorkbooks(): RT.ReaderTask<
+export function deleteSpace(
+  spaceId: SpaceId,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
+  return pipe(
+    RTE.ask<ApiReader>(),
+    RTE.chain((r) => {
+      return RTE.fromTaskEither(
+        TE.tryCatch(
+          () => {
+            return axios.delete(`${r.baseUrl}/spaces/${spaceId}`, {
+              headers: {
+                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
+              },
+            });
+          },
+          (reason: unknown) => reason as AxiosError,
+        ),
+      );
+    }),
+    RTE.map((resp) => resp.data.data),
+    RTE.chain(decodeWith(t.type({ success: t.boolean }))),
+    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+  );
+}
+
+/**
+ * Get a `Space`.
+ *
+ * @since 0.1.0
+ */
+export function getSpace(
+  spaceId: SpaceId,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Space>> {
+  return pipe(
+    RTE.ask<ApiReader>(),
+    RTE.chain((r) => {
+      return RTE.fromTaskEither(
+        TE.tryCatch(
+          () => {
+            return axios.get(`${r.baseUrl}/spaces/${spaceId}`, {
+              headers: {
+                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
+              },
+            });
+          },
+          (reason: unknown) => reason as AxiosError,
+        ),
+      );
+    }),
+    RTE.map((resp) => resp.data.data),
+    RTE.chain(decodeWith(SpaceC)),
+    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+  );
+}
+
+/**
+ * Get a list of `Space`s.
+ *
+ * @since 0.1.0
+ */
+export function listSpaces(): RT.ReaderTask<
   ApiReader,
-  DecoderErrors | HttpError | Successful<Workbooks>
+  DecoderErrors | HttpError | Successful<Spaces>
 > {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -177,7 +229,7 @@ export function listWorkbooks(): RT.ReaderTask<
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.get(`${r.baseUrl}/workbooks`, {
+            return axios.get(`${r.baseUrl}/spaces`, {
               headers: {
                 "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
@@ -188,27 +240,27 @@ export function listWorkbooks(): RT.ReaderTask<
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(t.array(WorkbookC))),
+    RTE.chain(decodeWith(t.array(SpaceC))),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
 
 /**
- * Update a `Workbook`.
+ * Update a `Space`.
  *
  * @since 0.1.0
  */
-export function updateWorkbook(
-  workbookId: WorkbookId,
-  input: UpdateWorkbookInput,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
+export function updateSpace(
+  spaceId: SpaceId,
+  input: UpdateSpaceInput,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Space>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain((r) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.patch(`${r.baseUrl}/workbooks/${workbookId}`, input, {
+            return axios.patch(`${r.baseUrl}/spaces/${spaceId}`, input, {
               headers: {
                 "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
               },
@@ -219,7 +271,7 @@ export function updateWorkbook(
       );
     }),
     RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(WorkbookC)),
+    RTE.chain(decodeWith(SpaceC)),
     RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
   );
 }
