@@ -11,7 +11,7 @@ import { EnvironmentId } from "./environments.mjs";
 //   Runtime codecs
 // ==================
 
-const HttpMethodCodec = t.union([
+const HttpMethodC = t.union([
   t.literal("DELETE"),
   t.literal("GET"),
   t.literal("PATCH"),
@@ -90,7 +90,7 @@ export function mkHttpError(error: AxiosError): HttpError {
   return {
     _tag: "http_error",
     method: pipe(
-      HttpMethodCodec.decode(error.config?.method?.toUpperCase()),
+      HttpMethodC.decode(error.config?.method?.toUpperCase()),
       E.getOrElseW(() => "Unsupported method"),
     ),
     reason: error.message,

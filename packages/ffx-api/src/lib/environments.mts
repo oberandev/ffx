@@ -21,7 +21,7 @@ import {
 //   Runtime codecs
 // ==================
 
-const AuthLinkC = t.union([t.literal("shared_link"), t.literal("magic_link")]);
+export const AuthLinkC = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
 export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique symbol }, string> {}
 

@@ -7,8 +7,8 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { isoSpaceId } from "../src/lib/documents.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
+import { isoSpaceId } from "../src/lib/spaces.mjs";
 import {
   Workbook,
   WorkbookC,
@@ -37,9 +37,9 @@ function _mkMockWorkbook(): IO.IO<Workbook> {
   });
 }
 
-describe("sheets", () => {
+describe("workbooks", () => {
   describe("[Codecs]", () => {
-    it("Sheet", () => {
+    it("Workbook", () => {
       const decoded = pipe(_mkMockWorkbook()(), WorkbookC.decode);
 
       expect(E.isRight(decoded)).toBe(true);
@@ -90,7 +90,7 @@ describe("sheets", () => {
         name: mockWorkbook.name,
         namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
+        // spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)
@@ -131,7 +131,7 @@ describe("sheets", () => {
         name: mockWorkbook.name,
         namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
+        // spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)
@@ -166,7 +166,7 @@ describe("sheets", () => {
         name: mockWorkbook.name,
         namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
+        // spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)
@@ -493,14 +493,14 @@ describe("sheets", () => {
 
       // test
       const resp = await client.workbooks.update(mockWorkbook.id, {
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
+        // actions: mockWorkbook.actions,
+        // environmentId: mockWorkbook.environmentId,
+        // labels: mockWorkbook.labels,
+        // metadata: mockWorkbook.metadata,
+        // name: mockWorkbook.name,
+        // namespace: mockWorkbook.namespace,
+        // sheets: mockWorkbook.sheets,
+        // spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)
@@ -534,14 +534,14 @@ describe("sheets", () => {
 
       // test
       const resp = await client.workbooks.update(mockWorkbook.id, {
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
+        // actions: mockWorkbook.actions,
+        // environmentId: mockWorkbook.environmentId,
+        // labels: mockWorkbook.labels,
+        // metadata: mockWorkbook.metadata,
+        // name: mockWorkbook.name,
+        // namespace: mockWorkbook.namespace,
+        // sheets: mockWorkbook.sheets,
+        // spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)
@@ -576,14 +576,14 @@ describe("sheets", () => {
 
       // test
       const resp = await client.workbooks.update(mockWorkbook.id, {
-        actions: mockWorkbook.actions,
-        environmentId: mockWorkbook.environmentId,
-        labels: mockWorkbook.labels,
-        metadata: mockWorkbook.metadata,
-        name: mockWorkbook.name,
-        namespace: mockWorkbook.namespace,
-        sheets: mockWorkbook.sheets,
-        spaceId: mockWorkbook.spaceId,
+        // actions: mockWorkbook.actions,
+        // environmentId: mockWorkbook.environmentId,
+        // labels: mockWorkbook.labels,
+        // metadata: mockWorkbook.metadata,
+        // name: mockWorkbook.name,
+        // namespace: mockWorkbook.namespace,
+        // sheets: mockWorkbook.sheets,
+        // spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)

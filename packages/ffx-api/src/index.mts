@@ -13,7 +13,6 @@ import {
   Document,
   DocumentId,
   Documents,
-  SpaceId,
   UpdateDocumentInput,
   createDocument,
   deleteDocument,
@@ -43,6 +42,19 @@ import {
   listSecrets,
 } from "./lib/secrets.mjs";
 import { Sheet, SheetId, Sheets, deleteSheet, getSheet, listSheets } from "./lib/sheets.mjs";
+import {
+  CreateSpaceInput,
+  Space,
+  SpaceId,
+  Spaces,
+  UpdateSpaceInput,
+  archiveSpace,
+  createSpace,
+  deleteSpace,
+  getSpace,
+  listSpaces,
+  updateSpace,
+} from "./lib/spaces.mjs";
 import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/types.mjs";
 import { Version, VersionId, createVersion } from "./lib/versions.mjs";
 import {
@@ -121,6 +133,21 @@ interface ApiClient {
     get: (sheetId: SheetId) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
   };
+  spaces: {
+    archive: (
+      spaceId: SpaceId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    create: (input: CreateSpaceInput) => Promise<DecoderErrors | HttpError | Successful<Space>>;
+    delete: (
+      spaceId: SpaceId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    get: (spaceId: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Space>>;
+    list: () => Promise<DecoderErrors | HttpError | Successful<Spaces>>;
+    update: (
+      spaceId: SpaceId,
+      input: UpdateSpaceInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Space>>;
+  };
   versions: {
     create: (
       sheetId: SheetId,
@@ -185,6 +212,14 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       get: (sheetId) => getSheet(sheetId)(reader)(),
       list: () => listSheets()(reader)(),
     },
+    spaces: {
+      archive: (sheetId) => archiveSpace(sheetId)(reader)(),
+      create: (input) => createSpace(input)(reader)(),
+      delete: (sheetId) => deleteSpace(sheetId)(reader)(),
+      get: (sheetId) => getSpace(sheetId)(reader)(),
+      list: () => listSpaces()(reader)(),
+      update: (spaceId, input) => updateSpace(spaceId, input)(reader)(),
+    },
     versions: {
       create: (sheetId, parentVersionId) => createVersion(sheetId, parentVersionId)(reader)(),
     },
@@ -198,15 +233,8 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
   };
 }
 
-export { Agent, Agents, AgentId, EventTopic, isoAgentId } from "./lib/agents.mjs";
-export {
-  Document,
-  Documents,
-  DocumentId,
-  SpaceId,
-  isoDocumentId,
-  isoSpaceId,
-} from "./lib/documents.mjs";
+export { Agent, AgentId, Agents, EventTopic, isoAgentId } from "./lib/agents.mjs";
+export { Document, DocumentId, Documents, isoDocumentId } from "./lib/documents.mjs";
 export {
   AccountId,
   Environment,
@@ -215,7 +243,9 @@ export {
   isoAccountId,
   isoEnvironmentId,
 } from "./lib/environments.mjs";
-export { Secret, Secrets, SecretId, isoSecretId } from "./lib/secrets.mjs";
-export { Permission, Sheet, Sheets, SheetId, isoSheetId } from "./lib/sheets.mjs";
+export { Secret, SecretId, Secrets, isoSecretId } from "./lib/secrets.mjs";
+export { Permission, Sheet, SheetId, Sheets, isoSheetId } from "./lib/sheets.mjs";
+export { Space, SpaceId, Spaces, isoSpaceId } from "./lib/spaces.mjs";
+export { UserId, isoUserId } from "./lib/users.mjs";
 export { Version, VersionId, isoVersionId } from "./lib/versions.mjs";
-export { Workbook, Workbooks, WorkbookId, isoWorkbookId } from "./lib/workbooks.mjs";
+export { Workbook, WorkbookId, Workbooks, isoWorkbookId } from "./lib/workbooks.mjs";

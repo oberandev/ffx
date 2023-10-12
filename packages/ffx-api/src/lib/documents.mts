@@ -9,6 +9,7 @@ import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
 import { EnvironmentIdFromString } from "./environments.mjs";
+import { SpaceId, SpaceIdFromString } from "./spaces.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -34,23 +35,6 @@ export const DocumentIdFromString = new t.Type<DocumentId>(
   (input, context) => {
     return Str.isString(input) && /^us_dc_\w{8}$/g.test(input)
       ? t.success(isoDocumentId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
-
-export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, string> {}
-
-export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
-
-export const SpaceIdFromString = new t.Type<SpaceId>(
-  "SpaceIdFromString",
-  (input: unknown): input is SpaceId => {
-    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input)
-      ? t.success(isoSpaceId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,

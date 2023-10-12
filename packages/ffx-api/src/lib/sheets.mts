@@ -16,6 +16,7 @@ import {
   decodeWith,
   mkHttpError,
 } from "./types.mjs";
+// import { WorkbookIdFromString } from "./workbooks.mjs";
 
 // ==================
 //   Runtime codecs
@@ -104,7 +105,7 @@ const FieldC = t.intersection(
   "FieldC",
 );
 
-const PermissionC = t.union(
+export const PermissionC = t.union(
   [t.literal("*"), t.literal("add"), t.literal("delete"), t.literal("edit"), t.literal("import")],
   "PermissionC",
 );
@@ -153,7 +154,7 @@ export const SheetC = t.intersection(
       createdAt: t.string,
       name: t.string,
       updatedAt: t.string,
-      workbookId: t.string,
+      // workbookId: WorkbookIdFromString,
     }),
     t.partial({
       countRecords: t.intersection([

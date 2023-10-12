@@ -8,8 +8,8 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
-import { SpaceId, SpaceIdFromString } from "./documents.mjs";
 import { EnvironmentId, EnvironmentIdFromString } from "./environments.mjs";
+import { SpaceId, SpaceIdFromString } from "./spaces.mjs";
 import {
   ApiReader,
   DecoderErrors,

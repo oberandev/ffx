@@ -24,7 +24,7 @@ function _mkMockSecret(): IO.IO<Secret> {
   });
 }
 
-describe("documents", () => {
+describe("secrets", () => {
   describe("[Codecs]", () => {
     it("Secret", () => {
       const decoded = pipe(_mkMockSecret()(), SecretC.decode);

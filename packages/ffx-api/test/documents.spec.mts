@@ -7,15 +7,9 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import {
-  Document,
-  DocumentC,
-  DocumentIdFromString,
-  SpaceIdFromString,
-  isoDocumentId,
-  isoSpaceId,
-} from "../src/lib/documents.mjs";
+import { Document, DocumentC, DocumentIdFromString, isoDocumentId } from "../src/lib/documents.mjs";
 import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
+import { SpaceIdFromString, isoSpaceId } from "../src/lib/spaces.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
