@@ -7,10 +7,15 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { Space, SpaceC, SpaceIdFromString, isoSpaceId } from "../src/lib/spaces.mjs";
-import { isoUserId } from "../src/lib/users.mjs";
-import { isoWorkbookId } from "../src/lib/workbooks.mjs";
+import {
+  EnvironmentId,
+  SpaceIdFromString,
+  isoEnvironmentId,
+  isoSpaceId,
+  isoUserId,
+  isoWorkbookId,
+} from "../src/lib/ids.mjs";
+import { Space, SpaceC } from "../src/lib/spaces.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));

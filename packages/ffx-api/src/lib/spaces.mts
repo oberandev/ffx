@@ -2,13 +2,17 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
-import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
-import { Iso } from "monocle-ts";
-import { Newtype, iso } from "newtype-ts";
 
-import { AuthLinkC, EnvironmentIdFromString } from "./environments.mjs";
+import { AuthLinkC } from "./environments.mjs";
+import {
+  EnvironmentIdFromString,
+  SpaceId,
+  SpaceIdFromString,
+  UserIdFromString,
+  WorkbookIdFromString,
+} from "./ids.mjs";
 import { CustomActionC, PermissionC } from "./sheets.mjs";
 import {
   ApiReader,
@@ -18,29 +22,10 @@ import {
   decodeWith,
   mkHttpError,
 } from "./types.mjs";
-import { UserIdFromString } from "./users.mjs";
-import { WorkbookIdFromString } from "./workbooks.mjs";
 
 // ==================
 //   Runtime codecs
 // ==================
-
-export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, string> {}
-
-export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
-
-export const SpaceIdFromString = new t.Type<SpaceId>(
-  "SpaceIdFromString",
-  (input: unknown): input is SpaceId => {
-    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_sp_\w{8}$/g.test(input)
-      ? t.success(isoSpaceId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
 
 export const SpaceC = t.intersection(
   [

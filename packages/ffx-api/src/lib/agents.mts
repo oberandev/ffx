@@ -2,12 +2,10 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
-import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
-import { Iso } from "monocle-ts";
-import { Newtype, iso } from "newtype-ts";
 
+import { AgentId, AgentIdFromString } from "./ids.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -59,23 +57,6 @@ const EventTopicC = t.union(
     t.literal("workbook:updated"),
   ],
   "EventTopicC",
-);
-
-export interface AgentId extends Newtype<{ readonly AgentId: unique symbol }, string> {}
-
-export const isoAgentId: Iso<AgentId, string> = iso<AgentId>();
-
-export const AgentIdFromString = new t.Type<AgentId>(
-  "AgentIdFromString",
-  (input: unknown): input is AgentId => {
-    return Str.isString(input) && /^us_ag_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_ag_\w{8}$/g.test(input)
-      ? t.success(isoAgentId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
 );
 
 export const AgentC = t.type(

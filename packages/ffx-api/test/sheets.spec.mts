@@ -7,9 +7,14 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { Sheet, SheetC, SheetIdFromString, Sheets, isoSheetId } from "../src/lib/sheets.mjs";
-import { isoWorkbookId } from "../src/lib/workbooks.mjs";
+import {
+  EnvironmentId,
+  SheetIdFromString,
+  isoEnvironmentId,
+  isoSheetId,
+  isoWorkbookId,
+} from "../src/lib/ids.mjs";
+import { Sheet, SheetC, Sheets } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));

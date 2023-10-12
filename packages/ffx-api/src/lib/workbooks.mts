@@ -2,15 +2,16 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
-import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
-import { Iso } from "monocle-ts";
-import { Newtype, iso } from "newtype-ts";
 
-import { EnvironmentIdFromString } from "./environments.mjs";
+import {
+  EnvironmentIdFromString,
+  SpaceIdFromString,
+  WorkbookId,
+  WorkbookIdFromString,
+} from "./ids.mjs";
 import { CustomActionC, SheetC } from "./sheets.mjs";
-import { SpaceIdFromString } from "./spaces.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -24,23 +25,6 @@ import {
 //   Runtime codecs
 // ==================
 
-export interface WorkbookId extends Newtype<{ readonly WorkbookId: unique symbol }, string> {}
-
-export const isoWorkbookId: Iso<WorkbookId, string> = iso<WorkbookId>();
-
-export const WorkbookIdFromString = new t.Type<WorkbookId>(
-  "WorkbookIdFromString",
-  (input: unknown): input is WorkbookId => {
-    return Str.isString(input) && /^us_wb_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_wb_\w{8}$/g.test(input)
-      ? t.success(isoWorkbookId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
-
 export const WorkbookC = t.intersection(
   [
     t.type({
@@ -48,7 +32,7 @@ export const WorkbookC = t.intersection(
       createdAt: t.string,
       environmentId: EnvironmentIdFromString,
       name: t.string,
-      // spaceId: SpaceIdFromString,
+      spaceId: SpaceIdFromString,
       updatedAt: t.string,
     }),
     t.partial({

@@ -7,15 +7,14 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { isoSpaceId } from "../src/lib/spaces.mjs";
 import {
-  Workbook,
-  WorkbookC,
+  EnvironmentId,
   WorkbookIdFromString,
-  Workbooks,
+  isoEnvironmentId,
+  isoSpaceId,
   isoWorkbookId,
-} from "../src/lib/workbooks.mjs";
+} from "../src/lib/ids.mjs";
+import { Workbook, WorkbookC, Workbooks } from "../src/lib/workbooks.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -90,7 +89,7 @@ describe("workbooks", () => {
         name: mockWorkbook.name,
         namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
-        // spaceId: mockWorkbook.spaceId,
+        spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)
@@ -131,7 +130,7 @@ describe("workbooks", () => {
         name: mockWorkbook.name,
         namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
-        // spaceId: mockWorkbook.spaceId,
+        spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)
@@ -166,7 +165,7 @@ describe("workbooks", () => {
         name: mockWorkbook.name,
         namespace: mockWorkbook.namespace,
         sheets: mockWorkbook.sheets,
-        // spaceId: mockWorkbook.spaceId,
+        spaceId: mockWorkbook.spaceId,
       });
 
       match(resp)

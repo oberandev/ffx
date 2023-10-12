@@ -5,7 +5,7 @@ import * as RTE from "fp-ts/ReaderTaskEither";
 import * as t from "io-ts";
 import { formatValidationErrors } from "io-ts-reporters";
 
-import { EnvironmentId } from "./environments.mjs";
+import { EnvironmentId } from "./ids.mjs";
 
 // ==================
 //   Runtime codecs

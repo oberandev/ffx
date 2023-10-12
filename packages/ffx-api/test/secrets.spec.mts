@@ -7,8 +7,14 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient, { isoSpaceId } from "../src/index.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { Secret, SecretC, SecretId, SecretIdFromString, isoSecretId } from "../src/lib/secrets.mjs";
+import {
+  EnvironmentId,
+  SecretId,
+  SecretIdFromString,
+  isoEnvironmentId,
+  isoSecretId,
+} from "../src/lib/ids.mjs";
+import { Secret, SecretC } from "../src/lib/secrets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));

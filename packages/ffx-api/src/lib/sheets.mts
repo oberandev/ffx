@@ -2,12 +2,10 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
-import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
-import { Iso } from "monocle-ts";
-import { Newtype, iso } from "newtype-ts";
 
+import { SheetId, SheetIdFromString, WorkbookIdFromString } from "./ids.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -16,7 +14,6 @@ import {
   decodeWith,
   mkHttpError,
 } from "./types.mjs";
-// import { WorkbookIdFromString } from "./workbooks.mjs";
 
 // ==================
 //   Runtime codecs
@@ -129,23 +126,6 @@ const SheetConfigC = t.intersection(
   "SheetConfigC",
 );
 
-export interface SheetId extends Newtype<{ readonly SheetId: unique symbol }, string> {}
-
-export const isoSheetId: Iso<SheetId, string> = iso<SheetId>();
-
-export const SheetIdFromString = new t.Type<SheetId>(
-  "SheetIdFromString",
-  (input: unknown): input is SheetId => {
-    return Str.isString(input) && /^us_sh_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_sh_\w{8}$/g.test(input)
-      ? t.success(isoSheetId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
-
 export const SheetC = t.intersection(
   [
     t.type({
@@ -154,7 +134,7 @@ export const SheetC = t.intersection(
       createdAt: t.string,
       name: t.string,
       updatedAt: t.string,
-      // workbookId: WorkbookIdFromString,
+      workbookId: WorkbookIdFromString,
     }),
     t.partial({
       countRecords: t.intersection([
