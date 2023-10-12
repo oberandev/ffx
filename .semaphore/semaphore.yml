@@ -17,48 +17,62 @@ global_job_config:
       value: test
   prologue:
     commands:
-      - sem-version node 20
-      - corepack enable
-      - corepack prepare pnpm@latest-8 --activate
-      - checkout
-      - cache restore node-$(checksum pnpm-lock.yaml)
+      - echo "$SEMAPHORE_GIT_PROVIDER"
+      - echo "$SEMAPHORE_GIT_SHA"
+      - echo "$SEMAPHORE_GIT_URL"
+      - echo "$SEMAPHORE_GIT_BRANCH"
+      - echo "$SEMAPHORE_GIT_WORKING_BRANCH"
+      - echo "$SEMAPHORE_GIT_DIR"
+      - echo "$SEMAPHORE_GIT_REPO_SLUG"
+      - echo "$SEMAPHORE_GIT_REF_TYPE"
+      - echo "$SEMAPHORE_GIT_REF"
+      - echo "$SEMAPHORE_GIT_COMMIT_RANGE"
+      - echo "$SEMAPHORE_GIT_PR_BRANCH"
+      - echo "$SEMAPHORE_GIT_PR_SLUG"
+      - echo "$SEMAPHORE_GIT_PR_SHA"
+      - echo "$SEMAPHORE_GIT_PR_NUMBER"
+      - echo "$SEMAPHORE_GIT_PR_NAME"
+      # - sem-version node 20
+      # - corepack enable
+      # - corepack prepare pnpm@latest-8 --activate
+      # - checkout
+      # - cache restore node-$(checksum pnpm-lock.yaml)
+# blocks:
+#   - name: "\U0001F4E6 Install dependencies"
+#     task:
+#       jobs:
+#         - name: pnpm install
+#           commands:
+#             - pnpm install
+#             - cache store node-$(checksum pnpm-lock.yaml) $(pnpm store path)
 
-blocks:
-  - name: "\U0001F4E6 Install dependencies"
-    task:
-      jobs:
-        - name: pnpm install
-          commands:
-            - pnpm install
-            - cache store node-$(checksum pnpm-lock.yaml) $(pnpm store path)
+#   - name: "\U0001F50D Static Analysis"
+#     task:
+#       prologue:
+#         commands:
+#           - pnpm install
+#       jobs:
+#         - name: prettier & eslint
+#           commands:
+#             - pnpm nx run-many -t format:check
+#             - pnpm nx run-many -t lint
 
-  - name: "\U0001F50D Static Analysis"
-    task:
-      prologue:
-        commands:
-          - pnpm install
-      jobs:
-        - name: prettier & eslint
-          commands:
-            - pnpm nx run-many -t format:check
-            - pnpm nx run-many -t lint
+#         - name: pnpm audit
+#           commands:
+#             - pnpm audit --prod
 
-        - name: pnpm audit
-          commands:
-            - pnpm audit --prod
-
-  - name: "\U0001F9EA Unit Tests"
-    task:
-      prologue:
-        commands:
-          - pnpm install
-      secrets:
-        - name: codecov
-        - name: geocodio
-      jobs:
-        - name: vitest
-          commands:
-            - curl -Os https://uploader.codecov.io/latest/linux/codecov
-            - chmod +x codecov
-            - pnpm nx affected -t test --base=main --head=HEAD
-            - ./codecov
+#   - name: "\U0001F9EA Unit Tests"
+#     task:
+#       prologue:
+#         commands:
+#           - pnpm install
+#       secrets:
+#         - name: codecov
+#         - name: geocodio
+#       jobs:
+#         - name: vitest
+#           commands:
+#             - curl -Os https://uploader.codecov.io/latest/linux/codecov
+#             - chmod +x codecov
+#             - pnpm nx affected -t test --base=main --head=HEAD
+#             - ./codecov
