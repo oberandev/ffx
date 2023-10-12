@@ -7,8 +7,14 @@ import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
 import mkApiClient from "../src/index.mjs";
-import { EnvironmentId, isoEnvironmentId } from "../src/lib/environments.mjs";
-import { Sheet, SheetC, SheetIdFromString, Sheets, isoSheetId } from "../src/lib/sheets.mjs";
+import {
+  EnvironmentId,
+  SheetIdFromString,
+  isoEnvironmentId,
+  isoSheetId,
+  isoWorkbookId,
+} from "../src/lib/ids.mjs";
+import { Sheet, SheetC, Sheets } from "../src/lib/sheets.mjs";
 
 function randomId(): IO.IO<string> {
   return IO.of(Math.random().toString(16).slice(2, 10));
@@ -95,7 +101,7 @@ function _mkMockSheet(): IO.IO<Sheet> {
     name: faker.lorem.word(),
     namespace: faker.lorem.word(),
     updatedAt: faker.date.past().toISOString(),
-    workbookId: `us_wb_${randomId()()}`,
+    workbookId: isoWorkbookId.wrap(`us_wb_${randomId()()}`),
   });
 }
 
