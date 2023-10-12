@@ -37,12 +37,13 @@ global_job_config:
       # - corepack prepare pnpm@latest-8 --activate
       # - checkout
       # - cache restore node-$(checksum pnpm-lock.yaml)
-# blocks:
-#   - name: "\U0001F4E6 Install dependencies"
-#     task:
-#       jobs:
-#         - name: pnpm install
-#           commands:
+blocks:
+  - name: "\U0001F4E6 Install dependencies"
+    task:
+      jobs:
+        - name: pnpm install
+          commands:
+            - echo "pnpm install"
 #             - pnpm install
 #             - cache store node-$(checksum pnpm-lock.yaml) $(pnpm store path)
 
