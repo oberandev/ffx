@@ -6,33 +6,22 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient from "../src/index.mjs";
-import {
-  EnvironmentId,
-  SpaceIdFromString,
-  isoEnvironmentId,
-  isoSpaceId,
-  isoUserId,
-  isoWorkbookId,
-} from "../src/lib/ids.mjs";
+import { baseUrl, client, mkEnvironmentId, mkSpaceId, mkUserId, mkWorkbookId } from "./helpers.mjs";
+import { SpaceIdFromString } from "../src/lib/ids.mjs";
 import { Space, SpaceC } from "../src/lib/spaces.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
 
 function _mkMockSpace(): IO.IO<Space> {
   return IO.of({
-    id: isoSpaceId.wrap(`us_sp_${randomId()()}`),
+    id: mkSpaceId()(),
     access: faker.helpers.arrayElements(["*", "add", "delete", "edit", "import"]),
     accessToken: faker.lorem.word(),
     actions: [],
     archivedAt: faker.date.past().toISOString(),
     autoConfigure: faker.helpers.arrayElement([false, true]),
     createdAt: faker.date.past().toISOString(),
-    createdByUserId: isoUserId.wrap(`us_usr_${randomId()()}`),
+    createdByUserId: mkUserId()(),
     displayOrder: faker.number.int(),
-    environmentId: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
+    environmentId: mkEnvironmentId()(),
     filesCount: faker.number.int(),
     guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
     guestLink: [faker.internet.url()],
@@ -41,7 +30,7 @@ function _mkMockSpace(): IO.IO<Space> {
     metadata: {},
     name: faker.lorem.word(),
     namespace: faker.lorem.word(),
-    primaryWorkbookId: isoWorkbookId.wrap(`us_wb_${randomId()()}`),
+    primaryWorkbookId: mkWorkbookId()(),
     updatedAt: faker.date.past().toISOString(),
     size: {
       id: faker.lorem.word(),
@@ -65,18 +54,13 @@ describe("spaces", () => {
     });
 
     it("SpaceId", () => {
-      const encoded = isoSpaceId.wrap(`us_sp_${randomId()()}`);
+      const brandedT = mkSpaceId()();
 
-      expect(SpaceIdFromString.is(encoded)).toBe(true);
+      expect(SpaceIdFromString.is(brandedT)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
     it("should handle failure when archiving a Space", async () => {
       // setup
       const mockSpace: Space = _mkMockSpace()();

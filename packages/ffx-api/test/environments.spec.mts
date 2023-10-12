@@ -6,24 +6,14 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient from "../src/index.mjs";
+import { baseUrl, client, mkAccountId, mkEnvironmentId } from "./helpers.mjs";
 import { Environment, EnvironmentC } from "../src/lib/environments.mjs";
-import {
-  AccountIdFromString,
-  EnvironmentId,
-  EnvironmentIdFromString,
-  isoAccountId,
-  isoEnvironmentId,
-} from "../src/lib/ids.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
+import { AccountIdFromString, EnvironmentIdFromString } from "../src/lib/ids.mjs";
 
 function _mkMockEnvironment(): IO.IO<Environment> {
   return IO.of({
-    id: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
-    accountId: isoAccountId.wrap(`us_acc_${randomId()()}`),
+    id: mkEnvironmentId()(),
+    accountId: mkAccountId()(),
     features: {},
     guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
     isProd: faker.helpers.arrayElement([false, true]),
@@ -41,24 +31,19 @@ describe("environments", () => {
     });
 
     it("EnvironmentId", () => {
-      const encoded = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
+      const encoded = mkEnvironmentId()();
 
       expect(EnvironmentIdFromString.is(encoded)).toBe(true);
     });
 
     it("AccountId", () => {
-      const encoded = isoAccountId.wrap(`us_acc_${randomId()()}`);
+      const brandedT = mkAccountId()();
 
-      expect(AccountIdFromString.is(encoded)).toBe(true);
+      expect(AccountIdFromString.is(brandedT)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
     it("should handle failure when creating an Environment", async () => {
       // setup
       const mockEnvironment: Environment = _mkMockEnvironment()();
@@ -84,7 +69,6 @@ describe("environments", () => {
 
       // test
       const resp = await client.environments.create({
-        features: mockEnvironment.features,
         guestAuthentication: mockEnvironment.guestAuthentication,
         isProd: mockEnvironment.isProd,
         metadata: mockEnvironment.metadata,
@@ -124,7 +108,6 @@ describe("environments", () => {
 
       // test
       const resp = await client.environments.create({
-        features: mockEnvironment.features,
         guestAuthentication: mockEnvironment.guestAuthentication,
         isProd: mockEnvironment.isProd,
         metadata: mockEnvironment.metadata,
@@ -165,7 +148,6 @@ describe("environments", () => {
 
       // test
       const resp = await client.environments.create({
-        features: mockEnvironment.features,
         guestAuthentication: mockEnvironment.guestAuthentication,
         isProd: mockEnvironment.isProd,
         metadata: mockEnvironment.metadata,

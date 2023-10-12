@@ -6,27 +6,17 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient, { isoSpaceId } from "../src/index.mjs";
-import {
-  EnvironmentId,
-  SecretId,
-  SecretIdFromString,
-  isoEnvironmentId,
-  isoSecretId,
-} from "../src/lib/ids.mjs";
+import { baseUrl, client, mkEnvironmentId, mkSecretId, mkSpaceId } from "./helpers.mjs";
+import { SecretId, SecretIdFromString } from "../src/lib/ids.mjs";
 import { Secret, SecretC } from "../src/lib/secrets.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
 
 function _mkMockSecret(): IO.IO<Secret> {
   return IO.of({
-    id: isoSecretId.wrap(`us_sec_${randomId()()}`),
-    spaceId: isoSpaceId.wrap(`us_sp_${randomId()()}`),
+    id: mkSecretId()(),
+    spaceId: mkSpaceId()(),
     name: faker.lorem.word(),
     value: faker.lorem.word(),
-    environmentId: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
+    environmentId: mkEnvironmentId()(),
   });
 }
 
@@ -39,18 +29,13 @@ describe("secrets", () => {
     });
 
     it("SecretId", () => {
-      const encoded: SecretId = isoSecretId.wrap(`us_sec_${randomId()()}`);
+      const brandedT: SecretId = mkSecretId()();
 
-      expect(SecretIdFromString.is(encoded)).toBe(true);
+      expect(SecretIdFromString.is(brandedT)).toBe(true);
     });
   });
 
   describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
-
     it("should handle failure when creating a Secret", async () => {
       // setup
       const mockSecret: Secret = _mkMockSecret()();
