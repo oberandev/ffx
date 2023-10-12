@@ -22,7 +22,6 @@ global_job_config:
       - corepack prepare pnpm@latest-8 --activate
       - checkout
       - cache restore node-$(checksum pnpm-lock.yaml)
-
 blocks:
   - name: "\U0001F4E6 Install dependencies"
     task:
@@ -61,4 +60,4 @@ blocks:
             - curl -Os https://uploader.codecov.io/latest/linux/codecov
             - chmod +x codecov
             - pnpm nx affected -t test --base=main --head=HEAD
-            - ./codecov
+            - ./codecov sha=$SEMAPHORE_GIT_PR_SHA

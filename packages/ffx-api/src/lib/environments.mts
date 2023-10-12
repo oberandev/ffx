@@ -2,12 +2,10 @@ import axios, { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
-import * as Str from "fp-ts/string";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
-import { Iso } from "monocle-ts";
-import { Newtype, iso } from "newtype-ts";
 
+import { AccountIdFromString, EnvironmentId, EnvironmentIdFromString } from "./ids.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -21,59 +19,37 @@ import {
 //   Runtime codecs
 // ==================
 
-const AuthLinkC = t.union([t.literal("shared_link"), t.literal("magic_link")]);
+export const AuthLinkC = t.union([t.literal("shared_link"), t.literal("magic_link")]);
 
-export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique symbol }, string> {}
+export const EnvironmentC = t.intersection([
+  t.type({
+    id: EnvironmentIdFromString,
+    accountId: AccountIdFromString,
+    features: t.UnknownRecord,
+    guestAuthentication: t.array(AuthLinkC),
+    isProd: t.boolean,
+    metadata: t.UnknownRecord,
+    name: t.string,
+  }),
+  t.partial({
+    namespaces: t.array(t.string),
+    translationsPath: t.string,
+  }),
+]);
 
-export const isoEnvironmentId: Iso<EnvironmentId, string> = iso<EnvironmentId>();
-
-export const EnvironmentIdFromString = new t.Type<EnvironmentId>(
-  "EnvironmentIdFromString",
-  (input: unknown): input is EnvironmentId => {
-    return Str.isString(input) && /^us_env_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_env_\w{8}$/g.test(input)
-      ? t.success(isoEnvironmentId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
-
-export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }, string> {}
-
-export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
-
-export const AccountIdFromString = new t.Type<AccountId>(
-  "AccountIdFromString",
-  (input: unknown): input is AccountId => {
-    return Str.isString(input) && /^us_acc_\w{8}$/g.test(input);
-  },
-  (input, context) => {
-    return Str.isString(input) && /^us_acc_\w{8}$/g.test(input)
-      ? t.success(isoAccountId.wrap(input))
-      : t.failure(input, context);
-  },
-  t.identity,
-);
-
-export const EnvironmentC = t.intersection(
-  [
+const CreateEnvironmentInputC = t.exact(
+  t.intersection([
     t.type({
-      id: EnvironmentIdFromString,
-      accountId: AccountIdFromString,
-      features: t.UnknownRecord,
-      guestAuthentication: t.array(AuthLinkC),
       isProd: t.boolean,
-      metadata: t.UnknownRecord,
       name: t.string,
     }),
     t.partial({
+      guestAuthentication: t.array(AuthLinkC),
+      metadata: t.UnknownRecord,
       namespaces: t.array(t.string),
       translationsPath: t.string,
     }),
-  ],
-  "EnvironmentC",
+  ]),
 );
 
 // ==================
@@ -82,8 +58,8 @@ export const EnvironmentC = t.intersection(
 
 export type Environment = Readonly<t.TypeOf<typeof EnvironmentC>>;
 export type Environments = ReadonlyArray<Environment>;
-export type CreateEnvironmentInput = Omit<Environment, "accountId" | "id">;
-export type UpdateEnvironmentInput = Partial<Omit<Environment, "accountId" | "features" | "id">>;
+export type CreateEnvironmentInput = Readonly<t.TypeOf<typeof CreateEnvironmentInputC>>;
+export type UpdateEnvironmentInput = Partial<CreateEnvironmentInput>;
 
 // ==================
 //       Main

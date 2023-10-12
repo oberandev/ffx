@@ -1,30 +1,16 @@
 import { faker } from "@faker-js/faker";
-import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
 import * as IO from "fp-ts/IO";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import mkApiClient from "../src/index.mjs";
-import {
-  AccountIdFromString,
-  Environment,
-  EnvironmentC,
-  EnvironmentId,
-  EnvironmentIdFromString,
-  isoAccountId,
-  isoEnvironmentId,
-} from "../src/lib/environments.mjs";
-
-function randomId(): IO.IO<string> {
-  return IO.of(Math.random().toString(16).slice(2, 10));
-}
+import { baseUrl, client, mkAccountId, mkEnvironmentId } from "./helpers.mjs";
+import { Environment } from "../src/lib/environments.mjs";
 
 function _mkMockEnvironment(): IO.IO<Environment> {
   return IO.of({
-    id: isoEnvironmentId.wrap(`us_env_${randomId()()}`),
-    accountId: isoAccountId.wrap(`us_acc_${randomId()()}`),
+    id: mkEnvironmentId()(),
+    accountId: mkAccountId()(),
     features: {},
     guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
     isProd: faker.helpers.arrayElement([false, true]),
@@ -34,569 +20,539 @@ function _mkMockEnvironment(): IO.IO<Environment> {
 }
 
 describe("environments", () => {
-  describe("[Codecs]", () => {
-    it("Environment", () => {
-      const decoded = pipe(_mkMockEnvironment()(), EnvironmentC.decode);
+  it("[Mocks] should handle failure when creating an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
 
-      expect(E.isRight(decoded)).toBe(true);
+    const restHandlers = [
+      rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.create({
+      guestAuthentication: mockEnvironment.guestAuthentication,
+      isProd: mockEnvironment.isProd,
+      metadata: mockEnvironment.metadata,
+      name: mockEnvironment.name,
+      namespaces: mockEnvironment.namespaces,
+      translationsPath: mockEnvironment.translationsPath,
     });
 
-    it("EnvironmentId", () => {
-      const encoded = isoEnvironmentId.wrap(`us_env_${randomId()()}`);
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      expect(EnvironmentIdFromString.is(encoded)).toBe(true);
-    });
-
-    it("AccountId", () => {
-      const encoded = isoAccountId.wrap(`us_acc_${randomId()()}`);
-
-      expect(AccountIdFromString.is(encoded)).toBe(true);
-    });
+    // teardown
+    server.close();
   });
 
-  describe("[Mocks]", () => {
-    const secret: string = "secret";
-    const environmentId: EnvironmentId = isoEnvironmentId.wrap("environmentId");
-    const client = mkApiClient(secret, environmentId);
-    const baseUrl: string = "https://platform.flatfile.com/api/v1";
+  it("[Mocks] should handle decoder errors when creating an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
 
-    it("should handle failure when creating an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+    const restHandlers = [
+      rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockEnvironment,
+              id: null,
+            },
+          }),
+        );
+      }),
+    ];
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.create({
-        features: mockEnvironment.features,
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
+    // test
+    const resp = await client.environments.create({
+      guestAuthentication: mockEnvironment.guestAuthentication,
+      isProd: mockEnvironment.isProd,
+      metadata: mockEnvironment.metadata,
+      name: mockEnvironment.name,
+      namespaces: mockEnvironment.namespaces,
+      translationsPath: mockEnvironment.translationsPath,
     });
 
-    it("should handle decoder errors when creating an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting EnvironmentIdFromString at 0.id but instead got: null`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle decoder errors when creating an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: mockEnvironment,
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.create({
+      guestAuthentication: mockEnvironment.guestAuthentication,
+      isProd: mockEnvironment.isProd,
+      metadata: mockEnvironment.metadata,
+      name: mockEnvironment.name,
+      namespaces: mockEnvironment.namespaces,
+      translationsPath: mockEnvironment.translationsPath,
+    });
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when deleting an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.delete(mockEnvironment.id);
+
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle decoder errors when deleting an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              success: "foobar",
+            },
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.delete(mockEnvironment.id);
+
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([`Expecting boolean at success but instead got: "foobar"`]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle successfully deleting an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              success: true,
+            },
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.delete(mockEnvironment.id);
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when fetching an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.get(mockEnvironment.id);
+
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle decoder errors when fetching an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockEnvironment,
+              accountId: null,
+            },
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.get(mockEnvironment.id);
+
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting AccountIdFromString at 0.accountId but instead got: null`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle successfully fetching an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: mockEnvironment,
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.get(mockEnvironment.id);
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle failure when fetching all Environments", async () => {
+    // setup
+    const restHandlers = [
+      rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.environments.list();
+
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mocks] should handle decoder errors when fetching all Environments", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
+
+    const restHandlers = [
+      rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: [
+              {
                 ...mockEnvironment,
                 id: null,
               },
-            }),
-          );
-        }),
-      ];
+            ],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.environments.create({
-        features: mockEnvironment.features,
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
+    // test
+    const resp = await client.environments.list();
 
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting EnvironmentIdFromString at 0.id but instead got: null`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting EnvironmentIdFromString at 0.0.id but instead got: null`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle decoder errors when creating an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+  it("[Mocks] should handle successfully fetching all Environments", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
 
-      const restHandlers = [
-        rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockEnvironment,
-            }),
-          );
-        }),
-      ];
+    const restHandlers = [
+      rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: [mockEnvironment],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.environments.create({
-        features: mockEnvironment.features,
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
+    // test
+    const resp = await client.environments.list();
 
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockEnvironment]))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
+  });
 
-    it("should handle failure when deleting an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+  it("[Mocks] should handle failure when updating an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
 
-      const restHandlers = [
-        rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.delete(mockEnvironment.id);
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when deleting an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
-      const restHandlers = [
-        rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: "foobar",
+    const restHandlers = [
+      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
               },
-            }),
-          );
-        }),
-      ];
+            ],
+          }),
+        );
+      }),
+    ];
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // test
-      const resp = await client.environments.delete(mockEnvironment.id);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([`Expecting boolean at success but instead got: "foobar"`]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
+    // test
+    const resp = await client.environments.update(mockEnvironment.id, {
+      guestAuthentication: mockEnvironment.guestAuthentication,
+      isProd: mockEnvironment.isProd,
+      metadata: mockEnvironment.metadata,
+      name: mockEnvironment.name,
+      namespaces: mockEnvironment.namespaces,
+      translationsPath: mockEnvironment.translationsPath,
     });
 
-    it("should handle successfully deleting an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const restHandlers = [
-        rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: true,
-              },
-            }),
-          );
-        }),
-      ];
+    // teardown
+    server.close();
+  });
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+  it("[Mocks] should handle decoder errors when updating an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
 
-      // test
-      const resp = await client.environments.delete(mockEnvironment.id);
+    const restHandlers = [
+      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockEnvironment,
+              id: null,
+            },
+          }),
+        );
+      }),
+    ];
 
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // teardown
-      server.close();
+    // test
+    const resp = await client.environments.update(mockEnvironment.id, {
+      guestAuthentication: mockEnvironment.guestAuthentication,
+      isProd: mockEnvironment.isProd,
+      metadata: mockEnvironment.metadata,
+      name: mockEnvironment.name,
+      namespaces: mockEnvironment.namespaces,
+      translationsPath: mockEnvironment.translationsPath,
     });
 
-    it("should handle failure when fetching an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([
+          `Expecting EnvironmentIdFromString at 0.id but instead got: null`,
+        ]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const restHandlers = [
-        rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
+    // teardown
+    server.close();
+  });
 
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
+  it("[Mocks] should handle successfully updating an Environment", async () => {
+    // setup
+    const mockEnvironment: Environment = _mkMockEnvironment()();
 
-      // test
-      const resp = await client.environments.get(mockEnvironment.id);
+    const restHandlers = [
+      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: mockEnvironment,
+          }),
+        );
+      }),
+    ];
 
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
 
-      // teardown
-      server.close();
+    // test
+    const resp = await client.environments.update(mockEnvironment.id, {
+      guestAuthentication: mockEnvironment.guestAuthentication,
+      isProd: mockEnvironment.isProd,
+      metadata: mockEnvironment.metadata,
+      name: mockEnvironment.name,
+      namespaces: mockEnvironment.namespaces,
+      translationsPath: mockEnvironment.translationsPath,
     });
 
-    it("should handle decoder errors when fetching an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
-      const restHandlers = [
-        rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockEnvironment,
-                accountId: null,
-              },
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.get(mockEnvironment.id);
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting AccountIdFromString at 0.accountId but instead got: null`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully fetching an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
-      const restHandlers = [
-        rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockEnvironment,
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.get(mockEnvironment.id);
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle failure when fetching all Environments", async () => {
-      // setup
-      const restHandlers = [
-        rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.list();
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when fetching all Environments", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
-      const restHandlers = [
-        rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: [
-                {
-                  ...mockEnvironment,
-                  id: null,
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.list();
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting EnvironmentIdFromString at 0.0.id but instead got: null`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully fetching all Environments", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
-      const restHandlers = [
-        rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: [mockEnvironment],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.list();
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockEnvironment]))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle failure when updating an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.update(mockEnvironment.id, {
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
-
-      match(resp)
-        .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle decoder errors when updating an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockEnvironment,
-                id: null,
-              },
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.update(mockEnvironment.id, {
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
-
-      match(resp)
-        .with({ _tag: "decoder_errors" }, ({ reasons }) =>
-          expect(reasons).toStrictEqual([
-            `Expecting EnvironmentIdFromString at 0.id but instead got: null`,
-          ]),
-        )
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
-
-    it("should handle successfully updating an Environment", async () => {
-      // setup
-      const mockEnvironment: Environment = _mkMockEnvironment()();
-
-      const restHandlers = [
-        rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockEnvironment,
-            }),
-          );
-        }),
-      ];
-
-      const server = setupServer(...restHandlers);
-      server.listen({ onUnhandledRequest: "error" });
-
-      // test
-      const resp = await client.environments.update(mockEnvironment.id, {
-        guestAuthentication: mockEnvironment.guestAuthentication,
-        isProd: mockEnvironment.isProd,
-        metadata: mockEnvironment.metadata,
-        name: mockEnvironment.name,
-        namespaces: mockEnvironment.namespaces,
-        translationsPath: mockEnvironment.translationsPath,
-      });
-
-      match(resp)
-        .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
-        .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
-
-      // teardown
-      server.close();
-    });
+    // teardown
+    server.close();
   });
 });
