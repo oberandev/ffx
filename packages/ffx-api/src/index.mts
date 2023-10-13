@@ -1,3 +1,5 @@
+import axios from "axios";
+
 import {
   Agent,
   Agents,
@@ -30,15 +32,64 @@ import {
   updateEnvironment,
 } from "./lib/environments.mjs";
 import {
+  File,
+  FileContents,
+  Files,
+  ListFilesQueryParams,
+  UpdateFileInput,
+  UploadFileInput,
+  deleteFile,
+  downloadFile,
+  getFile,
+  listFiles,
+  updateFile,
+  uploadFile,
+} from "./lib/files.mjs";
+import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/http.mjs";
+import {
   AgentId,
   DocumentId,
   EnvironmentId,
+  FileId,
+  JobId,
+  RecordId,
   SecretId,
   SheetId,
   SpaceId,
   VersionId,
   WorkbookId,
 } from "./lib/ids.mjs";
+import {
+  AcknowledgeJobInput,
+  CancelJobInput,
+  CompleteJobInput,
+  CreateJobInput,
+  FailJobInput,
+  Job,
+  Jobs,
+  UpdateJobInput,
+  acknowledgeJob,
+  acknowledgeJobOutcome,
+  cancelJob,
+  completeJob,
+  createJob,
+  deleteJob,
+  executeJob,
+  failJob,
+  getJob,
+  listJobs,
+  updateJob,
+} from "./lib/jobs.mjs";
+import {
+  ListRecordsQueryParams,
+  Record,
+  Records,
+  UpdateRecordsQueryParams,
+  deleteRecords,
+  insertRecords,
+  listRecords,
+  updateRecords,
+} from "./lib/records.mjs";
 import {
   CreateSecretInput,
   Secret,
@@ -60,7 +111,6 @@ import {
   listSpaces,
   updateSpace,
 } from "./lib/spaces.mjs";
-import { ApiReader, DecoderErrors, HttpError, Successful } from "./lib/types.mjs";
 import { Version, createVersion } from "./lib/versions.mjs";
 import {
   CreateWorkbookInput,
@@ -120,15 +170,76 @@ interface ApiClient {
       input: UpdateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
   };
+  files: {
+    delete: (
+      fileId: FileId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    download: (fileId: FileId) => Promise<DecoderErrors | HttpError | Successful<FileContents>>;
+    get: (fileId: FileId) => Promise<DecoderErrors | HttpError | Successful<File>>;
+    list: (
+      queryParams?: ListFilesQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Files>>;
+    update: (
+      fileId: FileId,
+      input: UpdateFileInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<File>>;
+    upload: (input: UploadFileInput) => Promise<DecoderErrors | HttpError | Successful<File>>;
+  };
+  jobs: {
+    ack: (
+      jobId: JobId,
+      input: AcknowledgeJobInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+    ackOutcome: (jobId: JobId) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+    cancel: (
+      jobId: JobId,
+      input: CancelJobInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+    complete: (
+      jobId: JobId,
+      input: CompleteJobInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+    create: (input: CreateJobInput) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+    delete: (jobId: JobId) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    execute: (
+      jobId: JobId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    fail: (
+      jobId: JobId,
+      input: FailJobInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+    get: (jobId: JobId) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+    list: () => Promise<DecoderErrors | HttpError | Successful<Jobs>>;
+    update: (
+      jobId: JobId,
+      input: UpdateJobInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<Job>>;
+  };
+  records: {
+    delete: (
+      sheetId: SheetId,
+      ids: ReadonlyArray<RecordId>,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    get: (
+      sheetId: SheetId,
+      queryParams?: ListRecordsQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Records>>;
+    insert: (
+      sheetId: SheetId,
+      input: ReadonlyArray<Record>,
+    ) => Promise<DecoderErrors | HttpError | Successful<Records>>;
+    update: (
+      sheetId: SheetId,
+      input: ReadonlyArray<Record>,
+      queryParams?: UpdateRecordsQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Records>>;
+  };
   secrets: {
     create: (input: CreateSecretInput) => Promise<DecoderErrors | HttpError | Successful<Secret>>;
     delete: (
       secretId: SecretId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    list: (
-      environmentId: EnvironmentId,
-      spaceId?: SpaceId,
-    ) => Promise<DecoderErrors | HttpError | Successful<Secrets>>;
+    list: (spaceId?: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Secrets>>;
   };
   sheets: {
     delete: (
@@ -175,14 +286,17 @@ interface ApiClient {
 }
 
 export default function mkApiClient(secret: string, environmentId: EnvironmentId): ApiClient {
-  const reader: ApiReader = {
-    baseUrl: "https://platform.flatfile.com/api/v1",
-    environmentId,
-    pkgJson: {
-      name: pkgJson.name,
-      version: pkgJson.version,
+  const instance = axios.create({
+    baseURL: "https://platform.flatfile.com/api/v1",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "User-Agent": `${pkgJson.name}/v${pkgJson.version}`,
     },
-    secret,
+  });
+
+  const reader: ApiReader = {
+    axios: instance,
+    environmentId,
   };
 
   return {
@@ -206,10 +320,37 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       list: () => listEnvironments()(reader)(),
       update: (environmentId, input) => updateEnvironment(environmentId, input)(reader)(),
     },
+    files: {
+      delete: (fileId) => deleteFile(fileId)(reader)(),
+      download: (fileId) => downloadFile(fileId)(reader)(),
+      get: (fileId) => getFile(fileId)(reader)(),
+      list: (queryParams) => listFiles(queryParams)(reader)(),
+      update: (fileId, input) => updateFile(fileId, input)(reader)(),
+      upload: (input) => uploadFile(input)(reader)(),
+    },
+    jobs: {
+      ack: (jobId, input) => acknowledgeJob(jobId, input)(reader)(),
+      ackOutcome: (jobId) => acknowledgeJobOutcome(jobId)(reader)(),
+      cancel: (jobId, input) => cancelJob(jobId, input)(reader)(),
+      complete: (jobId, input) => completeJob(jobId, input)(reader)(),
+      create: (input) => createJob(input)(reader)(),
+      delete: (jobId) => deleteJob(jobId)(reader)(),
+      execute: (jobId) => executeJob(jobId)(reader)(),
+      fail: (jobId, input) => failJob(jobId, input)(reader)(),
+      get: (jobId) => getJob(jobId)(reader)(),
+      list: () => listJobs()(reader)(),
+      update: (jobId, input) => updateJob(jobId, input)(reader)(),
+    },
+    records: {
+      delete: (sheetId, ids) => deleteRecords(sheetId, ids)(reader)(),
+      get: (sheetId, queryParams) => listRecords(sheetId, queryParams)(reader)(),
+      insert: (sheetId, input) => insertRecords(sheetId, input)(reader)(),
+      update: (sheetId, input, queryParams) => updateRecords(sheetId, input, queryParams)(reader)(),
+    },
     secrets: {
       create: (input) => createSecret(input)(reader)(),
       delete: (secretId) => deleteSecret(secretId)(reader)(),
-      list: (environmentId, spaceId) => listSecrets(environmentId, spaceId)(reader)(),
+      list: (spaceId) => listSecrets(spaceId)(reader)(),
     },
     sheets: {
       delete: (sheetId) => deleteSheet(sheetId)(reader)(),
@@ -240,10 +381,14 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
 export { Agent, Agents, EventTopic } from "./lib/agents.mjs";
 export { Document, Documents } from "./lib/documents.mjs";
 export { Environment, Environments } from "./lib/environments.mjs";
+export { File, Files } from "./lib/files.mjs";
 export {
   AgentId,
   DocumentId,
   EnvironmentId,
+  FileId,
+  JobId,
+  RecordId,
   SecretId,
   SheetId,
   SpaceId,
@@ -253,6 +398,9 @@ export {
   isoAgentId,
   isoDocumentId,
   isoEnvironmentId,
+  isoFileId,
+  isoJobId,
+  isoRecordId,
   isoSecretId,
   isoSheetId,
   isoSpaceId,
@@ -260,6 +408,7 @@ export {
   isoVersionId,
   isoWorkbookId,
 } from "./lib/ids.mjs";
+export { Job, Jobs } from "./lib/jobs.mjs";
 export { Secret, Secrets } from "./lib/secrets.mjs";
 export { Permission, Sheet, Sheets } from "./lib/sheets.mjs";
 export { Space, Spaces } from "./lib/spaces.mjs";

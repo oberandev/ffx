@@ -1,11 +1,10 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 
-import { AccountIdFromString, EnvironmentId, EnvironmentIdFromString } from "./ids.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -13,7 +12,8 @@ import {
   Successful,
   decodeWith,
   mkHttpError,
-} from "./types.mjs";
+} from "./http.mjs";
+import { AccountIdFromString, EnvironmentId, EnvironmentIdFromString } from "./ids.mjs";
 
 // ==================
 //   Runtime codecs
@@ -58,6 +58,7 @@ const CreateEnvironmentInputC = t.exact(
 
 export type Environment = Readonly<t.TypeOf<typeof EnvironmentC>>;
 export type Environments = ReadonlyArray<Environment>;
+
 export type CreateEnvironmentInput = Readonly<t.TypeOf<typeof CreateEnvironmentInputC>>;
 export type UpdateEnvironmentInput = Partial<CreateEnvironmentInput>;
 
@@ -75,23 +76,17 @@ export function createEnvironment(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environment>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.post(`${r.baseUrl}/environments`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.post(`/environments`, input),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(EnvironmentC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -105,23 +100,17 @@ export function deleteEnvironment(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.delete(`${r.baseUrl}/environments/${environmentId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.delete(`/environments/${environmentId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.type({ success: t.boolean }))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -135,23 +124,17 @@ export function getEnvironment(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environment>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`${r.baseUrl}/environments/${environmentId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.get(`/environments/${environmentId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(EnvironmentC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -166,23 +149,17 @@ export function listEnvironments(): RT.ReaderTask<
 > {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`${r.baseUrl}/environments`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.get(`/environments`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.array(EnvironmentC))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -197,22 +174,16 @@ export function updateEnvironment(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environment>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.patch(`${r.baseUrl}/environments/${environmentId}`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.patch(`/environments/${environmentId}`, input),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(EnvironmentC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }

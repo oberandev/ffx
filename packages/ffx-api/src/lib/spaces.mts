@@ -1,11 +1,20 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { DateFromISOString } from "io-ts-types";
 
 import { AuthLinkC } from "./environments.mjs";
+import {
+  ApiReader,
+  DecoderErrors,
+  HttpError,
+  Successful,
+  decodeWith,
+  mkHttpError,
+} from "./http.mjs";
 import {
   EnvironmentIdFromString,
   SpaceId,
@@ -14,14 +23,6 @@ import {
   WorkbookIdFromString,
 } from "./ids.mjs";
 import { CustomActionC, PermissionC } from "./sheets.mjs";
-import {
-  ApiReader,
-  DecoderErrors,
-  HttpError,
-  Successful,
-  decodeWith,
-  mkHttpError,
-} from "./types.mjs";
 
 // ==================
 //   Runtime codecs
@@ -30,17 +31,17 @@ import {
 export const SpaceC = t.intersection([
   t.type({
     id: SpaceIdFromString,
-    createdAt: t.string,
+    createdAt: DateFromISOString,
     environmentId: EnvironmentIdFromString,
     guestAuthentication: t.array(AuthLinkC),
     name: t.string,
-    updatedAt: t.string,
+    updatedAt: DateFromISOString,
   }),
   t.partial({
     access: t.array(PermissionC),
     accessToken: t.string,
     actions: t.array(CustomActionC),
-    archivedAt: t.string,
+    archivedAt: DateFromISOString,
     autoConfigure: t.boolean,
     createdByUserId: UserIdFromString,
     displayOrder: t.number,
@@ -59,7 +60,7 @@ export const SpaceC = t.intersection([
       pdv: t.number,
     }),
     translationsPath: t.string,
-    upgradedAt: t.string,
+    upgradedAt: DateFromISOString,
     workbooksCount: t.number,
   }),
 ]);
@@ -87,6 +88,7 @@ const CreateSpaceInputC = t.exact(
 
 export type Space = Readonly<t.TypeOf<typeof SpaceC>>;
 export type Spaces = ReadonlyArray<Space>;
+
 export type CreateSpaceInput = Readonly<t.TypeOf<typeof CreateSpaceInputC>>;
 export type UpdateSpaceInput = CreateSpaceInput;
 
@@ -104,23 +106,17 @@ export function archiveSpace(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.post(`${r.baseUrl}/spaces/${spaceId}/archive`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.post(`/spaces/${spaceId}/archive`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.type({ success: t.boolean }))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -134,23 +130,17 @@ export function createSpace(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Space>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.post(`${r.baseUrl}/spaces`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.post(`/spaces`, input),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(SpaceC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -164,23 +154,17 @@ export function deleteSpace(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.delete(`${r.baseUrl}/spaces/${spaceId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.delete(`/spaces/${spaceId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.type({ success: t.boolean }))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -194,23 +178,17 @@ export function getSpace(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Space>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`${r.baseUrl}/spaces/${spaceId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.get(`/spaces/${spaceId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(SpaceC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -225,23 +203,17 @@ export function listSpaces(): RT.ReaderTask<
 > {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`${r.baseUrl}/spaces`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.get(`/spaces`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.array(SpaceC))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -256,22 +228,16 @@ export function updateSpace(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Space>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.patch(`${r.baseUrl}/spaces/${spaceId}`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.patch(`/spaces/${spaceId}`, input),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(SpaceC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }

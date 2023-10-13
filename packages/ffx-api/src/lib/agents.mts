@@ -1,11 +1,10 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 
-import { AgentId, AgentIdFromString } from "./ids.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -13,7 +12,8 @@ import {
   Successful,
   decodeWith,
   mkHttpError,
-} from "./types.mjs";
+} from "./http.mjs";
+import { AgentId, AgentIdFromString } from "./ids.mjs";
 
 // ==================
 //   Runtime codecs
@@ -78,6 +78,7 @@ const CreateAgentInputC = t.exact(
 export type Agent = Readonly<t.TypeOf<typeof AgentC>>;
 export type Agents = ReadonlyArray<Agent>;
 export type EventTopic = Readonly<t.TypeOf<typeof EventTopicC>>;
+
 export type CreateAgentInput = Readonly<t.TypeOf<typeof CreateAgentInputC>>;
 
 // ==================
@@ -94,16 +95,13 @@ export function createAgent(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Agent>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios, environmentId }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.post(`${r.baseUrl}/agents`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
+            return axios.post(`/agents`, input, {
               params: {
-                environmentId: r.environmentId,
+                environmentId,
               },
             });
           },
@@ -113,7 +111,7 @@ export function createAgent(
     }),
     RTE.map((resp) => resp.data),
     RTE.chain(decodeWith(AgentC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -127,16 +125,13 @@ export function deleteAgent(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios, environmentId }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.delete(`${r.baseUrl}/agents/${agentId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
+            return axios.delete(`/agents/${agentId}`, {
               params: {
-                environmentId: r.environmentId,
+                environmentId,
               },
             });
           },
@@ -146,7 +141,7 @@ export function deleteAgent(
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.type({ success: t.boolean }))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -160,16 +155,13 @@ export function getAgent(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Agent>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios, environmentId }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.get(`${r.baseUrl}/agents/${agentId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
+            return axios.get(`/agents/${agentId}`, {
               params: {
-                environmentId: r.environmentId,
+                environmentId,
               },
             });
           },
@@ -179,7 +171,7 @@ export function getAgent(
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(AgentC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -194,16 +186,13 @@ export function listAgents(): RT.ReaderTask<
 > {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios, environmentId }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.get(`${r.baseUrl}/agents`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
+            return axios.get(`/agents`, {
               params: {
-                environmentId: r.environmentId,
+                environmentId,
               },
             });
           },
@@ -213,6 +202,6 @@ export function listAgents(): RT.ReaderTask<
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.array(AgentC))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }

@@ -4,41 +4,51 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { baseUrl, client, mkEnvironmentId, mkSpaceId, mkUserId, mkWorkbookId } from "./helpers.mjs";
+import {
+  baseUrl,
+  client,
+  maybePresent,
+  mkEnvironmentId,
+  mkSpaceId,
+  mkUserId,
+  mkWorkbookId,
+  multipleOf,
+  oneOf,
+} from "./helpers.mjs";
 import { Space } from "../src/lib/spaces.mjs";
 
 function _mkMockSpace(): IO.IO<Space> {
   return IO.of({
     id: mkSpaceId()(),
-    access: faker.helpers.arrayElements(["*", "add", "delete", "edit", "import"]),
-    accessToken: faker.lorem.word(),
-    actions: [],
-    archivedAt: faker.date.past().toISOString(),
-    autoConfigure: faker.helpers.arrayElement([false, true]),
-    createdAt: faker.date.past().toISOString(),
-    createdByUserId: mkUserId()(),
-    displayOrder: faker.number.int(),
+    access: maybePresent(() => multipleOf(["*", "add", "delete", "edit", "import"])),
+    accessToken: maybePresent(() => faker.lorem.word()),
+    actions: maybePresent(() => []),
+    archivedAt: maybePresent(() => faker.date.past()),
+    autoConfigure: maybePresent(() => oneOf([false, true])),
+    createdAt: faker.date.past(),
+    createdByUserId: maybePresent(() => mkUserId()()),
+    displayOrder: maybePresent(() => faker.number.int()),
     environmentId: mkEnvironmentId()(),
-    filesCount: faker.number.int(),
-    guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
-    guestLink: [faker.internet.url()],
-    isCollaborative: faker.helpers.arrayElement([false, true]),
-    labels: [faker.lorem.word()],
-    metadata: {},
+    filesCount: maybePresent(() => faker.number.int()),
+    guestAuthentication: [oneOf(["magic_link", "shared_link"])],
+    guestLink: maybePresent(() => [faker.internet.url()]),
+    isCollaborative: maybePresent(() => oneOf([false, true])),
+    labels: maybePresent(() => [faker.lorem.word()]),
+    metadata: maybePresent(() => ({})),
     name: faker.lorem.word(),
-    namespace: faker.lorem.word(),
-    primaryWorkbookId: mkWorkbookId()(),
-    updatedAt: faker.date.past().toISOString(),
-    size: {
+    namespace: maybePresent(() => faker.lorem.word()),
+    primaryWorkbookId: maybePresent(() => mkWorkbookId()()),
+    updatedAt: faker.date.past(),
+    size: maybePresent(() => ({
       id: faker.lorem.word(),
       name: faker.lorem.word(),
       numFiles: faker.number.int(),
       numUsers: faker.number.int(),
       pdv: faker.number.int(),
-    },
-    translationsPath: faker.lorem.word(),
-    upgradedAt: faker.date.past().toISOString(),
-    workbooksCount: faker.number.int(),
+    })),
+    translationsPath: maybePresent(() => faker.lorem.word()),
+    upgradedAt: maybePresent(() => faker.date.past()),
+    workbooksCount: maybePresent(() => faker.number.int()),
   });
 }
 
@@ -267,7 +277,7 @@ describe("spaces", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSpace))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSpace))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -464,7 +474,7 @@ describe("spaces", () => {
     const resp = await client.spaces.get(mockSpace.id);
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSpace))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSpace))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -563,7 +573,7 @@ describe("spaces", () => {
     const resp = await client.spaces.list();
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockSpace]))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual([mockSpace]))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -701,7 +711,7 @@ describe("spaces", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSpace))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSpace))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown

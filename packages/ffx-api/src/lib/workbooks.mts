@@ -1,17 +1,11 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { DateFromISOString } from "io-ts-types";
 
-import {
-  EnvironmentIdFromString,
-  SpaceIdFromString,
-  WorkbookId,
-  WorkbookIdFromString,
-} from "./ids.mjs";
-import { CustomActionC, SheetC } from "./sheets.mjs";
 import {
   ApiReader,
   DecoderErrors,
@@ -19,7 +13,14 @@ import {
   Successful,
   decodeWith,
   mkHttpError,
-} from "./types.mjs";
+} from "./http.mjs";
+import {
+  EnvironmentIdFromString,
+  SpaceIdFromString,
+  WorkbookId,
+  WorkbookIdFromString,
+} from "./ids.mjs";
+import { CustomActionC, SheetC } from "./sheets.mjs";
 
 // ==================
 //   Runtime codecs
@@ -28,11 +29,11 @@ import {
 export const WorkbookC = t.intersection([
   t.type({
     id: WorkbookIdFromString,
-    createdAt: t.string,
+    createdAt: DateFromISOString,
     environmentId: EnvironmentIdFromString,
     name: t.string,
     spaceId: SpaceIdFromString,
-    updatedAt: t.string,
+    updatedAt: DateFromISOString,
   }),
   t.partial({
     actions: t.array(CustomActionC),
@@ -65,6 +66,7 @@ const CreateWorkbookInputC = t.exact(
 
 export type Workbook = Readonly<t.TypeOf<typeof WorkbookC>>;
 export type Workbooks = ReadonlyArray<Workbook>;
+
 export type CreateWorkbookInput = Readonly<t.TypeOf<typeof CreateWorkbookInputC>>;
 export type UpdateWorkbookInput = Partial<CreateWorkbookInput>;
 
@@ -82,23 +84,17 @@ export function createWorkbook(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.post(`${r.baseUrl}/workbooks`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.post(`/workbooks`, input),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(WorkbookC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -112,23 +108,17 @@ export function deleteWorkbook(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.delete(`${r.baseUrl}/workbooks/${workbookId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.delete(`/workbooks/${workbookId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.type({ success: t.boolean }))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -142,23 +132,17 @@ export function getWorkbook(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`${r.baseUrl}/workbooks/${workbookId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.get(`/workbooks/${workbookId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(WorkbookC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -173,23 +157,17 @@ export function listWorkbooks(): RT.ReaderTask<
 > {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`${r.baseUrl}/workbooks`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.get(`/workbooks`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.array(WorkbookC))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -204,22 +182,16 @@ export function updateWorkbook(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbook>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.patch(`${r.baseUrl}/workbooks/${workbookId}`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.patch(`/workbooks/${workbookId}`, input),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(WorkbookC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }

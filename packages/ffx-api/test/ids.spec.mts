@@ -3,6 +3,10 @@ import {
   mkAgentId,
   mkDocumentId,
   mkEnvironmentId,
+  mkEventId,
+  mkFileId,
+  mkJobId,
+  mkRecordId,
   mkSecretId,
   mkSheetId,
   mkSpaceId,
@@ -14,6 +18,10 @@ import {
   AgentIdFromString,
   DocumentIdFromString,
   EnvironmentIdFromString,
+  EventIdFromString,
+  FileIdFromString,
+  JobIdFromString,
+  RecordIdFromString,
   SecretId,
   SecretIdFromString,
   SheetIdFromString,
@@ -45,6 +53,30 @@ describe("ids", () => {
     const encoded = mkEnvironmentId()();
 
     expect(EnvironmentIdFromString.is(encoded)).toBe(true);
+  });
+
+  it("EventId", () => {
+    const encoded = mkEventId()();
+
+    expect(EventIdFromString.is(encoded)).toBe(true);
+  });
+
+  it("FileId", () => {
+    const brandedT = mkFileId()();
+
+    expect(FileIdFromString.is(brandedT)).toBe(true);
+  });
+
+  it("JobId", () => {
+    const brandedT = mkJobId()();
+
+    expect(JobIdFromString.is(brandedT)).toBe(true);
+  });
+
+  it("RecordId", () => {
+    const brandedT = mkRecordId()();
+
+    expect(RecordIdFromString.is(brandedT)).toBe(true);
   });
 
   it("SecretId", () => {
