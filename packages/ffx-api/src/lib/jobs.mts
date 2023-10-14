@@ -229,8 +229,8 @@ export const JobC = t.intersection([
 const AcknowledgeJobInputC = t.exact(
   t.partial({
     estimatedCompletionAt: date,
-    info: t.string,
     progress: t.number,
+    reason: t.string,
   }),
 );
 
@@ -514,7 +514,7 @@ export function acknowledgeJob(
         TE.tryCatch(
           () => {
             return axios.post(`/jobs/${jobId}/ack`, {
-              info: input?.info,
+              info: input?.reason,
               progress: input?.progress,
               estimatedCompletionAt: input?.estimatedCompletionAt?.toISOString(),
             });

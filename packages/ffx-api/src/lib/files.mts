@@ -245,7 +245,7 @@ export function uploadFile(
         ),
       );
     }),
-    RTE.map((resp) => resp.data),
+    RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(FileC)),
     RTE.matchW(mkHttpError, identity),
   );
