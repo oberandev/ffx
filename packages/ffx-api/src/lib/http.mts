@@ -1,4 +1,4 @@
-import { AxiosError } from "axios";
+import { Axios, AxiosError } from "axios";
 import * as E from "fp-ts/Either";
 import { flow, pipe } from "fp-ts/function";
 import * as RTE from "fp-ts/ReaderTaskEither";
@@ -24,13 +24,8 @@ const HttpMethodC = t.union([
 // ==================
 
 export interface ApiReader {
-  readonly baseUrl: string;
+  readonly axios: Axios;
   readonly environmentId: EnvironmentId;
-  readonly pkgJson: Readonly<{
-    name: string;
-    version: string;
-  }>;
-  readonly secret: string;
 }
 
 export interface DecoderErrors {
@@ -56,38 +51,31 @@ export interface Successful<T> {
 //      Helpers
 // ==================
 
-export function decodeWith<A>(codec: t.Type<A>) {
+export function decodeWith<A>(codec: t.Decoder<unknown, A>) {
   return flow<
     [i: unknown],
     t.Validation<A>,
     DecoderErrors | Successful<A>,
     RTE.ReaderTaskEither<ApiReader, AxiosError, DecoderErrors | Successful<A>>
-  >(
-    codec.decode,
-    E.matchW(
-      (decoderErrors) => _mkDecoderErrors(formatValidationErrors(decoderErrors)),
-      (data) => _mkSuccessful(data),
-    ),
-    RTE.of,
-  );
+  >(codec.decode, E.matchW(flow(formatValidationErrors, _mkDecoderErrors), _mkSuccessful), RTE.of);
 }
 
-function _mkDecoderErrors(reasons: ReadonlyArray<string>): DecoderErrors {
-  return {
+const _mkDecoderErrors = flow(
+  (reasons: ReadonlyArray<string>): DecoderErrors => ({
     _tag: "decoder_errors",
     reasons,
-  };
-}
+  }),
+);
 
-function _mkSuccessful<T>(data: T): Successful<T> {
-  return {
+const _mkSuccessful = flow(
+  <T,>(data: T): Successful<T> => ({
     _tag: "successful",
     data,
-  };
-}
+  }),
+);
 
-export function mkHttpError(error: AxiosError): HttpError {
-  return {
+export const mkHttpError = flow(
+  (error: AxiosError): HttpError => ({
     _tag: "http_error",
     method: pipe(
       HttpMethodC.decode(error.config?.method?.toUpperCase()),
@@ -106,5 +94,5 @@ export function mkHttpError(error: AxiosError): HttpError {
       t.string.decode(error.config?.headers["User-Agent"]?.toString()),
       E.getOrElse(() => "axios"),
     ),
-  };
-}
+  }),
+);

@@ -4,7 +4,14 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { baseUrl, client, mkDocumentId, mkEnvironmentId, mkSpaceId } from "./helpers.mjs";
+import {
+  baseUrl,
+  client,
+  maybePresent,
+  mkDocumentId,
+  mkEnvironmentId,
+  mkSpaceId,
+} from "./helpers.mjs";
 import { Document } from "../src/lib/documents.mjs";
 
 function _mkMockDocument(): IO.IO<Document> {
@@ -14,7 +21,7 @@ function _mkMockDocument(): IO.IO<Document> {
     environmentId: mkEnvironmentId()(),
     spaceId: mkSpaceId()(),
     title: faker.lorem.words(2),
-    treatments: [faker.lorem.word()],
+    treatments: maybePresent(() => [faker.lorem.word()]),
   });
 }
 
@@ -115,7 +122,7 @@ describe("documents", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockDocument))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockDocument))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -330,7 +337,7 @@ describe("documents", () => {
     const resp = await client.documents.get(mockDocument.id, mockDocument.spaceId);
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockDocument))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockDocument))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -431,7 +438,7 @@ describe("documents", () => {
     const resp = await client.documents.list(mockDocument.spaceId);
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockDocument]))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual([mockDocument]))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -551,7 +558,7 @@ describe("documents", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockDocument))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockDocument))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown

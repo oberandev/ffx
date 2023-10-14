@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { identity, pipe } from "fp-ts/function";
 import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
@@ -6,21 +6,20 @@ import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 
 import {
-  EnvironmentId,
-  EnvironmentIdFromString,
-  SecretId,
-  SecretIdFromString,
-  SpaceId,
-  SpaceIdFromString,
-} from "./ids.mjs";
-import {
   ApiReader,
   DecoderErrors,
   HttpError,
   Successful,
   decodeWith,
   mkHttpError,
-} from "./types.mjs";
+} from "./http.mjs";
+import {
+  EnvironmentIdFromString,
+  SecretId,
+  SecretIdFromString,
+  SpaceId,
+  SpaceIdFromString,
+} from "./ids.mjs";
 
 // ==================
 //   Runtime codecs
@@ -41,7 +40,6 @@ export const SecretC = t.intersection([
 const CreateSecretInputC = t.exact(
   t.intersection([
     t.type({
-      environmentId: EnvironmentIdFromString,
       name: t.string,
       value: t.string,
     }),
@@ -57,6 +55,7 @@ const CreateSecretInputC = t.exact(
 
 export type Secret = Readonly<t.TypeOf<typeof SecretC>>;
 export type Secrets = ReadonlyArray<Secret>;
+
 export type CreateSecretInput = Readonly<t.TypeOf<typeof CreateSecretInputC>>;
 
 // ==================
@@ -73,23 +72,21 @@ export function createSecret(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Secret>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios, environmentId }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.post(`${r.baseUrl}/secrets`, input, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () =>
+            axios.post(`/secrets`, {
+              ...input,
+              environmentId,
+            }),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(SecretC)),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -103,23 +100,17 @@ export function deleteSecret(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.delete(`${r.baseUrl}/secrets/${secretId}`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
-            });
-          },
+          () => axios.delete(`/secrets/${secretId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.type({ success: t.boolean }))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }
 
@@ -129,19 +120,15 @@ export function deleteSecret(
  * @since 0.1.0
  */
 export function listSecrets(
-  environmentId: EnvironmentId,
   spaceId?: SpaceId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Secrets>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain((r) => {
+    RTE.chain(({ axios, environmentId }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.get(`${r.baseUrl}/secrets`, {
-              headers: {
-                "User-Agent": `${r.pkgJson.name}/v${r.pkgJson.version}`,
-              },
+            return axios.get(`/secrets`, {
               params: {
                 environmentId,
                 spaceId,
@@ -154,6 +141,6 @@ export function listSecrets(
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.array(SecretC))),
-    RTE.matchW((axiosError) => mkHttpError(axiosError), identity),
+    RTE.matchW(mkHttpError, identity),
   );
 }

@@ -4,22 +4,29 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { baseUrl, client, mkEnvironmentId, mkSpaceId, mkWorkbookId } from "./helpers.mjs";
+import {
+  baseUrl,
+  client,
+  maybePresent,
+  mkEnvironmentId,
+  mkSpaceId,
+  mkWorkbookId,
+} from "./helpers.mjs";
 import { Workbook, Workbooks } from "../src/lib/workbooks.mjs";
 
 function _mkMockWorkbook(): IO.IO<Workbook> {
   return IO.of({
     id: mkWorkbookId()(),
-    actions: [],
-    createdAt: faker.date.past().toISOString(),
+    actions: maybePresent(() => []),
+    createdAt: faker.date.past(),
     environmentId: mkEnvironmentId()(),
-    labels: [faker.lorem.word()],
-    metadata: {},
+    labels: maybePresent(() => [faker.lorem.word()]),
+    metadata: maybePresent(() => ({})),
     name: faker.lorem.word(),
-    namespace: faker.lorem.word(),
-    sheets: [],
+    namespace: maybePresent(() => faker.lorem.word()),
+    sheets: maybePresent(() => []),
     spaceId: mkSpaceId()(),
-    updatedAt: faker.date.past().toISOString(),
+    updatedAt: faker.date.past(),
   });
 }
 
@@ -133,7 +140,7 @@ describe("workbooks", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockWorkbook))
       .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
     // teardown
@@ -330,7 +337,7 @@ describe("workbooks", () => {
     const resp = await client.workbooks.get(mockWorkbook.id);
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockWorkbook))
       .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
     // teardown
@@ -424,7 +431,7 @@ describe("workbooks", () => {
     const resp = await client.workbooks.list();
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbooks))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockWorkbooks))
       .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
     // teardown
@@ -547,7 +554,7 @@ describe("workbooks", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockWorkbook))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockWorkbook))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown

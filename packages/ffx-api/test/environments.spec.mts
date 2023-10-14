@@ -4,7 +4,7 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { baseUrl, client, mkAccountId, mkEnvironmentId } from "./helpers.mjs";
+import { baseUrl, client, maybePresent, mkAccountId, mkEnvironmentId, oneOf } from "./helpers.mjs";
 import { Environment } from "../src/lib/environments.mjs";
 
 function _mkMockEnvironment(): IO.IO<Environment> {
@@ -12,10 +12,12 @@ function _mkMockEnvironment(): IO.IO<Environment> {
     id: mkEnvironmentId()(),
     accountId: mkAccountId()(),
     features: {},
-    guestAuthentication: [faker.helpers.arrayElement(["magic_link", "shared_link"])],
-    isProd: faker.helpers.arrayElement([false, true]),
+    guestAuthentication: [oneOf(["magic_link", "shared_link"])],
+    isProd: oneOf([false, true]),
     metadata: {},
     name: faker.lorem.word(),
+    namespaces: maybePresent(() => [faker.lorem.word()]),
+    translationsPath: maybePresent(() => faker.lorem.word()),
   });
 }
 
@@ -133,7 +135,7 @@ describe("environments", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockEnvironment))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -231,7 +233,7 @@ describe("environments", () => {
     const resp = await client.environments.delete(mockEnvironment.id);
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual({ success: true }))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -330,7 +332,7 @@ describe("environments", () => {
     const resp = await client.environments.get(mockEnvironment.id);
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockEnvironment))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -429,7 +431,7 @@ describe("environments", () => {
     const resp = await client.environments.list();
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockEnvironment]))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual([mockEnvironment]))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -549,7 +551,7 @@ describe("environments", () => {
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockEnvironment))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockEnvironment))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown

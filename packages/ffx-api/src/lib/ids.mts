@@ -3,6 +3,10 @@ import * as t from "io-ts";
 import { Iso } from "monocle-ts";
 import { Newtype, iso } from "newtype-ts";
 
+// ==================
+//     AccountId
+// ==================
+
 export interface AccountId extends Newtype<{ readonly AccountId: unique symbol }, string> {}
 
 export const isoAccountId: Iso<AccountId, string> = iso<AccountId>();
@@ -19,6 +23,10 @@ export const AccountIdFromString = new t.Type<AccountId>(
   },
   t.identity,
 );
+
+// ==================
+//      AgentId
+// ==================
 
 export interface AgentId extends Newtype<{ readonly AgentId: unique symbol }, string> {}
 
@@ -37,6 +45,10 @@ export const AgentIdFromString = new t.Type<AgentId>(
   t.identity,
 );
 
+// ==================
+//     DocumentId
+// ==================
+
 export interface DocumentId extends Newtype<{ readonly DocumentId: unique symbol }, string> {}
 
 export const isoDocumentId: Iso<DocumentId, string> = iso<DocumentId>();
@@ -53,6 +65,10 @@ export const DocumentIdFromString = new t.Type<DocumentId>(
   },
   t.identity,
 );
+
+// ==================
+//    EnvironmentId
+// ==================
 
 export interface EnvironmentId extends Newtype<{ readonly EnvironmentId: unique symbol }, string> {}
 
@@ -71,6 +87,115 @@ export const EnvironmentIdFromString = new t.Type<EnvironmentId>(
   t.identity,
 );
 
+// ==================
+//      EventId
+// ==================
+
+export interface EventId extends Newtype<{ readonly EventId: unique symbol }, string> {}
+
+export const isoEventId: Iso<EventId, string> = iso<EventId>();
+
+export const EventIdFromString = new t.Type<EventId>(
+  "EventIdFromString",
+  (input: unknown): input is EventId => {
+    return Str.isString(input) && /^us_evt_\w{16}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_evt_\w{16}$/g.test(input)
+      ? t.success(isoEventId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
+//       FileId
+// ==================
+
+export interface FileId extends Newtype<{ readonly FileId: unique symbol }, string> {}
+
+export const isoFileId: Iso<FileId, string> = iso<FileId>();
+
+export const FileIdFromString = new t.Type<FileId>(
+  "FileIdFromString",
+  (input: unknown): input is FileId => {
+    return Str.isString(input) && /^us_fl_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_fl_\w{8}$/g.test(input)
+      ? t.success(isoFileId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
+//      GuestId
+// ==================
+
+export interface GuestId extends Newtype<{ readonly GuestId: unique symbol }, string> {}
+
+export const isoGuestId: Iso<GuestId, string> = iso<GuestId>();
+
+export const GuestIdFromString = new t.Type<GuestId>(
+  "GuestIdFromString",
+  (input: unknown): input is GuestId => {
+    return Str.isString(input) && /^us_g_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_g_\w{8}$/g.test(input)
+      ? t.success(isoGuestId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
+//       JobId
+// ==================
+
+export interface JobId extends Newtype<{ readonly JobId: unique symbol }, string> {}
+
+export const isoJobId: Iso<JobId, string> = iso<JobId>();
+
+export const JobIdFromString = new t.Type<JobId>(
+  "JobIdFromString",
+  (input: unknown): input is JobId => {
+    return Str.isString(input) && /^us_jb_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_jb_\w{8}$/g.test(input)
+      ? t.success(isoJobId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
+//     RecordId
+// ==================
+
+export interface RecordId extends Newtype<{ readonly RecordId: unique symbol }, string> {}
+
+export const isoRecordId: Iso<RecordId, string> = iso<RecordId>();
+
+export const RecordIdFromString = new t.Type<RecordId>(
+  "RecordIdFromString",
+  (input: unknown): input is RecordId => {
+    return Str.isString(input) && /^us_rc_\w{16}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_rc_\w{16}$/g.test(input)
+      ? t.success(isoRecordId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
+//     SecretId
+// ==================
+
 export interface SecretId extends Newtype<{ readonly SecretId: unique symbol }, string> {}
 
 export const isoSecretId: Iso<SecretId, string> = iso<SecretId>();
@@ -87,6 +212,10 @@ export const SecretIdFromString = new t.Type<SecretId>(
   },
   t.identity,
 );
+
+// ==================
+//      SheetId
+// ==================
 
 export interface SheetId extends Newtype<{ readonly SheetId: unique symbol }, string> {}
 
@@ -105,6 +234,31 @@ export const SheetIdFromString = new t.Type<SheetId>(
   t.identity,
 );
 
+// ==================
+//     SnapshotId
+// ==================
+
+export interface SnapshotId extends Newtype<{ readonly SnapshotId: unique symbol }, string> {}
+
+export const isoSnapshotId: Iso<SnapshotId, string> = iso<SnapshotId>();
+
+export const SnapshotIdFromString = new t.Type<SnapshotId>(
+  "SnapshotIdFromString",
+  (input: unknown): input is SnapshotId => {
+    return Str.isString(input) && /^us_ss_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_ss_\w{8}$/g.test(input)
+      ? t.success(isoSnapshotId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
+//      SpaceId
+// ==================
+
 export interface SpaceId extends Newtype<{ readonly SpaceId: unique symbol }, string> {}
 
 export const isoSpaceId: Iso<SpaceId, string> = iso<SpaceId>();
@@ -121,6 +275,10 @@ export const SpaceIdFromString = new t.Type<SpaceId>(
   },
   t.identity,
 );
+
+// ==================
+//       UserId
+// ==================
 
 export interface UserId extends Newtype<{ readonly UserId: unique symbol }, string> {}
 
@@ -139,6 +297,10 @@ export const UserIdFromString = new t.Type<UserId>(
   t.identity,
 );
 
+// ==================
+//     VersionId
+// ==================
+
 export interface VersionId extends Newtype<{ readonly VersionId: unique symbol }, string> {}
 
 export const isoVersionId: Iso<VersionId, string> = iso<VersionId>();
@@ -155,6 +317,10 @@ export const VersionIdFromString = new t.Type<VersionId>(
   },
   t.identity,
 );
+
+// ==================
+//     WorkbookId
+// ==================
 
 export interface WorkbookId extends Newtype<{ readonly WorkbookId: unique symbol }, string> {}
 
