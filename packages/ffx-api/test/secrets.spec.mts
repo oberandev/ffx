@@ -4,16 +4,23 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { baseUrl, client, mkEnvironmentId, mkSecretId, mkSpaceId } from "./helpers.mjs";
+import {
+  baseUrl,
+  client,
+  maybePresent,
+  mkEnvironmentId,
+  mkSecretId,
+  mkSpaceId,
+} from "./helpers.mjs";
 import { Secret } from "../src/lib/secrets.mjs";
 
 function _mkMockSecret(): IO.IO<Secret> {
   return IO.of({
     id: mkSecretId()(),
-    spaceId: mkSpaceId()(),
-    name: faker.lorem.word(),
-    value: faker.lorem.word(),
     environmentId: mkEnvironmentId()(),
+    name: faker.lorem.word(),
+    spaceId: maybePresent(() => mkSpaceId()()),
+    value: faker.lorem.word(),
   });
 }
 
@@ -43,7 +50,6 @@ describe("secrets", () => {
 
     // test
     const resp = await client.secrets.create({
-      environmentId: mockSecret.environmentId,
       name: mockSecret.name,
       spaceId: mockSecret.spaceId,
       value: mockSecret.value,
@@ -80,7 +86,6 @@ describe("secrets", () => {
 
     // test
     const resp = await client.secrets.create({
-      environmentId: mockSecret.environmentId,
       name: mockSecret.name,
       spaceId: mockSecret.spaceId,
       value: mockSecret.value,
@@ -113,14 +118,13 @@ describe("secrets", () => {
 
     // test
     const resp = await client.secrets.create({
-      environmentId: mockSecret.environmentId,
       name: mockSecret.name,
       spaceId: mockSecret.spaceId,
       value: mockSecret.value,
     });
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSecret))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSecret))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown
@@ -249,7 +253,7 @@ describe("secrets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.secrets.list(mockSecret.environmentId);
+    const resp = await client.secrets.list();
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -283,7 +287,7 @@ describe("secrets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.secrets.list(mockSecret.environmentId);
+    const resp = await client.secrets.list();
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -316,10 +320,10 @@ describe("secrets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.secrets.list(mockSecret.environmentId);
+    const resp = await client.secrets.list();
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual([mockSecret]))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual([mockSecret]))
       .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
 
     // teardown

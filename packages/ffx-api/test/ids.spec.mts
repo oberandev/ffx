@@ -3,9 +3,16 @@ import {
   mkAgentId,
   mkDocumentId,
   mkEnvironmentId,
+  mkEventId,
+  mkFileId,
+  mkGuestId,
+  mkJobId,
+  mkRecordId,
   mkSecretId,
   mkSheetId,
+  mkSnapshotId,
   mkSpaceId,
+  mkUserId,
   mkVersionId,
   mkWorkbookId,
 } from "./helpers.mjs";
@@ -14,10 +21,17 @@ import {
   AgentIdFromString,
   DocumentIdFromString,
   EnvironmentIdFromString,
+  EventIdFromString,
+  FileIdFromString,
+  GuestIdFromString,
+  JobIdFromString,
+  RecordIdFromString,
   SecretId,
   SecretIdFromString,
   SheetIdFromString,
+  SnapshotIdFromString,
   SpaceIdFromString,
+  UserIdFromString,
   VersionIdFromString,
   WorkbookIdFromString,
 } from "../src/lib/ids.mjs";
@@ -47,6 +61,36 @@ describe("ids", () => {
     expect(EnvironmentIdFromString.is(encoded)).toBe(true);
   });
 
+  it("EventId", () => {
+    const encoded = mkEventId()();
+
+    expect(EventIdFromString.is(encoded)).toBe(true);
+  });
+
+  it("FileId", () => {
+    const brandedT = mkFileId()();
+
+    expect(FileIdFromString.is(brandedT)).toBe(true);
+  });
+
+  it("GuestId", () => {
+    const brandedT = mkGuestId()();
+
+    expect(GuestIdFromString.is(brandedT)).toBe(true);
+  });
+
+  it("JobId", () => {
+    const brandedT = mkJobId()();
+
+    expect(JobIdFromString.is(brandedT)).toBe(true);
+  });
+
+  it("RecordId", () => {
+    const brandedT = mkRecordId()();
+
+    expect(RecordIdFromString.is(brandedT)).toBe(true);
+  });
+
   it("SecretId", () => {
     const brandedT: SecretId = mkSecretId()();
 
@@ -59,10 +103,22 @@ describe("ids", () => {
     expect(SheetIdFromString.is(brandedT)).toBe(true);
   });
 
+  it("SnapshotId", () => {
+    const brandedT = mkSnapshotId()();
+
+    expect(SnapshotIdFromString.is(brandedT)).toBe(true);
+  });
+
   it("SpaceId", () => {
     const brandedT = mkSpaceId()();
 
     expect(SpaceIdFromString.is(brandedT)).toBe(true);
+  });
+
+  it("UserId", () => {
+    const brandedT = mkUserId()();
+
+    expect(UserIdFromString.is(brandedT)).toBe(true);
   });
 
   it("VersionId", () => {

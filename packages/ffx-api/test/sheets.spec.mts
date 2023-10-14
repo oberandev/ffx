@@ -4,90 +4,88 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { baseUrl, client, mkSheetId, mkWorkbookId } from "./helpers.mjs";
+import {
+  baseUrl,
+  client,
+  maybePresent,
+  mkSheetId,
+  mkWorkbookId,
+  multipleOf,
+  oneOf,
+} from "./helpers.mjs";
 import { Sheet, Sheets } from "../src/lib/sheets.mjs";
 
 function _mkMockSheet(): IO.IO<Sheet> {
   return IO.of({
     id: mkSheetId()(),
     config: {
-      access: faker.helpers.arrayElements(["*", "add", "delete", "edit", "import"]),
-      actions: [
+      access: maybePresent(() => multipleOf(["*", "add", "delete", "edit", "import"])),
+      actions: maybePresent(() => [
         {
-          confirm: faker.helpers.arrayElement([false, true]),
-          description: faker.lorem.words(3),
-          icon: faker.lorem.word(),
-          inputForm: {
+          confirm: maybePresent(() => oneOf([false, true])),
+          description: maybePresent(() => faker.lorem.words(3)),
+          icon: maybePresent(() => faker.lorem.word()),
+          inputForm: maybePresent(() => ({
             fields: [
               {
-                config: {
+                config: maybePresent(() => ({
                   options: {
-                    color: faker.lorem.word(),
-                    description: faker.lorem.words(3),
-                    icon: faker.lorem.word(),
-                    label: faker.lorem.word(),
-                    meta: {},
-                    value: faker.helpers.arrayElement([
-                      faker.helpers.arrayElement([false, true]),
-                      faker.number.int(),
-                      faker.lorem.word(),
-                    ]),
+                    color: maybePresent(() => faker.lorem.word()),
+                    description: maybePresent(() => faker.lorem.words(3)),
+                    icon: maybePresent(() => faker.lorem.word()),
+                    label: maybePresent(() => faker.lorem.word()),
+                    meta: maybePresent(() => ({})),
+                    value: oneOf([oneOf([false, true]), faker.number.int(), faker.lorem.word()]),
                   },
-                },
-                constraints: [{ type: "required" }],
-                description: faker.lorem.words(3),
+                })),
+                constraints: maybePresent(() => [{ type: "required" }]),
+                description: maybePresent(() => faker.lorem.words(3)),
                 key: faker.lorem.word(),
                 label: faker.lorem.word(),
-                type: faker.helpers.arrayElement([
-                  "boolean",
-                  "enum",
-                  "number",
-                  "string",
-                  "textarea",
-                ]),
+                type: oneOf(["boolean", "enum", "number", "string", "textarea"]),
               },
             ],
             type: "simple",
-          },
+          })),
           label: faker.lorem.word(),
-          mode: faker.helpers.arrayElement(["background", "foreground"]),
-          operation: faker.lorem.word(),
-          primary: faker.helpers.arrayElement([false, true]),
-          requireAllValid: faker.helpers.arrayElement([false, true]),
-          requireSelection: faker.helpers.arrayElement([false, true]),
-          schedule: faker.helpers.arrayElement(["daily", "hourly", "weekly"]),
-          tooltip: faker.lorem.word(),
+          mode: maybePresent(() => oneOf(["background", "foreground"])),
+          operation: maybePresent(() => faker.lorem.word()),
+          primary: maybePresent(() => oneOf([false, true])),
+          requireAllValid: maybePresent(() => oneOf([false, true])),
+          requireSelection: maybePresent(() => oneOf([false, true])),
+          schedule: maybePresent(() => oneOf(["daily", "hourly", "weekly"])),
+          tooltip: maybePresent(() => faker.lorem.word()),
         },
-      ],
-      allowAdditionalFields: faker.helpers.arrayElement([false, true]),
-      description: faker.lorem.words(3),
+      ]),
+      allowAdditionalFields: maybePresent(() => oneOf([false, true])),
+      description: maybePresent(() => faker.lorem.words(3)),
       fields: [
         {
-          constraints: [{ type: "required" }],
-          description: faker.lorem.words(3),
+          constraints: maybePresent(() => [{ type: "required" }]),
+          description: maybePresent(() => faker.lorem.words(3)),
           key: faker.lorem.word(),
-          label: faker.lorem.word(),
-          metadata: {},
-          readonly: faker.helpers.arrayElement([false, true]),
-          treatments: [faker.lorem.word()],
+          label: maybePresent(() => faker.lorem.word()),
+          metadata: maybePresent(() => ({})),
+          readonly: maybePresent(() => oneOf([false, true])),
+          treatments: maybePresent(() => [faker.lorem.word()]),
           type: faker.lorem.word(),
         },
       ],
-      metadata: {},
+      metadata: maybePresent(() => ({})),
       name: faker.lorem.word(),
-      readonly: faker.helpers.arrayElement([false, true]),
-      slug: faker.lorem.word(),
+      readonly: oneOf([false, true]),
+      slug: maybePresent(() => faker.lorem.word()),
     },
-    countRecords: {
+    countRecords: maybePresent(() => ({
       error: faker.number.int({ min: 0 }),
       errorsByField: {},
       total: faker.number.int({ min: 0 }),
       valid: faker.number.int({ min: 0 }),
-    },
-    createdAt: faker.date.past().toISOString(),
+    })),
+    createdAt: faker.date.past(),
     name: faker.lorem.word(),
-    namespace: faker.lorem.word(),
-    updatedAt: faker.date.past().toISOString(),
+    namespace: maybePresent(() => faker.lorem.word()),
+    updatedAt: faker.date.past(),
     workbookId: mkWorkbookId()(),
   });
 }
@@ -283,7 +281,7 @@ describe("sheets", () => {
     const resp = await client.sheets.get(mockSheet.id);
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheet))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSheet))
       .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
     // teardown
@@ -377,7 +375,7 @@ describe("sheets", () => {
     const resp = await client.sheets.list();
 
     match(resp)
-      .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockSheets))
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSheets))
       .otherwise(() => assert.fail(`Received unexpected tag: ${resp._tag}`));
 
     // teardown
