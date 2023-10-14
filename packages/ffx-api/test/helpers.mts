@@ -11,10 +11,12 @@ import {
   EnvironmentId,
   EventId,
   FileId,
+  GuestId,
   JobId,
   RecordId,
   SecretId,
   SheetId,
+  SnapshotId,
   SpaceId,
   UserId,
   VersionId,
@@ -25,10 +27,12 @@ import {
   isoEnvironmentId,
   isoEventId,
   isoFileId,
+  isoGuestId,
   isoJobId,
   isoRecordId,
   isoSecretId,
   isoSheetId,
+  isoSnapshotId,
   isoSpaceId,
   isoUserId,
   isoVersionId,
@@ -96,6 +100,13 @@ export function mkFileId(): IO.IO<FileId> {
   );
 }
 
+export function mkGuestId(): IO.IO<GuestId> {
+  return pipe(
+    randomId(8),
+    IO.map((random) => isoGuestId.wrap(`us_g_${random}`)),
+  );
+}
+
 export function mkJobId(): IO.IO<JobId> {
   return pipe(
     randomId(8),
@@ -121,6 +132,13 @@ export function mkSheetId(): IO.IO<SheetId> {
   return pipe(
     randomId(8),
     IO.map((random) => isoSheetId.wrap(`us_sh_${random}`)),
+  );
+}
+
+export function mkSnapshotId(): IO.IO<SnapshotId> {
+  return pipe(
+    randomId(8),
+    IO.map((random) => isoSnapshotId.wrap(`us_ss_${random}`)),
   );
 }
 

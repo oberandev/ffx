@@ -130,6 +130,27 @@ export const FileIdFromString = new t.Type<FileId>(
 );
 
 // ==================
+//      GuestId
+// ==================
+
+export interface GuestId extends Newtype<{ readonly GuestId: unique symbol }, string> {}
+
+export const isoGuestId: Iso<GuestId, string> = iso<GuestId>();
+
+export const GuestIdFromString = new t.Type<GuestId>(
+  "GuestIdFromString",
+  (input: unknown): input is GuestId => {
+    return Str.isString(input) && /^us_g_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_g_\w{8}$/g.test(input)
+      ? t.success(isoGuestId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
 //       JobId
 // ==================
 
@@ -208,6 +229,27 @@ export const SheetIdFromString = new t.Type<SheetId>(
   (input, context) => {
     return Str.isString(input) && /^us_sh_\w{8}$/g.test(input)
       ? t.success(isoSheetId.wrap(input))
+      : t.failure(input, context);
+  },
+  t.identity,
+);
+
+// ==================
+//     SnapshotId
+// ==================
+
+export interface SnapshotId extends Newtype<{ readonly SnapshotId: unique symbol }, string> {}
+
+export const isoSnapshotId: Iso<SnapshotId, string> = iso<SnapshotId>();
+
+export const SnapshotIdFromString = new t.Type<SnapshotId>(
+  "SnapshotIdFromString",
+  (input: unknown): input is SnapshotId => {
+    return Str.isString(input) && /^us_ss_\w{8}$/g.test(input);
+  },
+  (input, context) => {
+    return Str.isString(input) && /^us_ss_\w{8}$/g.test(input)
+      ? t.success(isoSnapshotId.wrap(input))
       : t.failure(input, context);
   },
   t.identity,

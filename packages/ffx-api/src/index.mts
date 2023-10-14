@@ -32,6 +32,16 @@ import {
   updateEnvironment,
 } from "./lib/environments.mjs";
 import {
+  CreateEventInput,
+  Event,
+  Events,
+  ListEventsQueryParams,
+  acknowledgeEvent,
+  createEvent,
+  getEvent,
+  listEvents,
+} from "./lib/events.mjs";
+import {
   File,
   FileContents,
   Files,
@@ -50,6 +60,7 @@ import {
   AgentId,
   DocumentId,
   EnvironmentId,
+  EventId,
   FileId,
   JobId,
   RecordId,
@@ -169,6 +180,16 @@ interface ApiClient {
       environmentId: EnvironmentId,
       input: UpdateEnvironmentInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
+  };
+  events: {
+    ack: (
+      eventId: EventId,
+    ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
+    create: (input: CreateEventInput) => Promise<DecoderErrors | HttpError | Successful<Event>>;
+    get: (eventId: EventId) => Promise<DecoderErrors | HttpError | Successful<Event>>;
+    list: (
+      queryParams?: ListEventsQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Events>>;
   };
   files: {
     delete: (
@@ -320,6 +341,12 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       list: () => listEnvironments()(reader)(),
       update: (environmentId, input) => updateEnvironment(environmentId, input)(reader)(),
     },
+    events: {
+      ack: (eventId) => acknowledgeEvent(eventId)(reader)(),
+      create: (input) => createEvent(input)(reader)(),
+      get: (eventId) => getEvent(eventId)(reader)(),
+      list: (queryParams) => listEvents(queryParams)(reader)(),
+    },
     files: {
       delete: (fileId) => deleteFile(fileId)(reader)(),
       download: (fileId) => downloadFile(fileId)(reader)(),
@@ -378,31 +405,39 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
   };
 }
 
-export { Agent, Agents, EventTopic } from "./lib/agents.mjs";
+export { Agent, Agents } from "./lib/agents.mjs";
 export { Document, Documents } from "./lib/documents.mjs";
 export { Environment, Environments } from "./lib/environments.mjs";
+export { Event, Events } from "./lib/events.mjs";
 export { File, Files } from "./lib/files.mjs";
 export {
   AgentId,
   DocumentId,
   EnvironmentId,
+  EventId,
   FileId,
+  GuestId,
   JobId,
   RecordId,
   SecretId,
   SheetId,
+  SnapshotId,
   SpaceId,
+  UserId,
   VersionId,
   WorkbookId,
   isoAccountId,
   isoAgentId,
   isoDocumentId,
   isoEnvironmentId,
+  isoEventId,
   isoFileId,
+  isoGuestId,
   isoJobId,
   isoRecordId,
   isoSecretId,
   isoSheetId,
+  isoSnapshotId,
   isoSpaceId,
   isoUserId,
   isoVersionId,

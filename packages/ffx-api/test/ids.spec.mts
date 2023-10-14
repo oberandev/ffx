@@ -5,11 +5,14 @@ import {
   mkEnvironmentId,
   mkEventId,
   mkFileId,
+  mkGuestId,
   mkJobId,
   mkRecordId,
   mkSecretId,
   mkSheetId,
+  mkSnapshotId,
   mkSpaceId,
+  mkUserId,
   mkVersionId,
   mkWorkbookId,
 } from "./helpers.mjs";
@@ -20,12 +23,15 @@ import {
   EnvironmentIdFromString,
   EventIdFromString,
   FileIdFromString,
+  GuestIdFromString,
   JobIdFromString,
   RecordIdFromString,
   SecretId,
   SecretIdFromString,
   SheetIdFromString,
+  SnapshotIdFromString,
   SpaceIdFromString,
+  UserIdFromString,
   VersionIdFromString,
   WorkbookIdFromString,
 } from "../src/lib/ids.mjs";
@@ -67,6 +73,12 @@ describe("ids", () => {
     expect(FileIdFromString.is(brandedT)).toBe(true);
   });
 
+  it("GuestId", () => {
+    const brandedT = mkGuestId()();
+
+    expect(GuestIdFromString.is(brandedT)).toBe(true);
+  });
+
   it("JobId", () => {
     const brandedT = mkJobId()();
 
@@ -91,10 +103,22 @@ describe("ids", () => {
     expect(SheetIdFromString.is(brandedT)).toBe(true);
   });
 
+  it("SnapshotId", () => {
+    const brandedT = mkSnapshotId()();
+
+    expect(SnapshotIdFromString.is(brandedT)).toBe(true);
+  });
+
   it("SpaceId", () => {
     const brandedT = mkSpaceId()();
 
     expect(SpaceIdFromString.is(brandedT)).toBe(true);
+  });
+
+  it("UserId", () => {
+    const brandedT = mkUserId()();
+
+    expect(UserIdFromString.is(brandedT)).toBe(true);
   });
 
   it("VersionId", () => {

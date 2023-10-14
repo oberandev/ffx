@@ -110,7 +110,114 @@ function _mkMockJob(): IO.IO<Job> {
 }
 
 describe("jobs", () => {
-  it("[Mock] should handle failure when acknowledging a Job", async () => {});
+  it("[Mock] should handle failure when acknowledging a Job", async () => {
+    // setup
+    const mockJob: Job = _mkMockJob()();
+
+    const restHandlers = [
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.jobs.ack(mockJob.id, {
+      estimatedCompletionAt: new Date(),
+      reason: mockJob.info,
+      progress: mockJob.progress,
+    });
+
+    match(resp)
+      .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mock] should handle decoder errors when acknowledging a Job", async () => {
+    // setup
+    const mockJob: Job = _mkMockJob()();
+
+    const restHandlers = [
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: {
+              ...mockJob,
+              id: null,
+            },
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.jobs.ack(mockJob.id, {
+      estimatedCompletionAt: new Date(),
+      reason: mockJob.info,
+      progress: mockJob.progress,
+    });
+
+    match(resp)
+      .with({ _tag: "decoder_errors" }, ({ reasons }) =>
+        expect(reasons).toStrictEqual([`Expecting JobIdFromString at 0.id but instead got: null`]),
+      )
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
+
+  it("[Mock] should handle successfully acknowledging a Job", async () => {
+    // setup
+    const mockJob: Job = _mkMockJob()();
+
+    const restHandlers = [
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            data: mockJob,
+          }),
+        );
+      }),
+    ];
+
+    const server = setupServer(...restHandlers);
+    server.listen({ onUnhandledRequest: "error" });
+
+    // test
+    const resp = await client.jobs.ack(mockJob.id, {
+      estimatedCompletionAt: new Date(),
+      reason: mockJob.info,
+      progress: mockJob.progress,
+    });
+
+    match(resp)
+      .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockJob))
+      .otherwise(() => assert.fail(`Received unexpected:\n${JSON.stringify(resp, null, 2)}`));
+
+    // teardown
+    server.close();
+  });
 
   it("[Mock] should handle failure when acknowledging the outcome of a Job", async () => {});
 
