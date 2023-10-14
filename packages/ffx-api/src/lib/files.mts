@@ -22,6 +22,7 @@ import {
   SpaceIdFromString,
   WorkbookIdFromString,
 } from "./ids.mjs";
+import { CustomActionC } from "./sheets.mjs";
 
 // ==================
 //   Runtime codecs

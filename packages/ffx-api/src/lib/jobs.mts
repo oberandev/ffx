@@ -35,7 +35,7 @@ const JobTypeC = t.union([
   t.literal("workbook"),
 ]);
 
-const JobOutcomeC = t.type({
+const JobOutcomeC = t.partial({
   acknowledge: t.boolean,
   buttonText: t.string,
   heading: t.string,

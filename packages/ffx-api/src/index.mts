@@ -227,7 +227,7 @@ interface ApiClient {
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     fail: (
       jobId: JobId,
-      input: FailJobInput,
+      input?: FailJobInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Job>>;
     get: (jobId: JobId) => Promise<DecoderErrors | HttpError | Successful<Job>>;
     list: () => Promise<DecoderErrors | HttpError | Successful<Jobs>>;
