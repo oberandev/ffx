@@ -14,6 +14,7 @@ import {
   mkHttpError,
 } from "./http.mjs";
 import {
+  EnvironmentId,
   EnvironmentIdFromString,
   SecretId,
   SecretIdFromString,
@@ -47,6 +48,7 @@ export const SecretC = t.intersection([
 const UpsertSecretInputC = t.exact(
   t.intersection([
     t.type({
+      environmentId: EnvironmentIdFromString,
       name: t.string,
       value: t.string,
     }),
@@ -99,11 +101,12 @@ export function deleteSecret(
  * @since 0.1.0
  */
 export function listSecrets(
+  environmentId: EnvironmentId,
   spaceId?: SpaceId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Secrets>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
@@ -134,12 +137,12 @@ export function upsertSecret(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Secret>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () =>
             axios.post(`/secrets`, {
-              environmentId,
+              environmentId: input.environmentId,
               name: input.name,
               spaceId: input.spaceId,
               value: input.value,

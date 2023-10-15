@@ -67,6 +67,13 @@ const CreateWorkbookInputC = t.exact(
   ]),
 );
 
+const ListWorkbooksQueryParamsC = t.exact(
+  t.partial({
+    includeCounts: t.boolean,
+    spaceId: SpaceIdFromString,
+  }),
+);
+
 // ==================
 //       Types
 // ==================
@@ -75,6 +82,7 @@ export type Workbook = Readonly<t.TypeOf<typeof WorkbookC>>;
 export type Workbooks = ReadonlyArray<Workbook>;
 
 export type CreateWorkbookInput = Readonly<t.TypeOf<typeof CreateWorkbookInputC>>;
+export type ListWorkbooksQueryParams = Readonly<t.TypeOf<typeof ListWorkbooksQueryParamsC>>;
 export type UpdateWorkbookInput = Partial<CreateWorkbookInput>;
 
 // ==================
@@ -168,16 +176,15 @@ export function getWorkbook(
  *
  * @since 0.1.0
  */
-export function listWorkbooks(): RT.ReaderTask<
-  ApiReader,
-  DecoderErrors | HttpError | Successful<Workbooks>
-> {
+export function listWorkbooks(
+  queryParams?: ListWorkbooksQueryParams,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbooks>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.get(`/workbooks`),
+          () => axios.get(`/workbooks`, { params: queryParams }),
           (reason: unknown) => reason as AxiosError,
         ),
       );

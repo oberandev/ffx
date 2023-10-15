@@ -20,6 +20,7 @@ import {
   JobId,
   JobIdFromString,
   SheetIdFromString,
+  SpaceIdFromString,
   VersionIdFromString,
   WorkbookIdFromString,
 } from "./ids.mjs";
@@ -482,6 +483,18 @@ const UpdateJobInputC = t.exact(
   }),
 );
 
+const ListJobsQueryParamsC = t.exact(
+  t.partial({
+    environmentId: EnvironmentIdFromString,
+    fileId: FileIdFromString,
+    pageNumber: t.number,
+    pageSize: t.number,
+    sortDirection: t.union([t.literal("asc"), t.literal("desc")]),
+    spaceId: SpaceIdFromString,
+    workbookId: WorkbookIdFromString,
+  }),
+);
+
 // ==================
 //       Types
 // ==================
@@ -493,7 +506,8 @@ export type AcknowledgeJobInput = Readonly<t.TypeOf<typeof AcknowledgeJobInputC>
 export type CancelJobInput = Readonly<t.TypeOf<typeof CancelJobInputC>>;
 export type CompleteJobInput = Readonly<t.TypeOf<typeof CompleteJobInputC>>;
 export type CreateJobInput = Readonly<t.TypeOf<typeof CreateJobInputC>>;
-export type FailJobInput = t.TypeOf<typeof CompleteJobInputC>;
+export type FailJobInput = Readonly<t.TypeOf<typeof CompleteJobInputC>>;
+export type ListJobsQueryParams = Readonly<t.TypeOf<typeof ListJobsQueryParamsC>>;
 export type UpdateJobInput = Readonly<t.TypeOf<typeof UpdateJobInputC>>;
 
 // ==================
@@ -668,16 +682,10 @@ export function deleteJob(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.delete(`/jobs/${jobId}`, {
-              params: {
-                environmentId,
-              },
-            });
-          },
+          () => axios.delete(`/jobs/${jobId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -752,16 +760,10 @@ export function getJob(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Job>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`/jobs/${jobId}`, {
-              params: {
-                environmentId,
-              },
-            });
-          },
+          () => axios.get(`/jobs/${jobId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -777,19 +779,15 @@ export function getJob(
  *
  * @since 0.1.0
  */
-export function listJobs(): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Jobs>> {
+export function listJobs(
+  queryParams?: ListJobsQueryParams,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Jobs>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`/jobs`, {
-              params: {
-                environmentId,
-              },
-            });
-          },
+          () => axios.get(`/jobs`, { params: queryParams }),
           (reason: unknown) => reason as AxiosError,
         ),
       );

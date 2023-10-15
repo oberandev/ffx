@@ -20,6 +20,7 @@ import {
   SpaceId,
   SpaceIdFromString,
 } from "./ids.mjs";
+import { CustomActionC } from "./sheets.mjs";
 
 // ==================
 //   Runtime codecs
@@ -34,6 +35,7 @@ export const DocumentC = t.intersection([
     title: t.string,
   }),
   t.partial({
+    actions: t.array(CustomActionC),
     treatments: t.array(t.string),
   }),
 ]);
@@ -52,6 +54,7 @@ const CreateDocumentInputC = t.exact(
       title: t.string,
     }),
     t.partial({
+      actions: t.array(CustomActionC),
       treatments: t.array(t.string),
     }),
   ]),
@@ -87,6 +90,7 @@ export function createDocument(
         TE.tryCatch(
           () => {
             return axios.post(`/spaces/${spaceId}/documents`, {
+              actions: input.actions,
               body: input.body,
               title: input.title,
               treatments: input.treatments,
@@ -193,6 +197,7 @@ export function updateDocument(
         TE.tryCatch(
           () => {
             return axios.patch(`/spaces/${spaceId}/documents/${documentId}`, {
+              actions: input.actions,
               body: input.body,
               title: input.title,
               treatments: input.treatments,

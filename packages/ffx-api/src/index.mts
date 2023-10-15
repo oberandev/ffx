@@ -28,6 +28,7 @@ import {
   CreateEnvironmentInput,
   Environment,
   Environments,
+  ListEnvironmentsQueryParams,
   UpdateEnvironmentInput,
   createEnvironment,
   deleteEnvironment,
@@ -82,6 +83,7 @@ import {
   FailJobInput,
   Job,
   Jobs,
+  ListJobsQueryParams,
   UpdateJobInput,
   acknowledgeJob,
   acknowledgeJobOutcome,
@@ -116,6 +118,7 @@ import {
 import { Sheet, Sheets, deleteSheet, getSheet, listSheets } from "./lib/sheets.mjs";
 import {
   CreateSpaceInput,
+  ListSpacesQueryParams,
   Space,
   Spaces,
   UpdateSpaceInput,
@@ -129,6 +132,7 @@ import {
 import { Version, createVersion } from "./lib/versions.mjs";
 import {
   CreateWorkbookInput,
+  ListWorkbooksQueryParams,
   UpdateWorkbookInput,
   Workbook,
   Workbooks,
@@ -145,9 +149,13 @@ interface ApiClient {
     create: (input: CreateAgentInput) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
     delete: (
       agentId: AgentId,
+      environmentId: EnvironmentId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    get: (agentId: AgentId) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
-    list: () => Promise<DecoderErrors | HttpError | Successful<Agents>>;
+    get: (
+      agentId: AgentId,
+      environmentId: EnvironmentId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Agent>>;
+    list: (environmentId: EnvironmentId) => Promise<DecoderErrors | HttpError | Successful<Agents>>;
   };
   documents: {
     create: (
@@ -179,7 +187,9 @@ interface ApiClient {
     get: (
       environmentId: EnvironmentId,
     ) => Promise<DecoderErrors | HttpError | Successful<Environment>>;
-    list: () => Promise<DecoderErrors | HttpError | Successful<Environments>>;
+    list: (
+      queryParams?: ListEnvironmentsQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Environments>>;
     update: (
       environmentId: EnvironmentId,
       input: UpdateEnvironmentInput,
@@ -237,7 +247,9 @@ interface ApiClient {
       input?: FailJobInput,
     ) => Promise<DecoderErrors | HttpError | Successful<Job>>;
     get: (jobId: JobId) => Promise<DecoderErrors | HttpError | Successful<Job>>;
-    list: () => Promise<DecoderErrors | HttpError | Successful<Jobs>>;
+    list: (
+      queryParams?: ListJobsQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Jobs>>;
     update: (
       jobId: JobId,
       input: UpdateJobInput,
@@ -266,7 +278,10 @@ interface ApiClient {
     delete: (
       secretId: SecretId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
-    list: (spaceId?: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Secrets>>;
+    list: (
+      environmentId: EnvironmentId,
+      spaceId?: SpaceId,
+    ) => Promise<DecoderErrors | HttpError | Successful<Secrets>>;
     upsert: (input: UpsertSecretInput) => Promise<DecoderErrors | HttpError | Successful<Secret>>;
   };
   sheets: {
@@ -274,7 +289,7 @@ interface ApiClient {
       sheetId: SheetId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     get: (sheetId: SheetId) => Promise<DecoderErrors | HttpError | Successful<Sheet>>;
-    list: () => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
+    list: (workbookId: WorkbookId) => Promise<DecoderErrors | HttpError | Successful<Sheets>>;
   };
   spaces: {
     archive: (
@@ -285,7 +300,9 @@ interface ApiClient {
       spaceId: SpaceId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     get: (spaceId: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Space>>;
-    list: () => Promise<DecoderErrors | HttpError | Successful<Spaces>>;
+    list: (
+      queryParams?: ListSpacesQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Spaces>>;
     update: (
       spaceId: SpaceId,
       input: UpdateSpaceInput,
@@ -305,7 +322,9 @@ interface ApiClient {
       workbookId: WorkbookId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     get: (workbookId: WorkbookId) => Promise<DecoderErrors | HttpError | Successful<Workbook>>;
-    list: () => Promise<DecoderErrors | HttpError | Successful<Workbooks>>;
+    list: (
+      queryParams?: ListWorkbooksQueryParams,
+    ) => Promise<DecoderErrors | HttpError | Successful<Workbooks>>;
     update: (
       workbookId: WorkbookId,
       input: UpdateWorkbookInput,
@@ -315,7 +334,6 @@ interface ApiClient {
 
 export default function mkApiClient(
   secret: string,
-  environmentId: EnvironmentId,
   options?: {
     loggerLevel: "debug" | "trace";
   },
@@ -370,15 +388,14 @@ export default function mkApiClient(
 
   const reader: ApiReader = {
     axios: instance,
-    environmentId,
   };
 
   return {
     agents: {
       create: (input) => createAgent(input)(reader)(),
-      delete: (agentId) => deleteAgent(agentId)(reader)(),
-      get: (agentId) => getAgent(agentId)(reader)(),
-      list: () => listAgents()(reader)(),
+      delete: (agentId, environmentId) => deleteAgent(agentId, environmentId)(reader)(),
+      get: (agentId, environmentId) => getAgent(agentId, environmentId)(reader)(),
+      list: (environmentId) => listAgents(environmentId)(reader)(),
     },
     documents: {
       create: (spaceId, input) => createDocument(spaceId, input)(reader)(),
@@ -391,7 +408,7 @@ export default function mkApiClient(
       create: (input) => createEnvironment(input)(reader)(),
       delete: (environmentId) => deleteEnvironment(environmentId)(reader)(),
       get: (environmentId) => getEnvironment(environmentId)(reader)(),
-      list: () => listEnvironments()(reader)(),
+      list: (queryParams) => listEnvironments(queryParams)(reader)(),
       update: (environmentId, input) => updateEnvironment(environmentId, input)(reader)(),
     },
     events: {
@@ -418,7 +435,7 @@ export default function mkApiClient(
       execute: (jobId) => executeJob(jobId)(reader)(),
       fail: (jobId, input) => failJob(jobId, input)(reader)(),
       get: (jobId) => getJob(jobId)(reader)(),
-      list: () => listJobs()(reader)(),
+      list: (queryParams) => listJobs(queryParams)(reader)(),
       update: (jobId, input) => updateJob(jobId, input)(reader)(),
     },
     records: {
@@ -429,20 +446,20 @@ export default function mkApiClient(
     },
     secrets: {
       delete: (secretId) => deleteSecret(secretId)(reader)(),
-      list: (spaceId) => listSecrets(spaceId)(reader)(),
+      list: (environmentId, spaceId) => listSecrets(environmentId, spaceId)(reader)(),
       upsert: (input) => upsertSecret(input)(reader)(),
     },
     sheets: {
       delete: (sheetId) => deleteSheet(sheetId)(reader)(),
       get: (sheetId) => getSheet(sheetId)(reader)(),
-      list: () => listSheets()(reader)(),
+      list: (workbookId) => listSheets(workbookId)(reader)(),
     },
     spaces: {
       archive: (sheetId) => archiveSpace(sheetId)(reader)(),
       create: (input) => createSpace(input)(reader)(),
       delete: (sheetId) => deleteSpace(sheetId)(reader)(),
       get: (sheetId) => getSpace(sheetId)(reader)(),
-      list: () => listSpaces()(reader)(),
+      list: (queryParams) => listSpaces(queryParams)(reader)(),
       update: (spaceId, input) => updateSpace(spaceId, input)(reader)(),
     },
     versions: {
@@ -452,7 +469,7 @@ export default function mkApiClient(
       create: (input) => createWorkbook(input)(reader)(),
       delete: (workbookId) => deleteWorkbook(workbookId)(reader)(),
       get: (workbookId) => getWorkbook(workbookId)(reader)(),
-      list: () => listWorkbooks()(reader)(),
+      list: (queryParams) => listWorkbooks(queryParams)(reader)(),
       update: (workbookId, input) => updateWorkbook(workbookId, input)(reader)(),
     },
   };

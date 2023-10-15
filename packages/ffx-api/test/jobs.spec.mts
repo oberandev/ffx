@@ -927,7 +927,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.fail(mockJob.id, {
       outcome: mockJob.outcome,
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -961,7 +961,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.fail(mockJob.id, {
       outcome: mockJob.outcome,
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)

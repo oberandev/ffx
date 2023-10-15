@@ -17,6 +17,7 @@ import { Document } from "../src/lib/documents.mjs";
 function _mkMockDocument(): IO.IO<Document> {
   return IO.of({
     id: mkDocumentId()(),
+    actions: [],
     body: faker.lorem.paragraphs(2),
     environmentId: mkEnvironmentId()(),
     spaceId: mkSpaceId()(),
@@ -51,6 +52,7 @@ describe("documents", () => {
 
     // test
     const resp = await client.documents.create(mockDocument.spaceId, {
+      actions: mockDocument.actions,
       body: mockDocument.body,
       title: mockDocument.title,
       treatments: mockDocument.treatments,
@@ -87,6 +89,7 @@ describe("documents", () => {
 
     // test
     const resp = await client.documents.create(mockDocument.spaceId, {
+      actions: mockDocument.actions,
       body: mockDocument.body,
       title: mockDocument.title,
       treatments: mockDocument.treatments,
@@ -119,6 +122,7 @@ describe("documents", () => {
 
     // test
     const resp = await client.documents.create(mockDocument.spaceId, {
+      actions: mockDocument.actions,
       body: mockDocument.body,
       title: mockDocument.title,
       treatments: mockDocument.treatments,
@@ -476,6 +480,7 @@ describe("documents", () => {
 
     // test
     const resp = await client.documents.update(mockDocument.id, mockDocument.spaceId, {
+      actions: mockDocument.actions,
       body: mockDocument.body,
       title: mockDocument.title,
       treatments: mockDocument.treatments,
@@ -515,6 +520,7 @@ describe("documents", () => {
 
     // test
     const resp = await client.documents.update(mockDocument.id, mockDocument.spaceId, {
+      actions: mockDocument.actions,
       body: mockDocument.body,
       title: mockDocument.title,
       treatments: mockDocument.treatments,
@@ -555,6 +561,7 @@ describe("documents", () => {
 
     // test
     const resp = await client.documents.update(mockDocument.id, mockDocument.spaceId, {
+      actions: mockDocument.actions,
       body: mockDocument.body,
       title: mockDocument.title,
       treatments: mockDocument.treatments,

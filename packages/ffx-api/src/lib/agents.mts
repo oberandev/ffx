@@ -14,7 +14,7 @@ import {
   decodeWith,
   mkHttpError,
 } from "./http.mjs";
-import { AgentId, AgentIdFromString } from "./ids.mjs";
+import { AgentId, AgentIdFromString, EnvironmentId, EnvironmentIdFromString } from "./ids.mjs";
 
 // ==================
 //   Runtime codecs
@@ -35,9 +35,8 @@ const AgentC = t.type({
  */
 
 const CreateAgentInputC = t.strict({
-  compiler: t.literal("js"),
+  environmentId: EnvironmentIdFromString,
   source: t.string,
-  topics: t.array(EventTopicC),
 });
 
 // ==================
@@ -63,20 +62,55 @@ export function createAgent(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Agent>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
             return axios.post(
               `/agents`,
               {
-                compiler: input.compiler,
+                compiler: "js",
                 source: input.source,
-                topics: input.topics,
+                topics: [
+                  "agent:created",
+                  "agent:deleted",
+                  "agent:updated",
+                  "commit:completed",
+                  "commit:created",
+                  "commit:updated",
+                  "document:created",
+                  "document:deleted",
+                  "document:updated",
+                  "file:created",
+                  "file:deleted",
+                  "file:updated",
+                  "job:completed",
+                  "job:created",
+                  "job:deleted",
+                  "job:failed",
+                  "job:outcome-acknowledged",
+                  "job:ready",
+                  "job:scheduled",
+                  "job:updated",
+                  "layer:created",
+                  "records:created",
+                  "records:deleted",
+                  "records:updated",
+                  "sheet:created",
+                  "sheet:deleted",
+                  "sheet:updated",
+                  "snapshot:created",
+                  "space:created",
+                  "space:deleted",
+                  "space:updated",
+                  "workbook:created",
+                  "workbook:deleted",
+                  "workbook:updated",
+                ],
               },
               {
                 params: {
-                  environmentId,
+                  environmentId: input.environmentId,
                 },
               },
             );
@@ -98,10 +132,11 @@ export function createAgent(
  */
 export function deleteAgent(
   agentId: AgentId,
+  environmentId: EnvironmentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
@@ -128,10 +163,11 @@ export function deleteAgent(
  */
 export function getAgent(
   agentId: AgentId,
+  environmentId: EnvironmentId,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Agent>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
@@ -156,13 +192,12 @@ export function getAgent(
  *
  * @since 0.1.0
  */
-export function listAgents(): RT.ReaderTask<
-  ApiReader,
-  DecoderErrors | HttpError | Successful<Agents>
-> {
+export function listAgents(
+  environmentId: EnvironmentId,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Agents>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {

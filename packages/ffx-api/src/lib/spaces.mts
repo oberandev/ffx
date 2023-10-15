@@ -89,6 +89,26 @@ const CreateSpaceInputC = t.exact(
   }),
 );
 
+const ListSpacesQueryParamsC = t.exact(
+  t.partial({
+    archived: t.boolean,
+    environmentId: EnvironmentIdFromString,
+    isCollaborative: t.boolean,
+    pageNumber: t.number,
+    pageSize: t.number,
+    search: t.string,
+    sortDirection: t.union([t.literal("asc"), t.literal("desc")]),
+    sortField: t.union([
+      t.literal("createdAt"),
+      t.literal("createdByUserName"),
+      t.literal("environmentId"),
+      t.literal("filesCount"),
+      t.literal("name"),
+      t.literal("workbooksCount"),
+    ]),
+  }),
+);
+
 // ==================
 //       Types
 // ==================
@@ -97,6 +117,7 @@ export type Space = Readonly<t.TypeOf<typeof SpaceC>>;
 export type Spaces = ReadonlyArray<Space>;
 
 export type CreateSpaceInput = Readonly<t.TypeOf<typeof CreateSpaceInputC>>;
+export type ListSpacesQueryParams = Readonly<t.TypeOf<typeof ListSpacesQueryParamsC>>;
 export type UpdateSpaceInput = CreateSpaceInput;
 
 // ==================
@@ -219,16 +240,15 @@ export function getSpace(
  *
  * @since 0.1.0
  */
-export function listSpaces(): RT.ReaderTask<
-  ApiReader,
-  DecoderErrors | HttpError | Successful<Spaces>
-> {
+export function listSpaces(
+  queryParams?: ListSpacesQueryParams,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Spaces>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.get(`/spaces`),
+          () => axios.get(`/spaces`, { params: queryParams }),
           (reason: unknown) => reason as AxiosError,
         ),
       );

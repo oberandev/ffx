@@ -12,6 +12,7 @@ import {
   mkSecretId,
   mkSpaceId,
 } from "./helpers.mjs";
+import { EnvironmentId, SpaceId } from "../src/lib/ids.mjs";
 import { Secret } from "../src/lib/secrets.mjs";
 
 function _mkMockSecret(): IO.IO<Secret> {
@@ -147,7 +148,9 @@ describe("secrets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.secrets.list();
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const spaceId: SpaceId = mkSpaceId()();
+    const resp = await client.secrets.list(environmentId, spaceId);
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -181,7 +184,9 @@ describe("secrets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.secrets.list();
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const spaceId: SpaceId = mkSpaceId()();
+    const resp = await client.secrets.list(environmentId, spaceId);
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -214,7 +219,9 @@ describe("secrets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.secrets.list();
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const spaceId: SpaceId = mkSpaceId()();
+    const resp = await client.secrets.list(environmentId, spaceId);
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual([mockSecret]))
@@ -249,6 +256,7 @@ describe("secrets", () => {
 
     // test
     const resp = await client.secrets.upsert({
+      environmentId: mkEnvironmentId()(),
       name: mockSecret.name,
       spaceId: mockSecret.spaceId,
       value: mockSecret.value,
@@ -285,6 +293,7 @@ describe("secrets", () => {
 
     // test
     const resp = await client.secrets.upsert({
+      environmentId: mkEnvironmentId()(),
       name: mockSecret.name,
       spaceId: mockSecret.spaceId,
       value: mockSecret.value,
@@ -317,6 +326,7 @@ describe("secrets", () => {
 
     // test
     const resp = await client.secrets.upsert({
+      environmentId: mkEnvironmentId()(),
       name: mockSecret.name,
       spaceId: mockSecret.spaceId,
       value: mockSecret.value,

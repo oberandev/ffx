@@ -59,6 +59,13 @@ const CreateEnvironmentInputC = t.exact(
   ]),
 );
 
+const ListEnvironmentsQueryParamsC = t.exact(
+  t.partial({
+    pageNumber: t.number,
+    pageSize: t.number,
+  }),
+);
+
 // ==================
 //       Types
 // ==================
@@ -68,6 +75,7 @@ export type Environments = ReadonlyArray<Environment>;
 
 export type CreateEnvironmentInput = Readonly<t.TypeOf<typeof CreateEnvironmentInputC>>;
 export type UpdateEnvironmentInput = Partial<CreateEnvironmentInput>;
+export type ListEnvironmentsQueryParams = Readonly<t.TypeOf<typeof ListEnvironmentsQueryParamsC>>;
 
 // ==================
 //       Main
@@ -159,16 +167,15 @@ export function getEnvironment(
  *
  * @since 0.1.0
  */
-export function listEnvironments(): RT.ReaderTask<
-  ApiReader,
-  DecoderErrors | HttpError | Successful<Environments>
-> {
+export function listEnvironments(
+  queryParams?: ListEnvironmentsQueryParams,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Environments>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.get(`/environments`),
+          () => axios.get(`/environments`, { params: queryParams }),
           (reason: unknown) => reason as AxiosError,
         ),
       );

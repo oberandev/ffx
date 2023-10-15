@@ -24,8 +24,7 @@ import mkApiClient from "@oberan/ffx-api";
 import { match } from "ts-pattern";
 
 const secret: string = process.env.FF_SECRET ?? "";
-const environmentId: string = process.env.FF_ENVIRONMENT_ID ?? "";
-const client = mkApiClient(secret, environmentId);
+const client = mkApiClient(secret);
 
 // No need to surround with try/catch!
 const resp = await client.agents.list();

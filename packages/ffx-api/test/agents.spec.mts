@@ -4,8 +4,9 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
-import { baseUrl, client, mkAgentId, multipleOf } from "./helpers.mjs";
+import { baseUrl, client, mkAgentId, mkEnvironmentId, multipleOf } from "./helpers.mjs";
 import { Agent, Agents } from "../src/lib/agents.mjs";
+import { EnvironmentId } from "../src/lib/ids.mjs";
 
 function _mkMockAgent(): IO.IO<Agent> {
   return IO.of({
@@ -77,9 +78,8 @@ describe("agents", () => {
 
     // test
     const resp = await client.agents.create({
-      compiler: mockAgent.compiler,
+      environmentId: mkEnvironmentId()(),
       source: mockAgent.source,
-      topics: mockAgent.topics,
     });
 
     match(resp)
@@ -111,9 +111,8 @@ describe("agents", () => {
 
     // test
     const resp = await client.agents.create({
-      compiler: mockAgent.compiler,
+      environmentId: mkEnvironmentId()(),
       source: mockAgent.source,
-      topics: mockAgent.topics,
     });
 
     match(resp)
@@ -143,9 +142,8 @@ describe("agents", () => {
 
     // test
     const resp = await client.agents.create({
-      compiler: mockAgent.compiler,
+      environmentId: mkEnvironmentId()(),
       source: mockAgent.source,
-      topics: mockAgent.topics,
     });
 
     match(resp)
@@ -180,7 +178,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.delete(mockAgent.id);
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.delete(mockAgent.id, environmentId);
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -211,7 +210,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.delete(mockAgent.id);
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.delete(mockAgent.id, environmentId);
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -244,7 +244,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.delete(mockAgent.id);
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.delete(mockAgent.id, environmentId);
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual({ success: true }))
@@ -278,7 +279,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.get(mockAgent.id);
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.get(mockAgent.id, environmentId);
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -310,7 +312,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.get(mockAgent.id);
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.get(mockAgent.id, environmentId);
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -341,7 +344,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.get(mockAgent.id);
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.get(mockAgent.id, environmentId);
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockAgent))
@@ -373,7 +377,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.list();
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.list(environmentId);
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -402,7 +407,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.list();
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.list(environmentId);
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -433,7 +439,8 @@ describe("agents", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.agents.list();
+    const environmentId: EnvironmentId = mkEnvironmentId()();
+    const resp = await client.agents.list(environmentId);
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toStrictEqual(mockAgents))
