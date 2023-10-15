@@ -97,7 +97,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -131,7 +131,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -164,7 +164,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -195,7 +195,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -229,7 +229,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -265,7 +265,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -292,7 +292,7 @@ describe("sheets", () => {
   it("[Mocks] should handle failure when fetching all Sheets", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -327,7 +327,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -361,7 +361,7 @@ describe("sheets", () => {
     const mockSheets: Sheets = Array.from({ length: 2 }, () => _mkMockSheet()());
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({

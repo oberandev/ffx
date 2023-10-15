@@ -32,7 +32,7 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -71,7 +71,7 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -112,7 +112,7 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockDocument }));
       }),
     ];
@@ -143,7 +143,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.delete(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -180,7 +180,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.delete(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -216,7 +216,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.delete(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -250,7 +250,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.get(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -287,7 +287,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.get(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -326,7 +326,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.get(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -356,7 +356,7 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -390,7 +390,7 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -428,7 +428,7 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -459,7 +459,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.patch(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(400),
             ctx.json({
@@ -501,7 +501,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.patch(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({
@@ -545,7 +545,7 @@ describe("documents", () => {
     const restHandlers = [
       rest.patch(
         `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_req, res, ctx) => {
+        (_, res, ctx) => {
           return res(
             ctx.status(200),
             ctx.json({

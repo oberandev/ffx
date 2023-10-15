@@ -58,7 +58,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/agents`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -95,7 +95,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/agents`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -132,7 +132,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/agents`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/agents`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json(mockAgent));
       }),
     ];
@@ -159,7 +159,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -194,7 +194,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -228,7 +228,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -260,7 +260,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -295,7 +295,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -330,7 +330,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -358,7 +358,7 @@ describe("agents", () => {
   it("[Mock] should handle failure when fetching all Agents", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/agents`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -393,7 +393,7 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/agents`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -425,7 +425,7 @@ describe("agents", () => {
     const mockAgents: Agents = Array.from({ length: 2 }, () => _mkMockAgent()());
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/agents`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({

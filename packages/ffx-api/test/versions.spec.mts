@@ -21,7 +21,7 @@ describe("versions", () => {
     const parentVersionId: VersionId = mkVersionId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/versions`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/versions`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -56,7 +56,7 @@ describe("versions", () => {
     const parentVersionId: VersionId = mkVersionId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/versions`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/versions`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -93,7 +93,7 @@ describe("versions", () => {
     const mockVersion: Version = _mkMockVersion()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/versions`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/versions`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockVersion }));
       }),
     ];

@@ -31,7 +31,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -65,7 +65,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -98,7 +98,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -129,7 +129,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/secrets`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -165,7 +165,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/secrets`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -205,7 +205,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/secrets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/secrets`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -236,7 +236,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/secrets`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -275,7 +275,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/secrets`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -316,7 +316,7 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/secrets`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/secrets`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockSecret }));
       }),
     ];

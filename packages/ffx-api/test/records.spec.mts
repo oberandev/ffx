@@ -73,7 +73,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -108,7 +108,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -142,7 +142,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -174,7 +174,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -209,7 +209,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -244,7 +244,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockRecords }));
       }),
     ];
@@ -268,7 +268,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -303,7 +303,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -338,7 +338,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -368,7 +368,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -403,7 +403,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -438,7 +438,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({

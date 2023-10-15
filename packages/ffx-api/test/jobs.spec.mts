@@ -115,7 +115,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -153,7 +153,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -191,7 +191,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -224,7 +224,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -258,7 +258,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -292,7 +292,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -321,7 +321,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -357,7 +357,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -393,7 +393,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -424,7 +424,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -461,7 +461,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -498,7 +498,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -530,7 +530,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -582,7 +582,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -636,7 +636,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockJob }));
       }),
     ];
@@ -678,7 +678,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -712,7 +712,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -745,7 +745,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -776,7 +776,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -810,7 +810,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -843,7 +843,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -874,7 +874,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -908,7 +908,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -945,7 +945,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -977,7 +977,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -1011,7 +1011,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1045,7 +1045,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1072,7 +1072,7 @@ describe("jobs", () => {
   it("[Mock] should handle failure when fetching all Jobs", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -1106,7 +1106,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1144,7 +1144,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1173,7 +1173,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -1212,7 +1212,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1253,7 +1253,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockJob }));
       }),
     ];
