@@ -27,7 +27,7 @@ interface Logger {
  *
  * @since 0.1.0
  */
-function mkLogger(pluginName: string): Logger {
+export function mkLogger(pluginName: string): Logger {
   return {
     debug: (msg: string) => {
       return IO.of(
@@ -81,5 +81,3 @@ function mkLogger(pluginName: string): Logger {
     },
   };
 }
-
-export default mkLogger;

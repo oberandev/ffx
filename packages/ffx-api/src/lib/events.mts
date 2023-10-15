@@ -140,30 +140,39 @@ export const EventC = t.intersection([
   }),
 ]);
 
-const CreateEventInputC = t.intersection([
-  t.type({
-    context: EventContextC,
-    domain: EventDomainC,
-    payload: t.UnknownRecord,
-    topic: EventTopicC,
-  }),
-  t.partial({
-    attributes: t.partial({
-      progress: t.partial({
-        current: t.number,
-        percent: t.number,
-        total: t.number,
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
+const CreateEventInputC = t.exact(
+  t.intersection([
+    t.type({
+      context: EventContextC,
+      domain: EventDomainC,
+      payload: t.UnknownRecord,
+      topic: EventTopicC,
+    }),
+    t.partial({
+      attributes: t.partial({
+        progress: t.partial({
+          current: t.number,
+          percent: t.number,
+          total: t.number,
+        }),
+        targetUpdatedAt: DateFromISOString,
       }),
-      targetUpdatedAt: DateFromISOString,
+      callbackUrl: t.string,
+      dataUrl: t.string,
+      origin: t.partial({
+        id: t.string,
+        slug: t.string,
+      }),
     }),
-    callbackUrl: t.string,
-    dataUrl: t.string,
-    origin: t.partial({
-      id: t.string,
-      slug: t.string,
-    }),
-  }),
-]);
+  ]),
+);
 
 const ListEventsQueryParamsC = t.exact(
   t.partial({
@@ -232,7 +241,18 @@ export function createEvent(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/events`, input),
+          () => {
+            return axios.post(`/events`, {
+              attributes: input.attributes,
+              callbackUrl: input.callbackUrl,
+              context: input.context,
+              dataUrl: input.dataUrl,
+              domain: input.domain,
+              origin: input.origin,
+              payload: input.payload,
+              topic: input.topic,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

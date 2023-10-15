@@ -65,6 +65,13 @@ export const SpaceC = t.intersection([
   }),
 ]);
 
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
 const CreateSpaceInputC = t.exact(
   t.partial({
     access: t.array(PermissionC),
@@ -133,7 +140,22 @@ export function createSpace(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/spaces`, input),
+          () => {
+            return axios.post(`/spaces`, {
+              access: input.access,
+              actions: input.actions,
+              autoConfigure: input.autoConfigure,
+              displayOrder: input.displayOrder,
+              environmentId: input.environmentId,
+              guestAuthentication: input.guestAuthentication,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              namespace: input.namespace,
+              primaryWorkbookId: input.primaryWorkbookId,
+              translationsPath: input.translationsPath,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -231,7 +253,22 @@ export function updateSpace(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/spaces/${spaceId}`, input),
+          () => {
+            return axios.patch(`/spaces/${spaceId}`, {
+              access: input.access,
+              actions: input.actions,
+              autoConfigure: input.autoConfigure,
+              displayOrder: input.displayOrder,
+              environmentId: input.environmentId,
+              guestAuthentication: input.guestAuthentication,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              namespace: input.namespace,
+              primaryWorkbookId: input.primaryWorkbookId,
+              translationsPath: input.translationsPath,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

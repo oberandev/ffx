@@ -136,7 +136,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.ack(mockJob.id, {
       estimatedCompletionAt: new Date(),
-      reason: mockJob.info,
+      info: mockJob.info,
       progress: mockJob.progress,
     });
 
@@ -172,7 +172,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.ack(mockJob.id, {
       estimatedCompletionAt: new Date(),
-      reason: mockJob.info,
+      info: mockJob.info,
       progress: mockJob.progress,
     });
 
@@ -207,7 +207,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.ack(mockJob.id, {
       estimatedCompletionAt: new Date(),
-      reason: mockJob.info,
+      info: mockJob.info,
       progress: mockJob.progress,
     });
 
@@ -341,7 +341,7 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.cancel(mockJob.id, {
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -375,7 +375,7 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.cancel(mockJob.id, {
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -408,7 +408,7 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.cancel(mockJob.id, {
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -444,8 +444,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.complete(mockJob.id, {
+      info: mockJob.info,
       outcome: mockJob.outcome,
-      reason: mockJob.info,
     });
 
     match(resp)
@@ -479,8 +479,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.complete(mockJob.id, {
+      info: mockJob.info,
       outcome: mockJob.outcome,
-      reason: mockJob.info,
     });
 
     match(resp)
@@ -513,8 +513,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.complete(mockJob.id, {
+      info: mockJob.info,
       outcome: mockJob.outcome,
-      reason: mockJob.info,
     });
 
     match(resp)
@@ -550,8 +550,22 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.create({
+      config: mockJob.config,
+      destination: mockJob.destination,
+      environmentId: mockJob.environmentId,
+      fileId: mockJob.fileId,
+      fromAction: mockJob.fromAction,
+      info: mockJob.info,
+      input: mockJob.input,
+      managed: mockJob.managed,
+      mode: mockJob.mode,
       operation: mockJob.operation,
+      outcome: mockJob.outcome,
+      progress: mockJob.progress,
       source: mockJob.source,
+      status: mockJob.status,
+      subject: mockJob.subject,
+      trigger: mockJob.trigger,
       type: mockJob.type,
     });
 
@@ -586,8 +600,22 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.create({
+      config: mockJob.config,
+      destination: mockJob.destination,
+      environmentId: mockJob.environmentId,
+      fileId: mockJob.fileId,
+      fromAction: mockJob.fromAction,
+      info: mockJob.info,
+      input: mockJob.input,
+      managed: mockJob.managed,
+      mode: mockJob.mode,
       operation: mockJob.operation,
+      outcome: mockJob.outcome,
+      progress: mockJob.progress,
       source: mockJob.source,
+      status: mockJob.status,
+      subject: mockJob.subject,
+      trigger: mockJob.trigger,
       type: mockJob.type,
     });
 
@@ -618,8 +646,22 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.create({
+      config: mockJob.config,
+      destination: mockJob.destination,
+      environmentId: mockJob.environmentId,
+      fileId: mockJob.fileId,
+      fromAction: mockJob.fromAction,
+      info: mockJob.info,
+      input: mockJob.input,
+      managed: mockJob.managed,
+      mode: mockJob.mode,
       operation: mockJob.operation,
+      outcome: mockJob.outcome,
+      progress: mockJob.progress,
       source: mockJob.source,
+      status: mockJob.status,
+      subject: mockJob.subject,
+      trigger: mockJob.trigger,
       type: mockJob.type,
     });
 
@@ -1151,6 +1193,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.update(mockJob.id, {
+      config: mockJob.config,
+      outcomeAcknowledgedAt: new Date(),
       progress: mockJob.progress,
       status: mockJob.status,
     });
@@ -1186,6 +1230,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.update(mockJob.id, {
+      config: mockJob.config,
+      outcomeAcknowledgedAt: new Date(),
       progress: mockJob.progress,
       status: mockJob.status,
     });
@@ -1217,6 +1263,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.update(mockJob.id, {
+      config: mockJob.config,
+      outcomeAcknowledgedAt: new Date(),
       progress: mockJob.progress,
       status: mockJob.status,
     });

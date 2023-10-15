@@ -1,4 +1,8 @@
+import mkLogger from "@ffx/logger";
 import axios from "axios";
+import { constVoid } from "fp-ts/function";
+import { ReadStream } from "node:fs";
+import { match } from "ts-pattern";
 
 import {
   Agent,
@@ -42,7 +46,7 @@ import {
   listEvents,
 } from "./lib/events.mjs";
 import {
-  File,
+  File_,
   FileContents,
   Files,
   ListFilesQueryParams,
@@ -93,8 +97,8 @@ import {
 } from "./lib/jobs.mjs";
 import {
   ListRecordsQueryParams,
-  Record,
   Records,
+  RecordWithLinks,
   UpdateRecordsQueryParams,
   deleteRecords,
   insertRecords,
@@ -102,12 +106,12 @@ import {
   updateRecords,
 } from "./lib/records.mjs";
 import {
-  CreateSecretInput,
   Secret,
   Secrets,
-  createSecret,
+  UpsertSecretInput,
   deleteSecret,
   listSecrets,
+  upsertSecret,
 } from "./lib/secrets.mjs";
 import { Sheet, Sheets, deleteSheet, getSheet, listSheets } from "./lib/sheets.mjs";
 import {
@@ -196,15 +200,18 @@ interface ApiClient {
       fileId: FileId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     download: (fileId: FileId) => Promise<DecoderErrors | HttpError | Successful<FileContents>>;
-    get: (fileId: FileId) => Promise<DecoderErrors | HttpError | Successful<File>>;
+    get: (fileId: FileId) => Promise<DecoderErrors | HttpError | Successful<File_>>;
     list: (
       queryParams?: ListFilesQueryParams,
     ) => Promise<DecoderErrors | HttpError | Successful<Files>>;
     update: (
       fileId: FileId,
       input: UpdateFileInput,
-    ) => Promise<DecoderErrors | HttpError | Successful<File>>;
-    upload: (input: UploadFileInput) => Promise<DecoderErrors | HttpError | Successful<File>>;
+    ) => Promise<DecoderErrors | HttpError | Successful<File_>>;
+    upload: (
+      file: File | ReadStream,
+      input: UploadFileInput,
+    ) => Promise<DecoderErrors | HttpError | Successful<File_>>;
   };
   jobs: {
     ack: (
@@ -247,20 +254,20 @@ interface ApiClient {
     ) => Promise<DecoderErrors | HttpError | Successful<Records>>;
     insert: (
       sheetId: SheetId,
-      input: ReadonlyArray<Record>,
+      input: ReadonlyArray<RecordWithLinks>,
     ) => Promise<DecoderErrors | HttpError | Successful<Records>>;
     update: (
       sheetId: SheetId,
-      input: ReadonlyArray<Record>,
+      input: ReadonlyArray<RecordWithLinks>,
       queryParams?: UpdateRecordsQueryParams,
     ) => Promise<DecoderErrors | HttpError | Successful<Records>>;
   };
   secrets: {
-    create: (input: CreateSecretInput) => Promise<DecoderErrors | HttpError | Successful<Secret>>;
     delete: (
       secretId: SecretId,
     ) => Promise<DecoderErrors | HttpError | Successful<{ success: boolean }>>;
     list: (spaceId?: SpaceId) => Promise<DecoderErrors | HttpError | Successful<Secrets>>;
+    upsert: (input: UpsertSecretInput) => Promise<DecoderErrors | HttpError | Successful<Secret>>;
   };
   sheets: {
     delete: (
@@ -306,7 +313,13 @@ interface ApiClient {
   };
 }
 
-export default function mkApiClient(secret: string, environmentId: EnvironmentId): ApiClient {
+export default function mkApiClient(
+  secret: string,
+  environmentId: EnvironmentId,
+  options?: {
+    loggerLevel: "debug" | "trace";
+  },
+): ApiClient {
   const instance = axios.create({
     baseURL: "https://platform.flatfile.com/api/v1",
     headers: {
@@ -314,6 +327,46 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       "User-Agent": `${pkgJson.name}/v${pkgJson.version}`,
     },
   });
+
+  instance.interceptors.request.use(
+    (config) => {
+      const logger = mkLogger(pkgJson.name);
+      const stringify = (json: Record<string, any>) => JSON.stringify(json, null, 2);
+
+      match(options?.loggerLevel)
+        .with("debug", () => {
+          logger.debug(
+            stringify({
+              headers: {
+                ...config.headers,
+                Authorization: undefined,
+              },
+              method: config.method?.toUpperCase(),
+              baseUrl: config.baseURL,
+              path: config.url,
+              params: config.params,
+              body: config.data,
+            }),
+          );
+        })
+        .with("trace", () => {
+          logger.trace(
+            stringify({
+              headers: config.headers,
+              method: config.method?.toUpperCase(),
+              baseUrl: config.baseURL,
+              path: config.url,
+              params: config.params,
+              body: config.data,
+            }),
+          );
+        })
+        .otherwise(constVoid);
+
+      return config;
+    },
+    (error) => Promise.reject(error),
+  );
 
   const reader: ApiReader = {
     axios: instance,
@@ -353,7 +406,7 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       get: (fileId) => getFile(fileId)(reader)(),
       list: (queryParams) => listFiles(queryParams)(reader)(),
       update: (fileId, input) => updateFile(fileId, input)(reader)(),
-      upload: (input) => uploadFile(input)(reader)(),
+      upload: (file, input) => uploadFile(file, input)(reader)(),
     },
     jobs: {
       ack: (jobId, input) => acknowledgeJob(jobId, input)(reader)(),
@@ -375,9 +428,9 @@ export default function mkApiClient(secret: string, environmentId: EnvironmentId
       update: (sheetId, input, queryParams) => updateRecords(sheetId, input, queryParams)(reader)(),
     },
     secrets: {
-      create: (input) => createSecret(input)(reader)(),
       delete: (secretId) => deleteSecret(secretId)(reader)(),
       list: (spaceId) => listSecrets(spaceId)(reader)(),
+      upsert: (input) => upsertSecret(input)(reader)(),
     },
     sheets: {
       delete: (sheetId) => deleteSheet(sheetId)(reader)(),
@@ -409,7 +462,7 @@ export { Agent, Agents } from "./lib/agents.mjs";
 export { Document, Documents } from "./lib/documents.mjs";
 export { Environment, Environments } from "./lib/environments.mjs";
 export { Event, Events } from "./lib/events.mjs";
-export { File, Files } from "./lib/files.mjs";
+export { File_, Files } from "./lib/files.mjs";
 export {
   AgentId,
   DocumentId,

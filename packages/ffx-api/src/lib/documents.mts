@@ -38,6 +38,13 @@ export const DocumentC = t.intersection([
   }),
 ]);
 
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
 const CreateDocumentInputC = t.exact(
   t.intersection([
     t.type({
@@ -78,7 +85,13 @@ export function createDocument(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/spaces/${spaceId}/documents`, input),
+          () => {
+            return axios.post(`/spaces/${spaceId}/documents`, {
+              body: input.body,
+              title: input.title,
+              treatments: input.treatments,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -178,7 +191,13 @@ export function updateDocument(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/spaces/${spaceId}/documents/${documentId}`),
+          () => {
+            return axios.patch(`/spaces/${spaceId}/documents/${documentId}`, {
+              body: input.body,
+              title: input.title,
+              treatments: input.treatments,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

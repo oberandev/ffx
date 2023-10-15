@@ -53,6 +53,7 @@ describe("documents", () => {
     const resp = await client.documents.create(mockDocument.spaceId, {
       body: mockDocument.body,
       title: mockDocument.title,
+      treatments: mockDocument.treatments,
     });
 
     match(resp)
@@ -88,6 +89,7 @@ describe("documents", () => {
     const resp = await client.documents.create(mockDocument.spaceId, {
       body: mockDocument.body,
       title: mockDocument.title,
+      treatments: mockDocument.treatments,
     });
 
     match(resp)
@@ -119,6 +121,7 @@ describe("documents", () => {
     const resp = await client.documents.create(mockDocument.spaceId, {
       body: mockDocument.body,
       title: mockDocument.title,
+      treatments: mockDocument.treatments,
     });
 
     match(resp)
