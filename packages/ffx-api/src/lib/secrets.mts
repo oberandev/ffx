@@ -37,7 +37,14 @@ export const SecretC = t.intersection([
   }),
 ]);
 
-const CreateSecretInputC = t.exact(
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
+const UpsertSecretInputC = t.exact(
   t.intersection([
     t.type({
       name: t.string,
@@ -56,39 +63,11 @@ const CreateSecretInputC = t.exact(
 export type Secret = Readonly<t.TypeOf<typeof SecretC>>;
 export type Secrets = ReadonlyArray<Secret>;
 
-export type CreateSecretInput = Readonly<t.TypeOf<typeof CreateSecretInputC>>;
+export type UpsertSecretInput = Readonly<t.TypeOf<typeof UpsertSecretInputC>>;
 
 // ==================
 //       Main
 // ==================
-
-/**
- * Create a `Secret`.
- *
- * @since 0.1.0
- */
-export function createSecret(
-  input: CreateSecretInput,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Secret>> {
-  return pipe(
-    RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
-      return RTE.fromTaskEither(
-        TE.tryCatch(
-          () =>
-            axios.post(`/secrets`, {
-              ...input,
-              environmentId,
-            }),
-          (reason: unknown) => reason as AxiosError,
-        ),
-      );
-    }),
-    RTE.map((resp) => resp.data.data),
-    RTE.chain(decodeWith(SecretC)),
-    RTE.matchW(mkHttpError, identity),
-  );
-}
 
 /**
  * Delete a `Secret`.
@@ -141,6 +120,36 @@ export function listSecrets(
     }),
     RTE.map((resp) => resp.data.data),
     RTE.chain(decodeWith(t.array(SecretC))),
+    RTE.matchW(mkHttpError, identity),
+  );
+}
+
+/**
+ * Create or update a `Secret`.
+ *
+ * @since 0.1.0
+ */
+export function upsertSecret(
+  input: UpsertSecretInput,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Secret>> {
+  return pipe(
+    RTE.ask<ApiReader>(),
+    RTE.chain(({ axios, environmentId }) => {
+      return RTE.fromTaskEither(
+        TE.tryCatch(
+          () =>
+            axios.post(`/secrets`, {
+              environmentId,
+              name: input.name,
+              spaceId: input.spaceId,
+              value: input.value,
+            }),
+          (reason: unknown) => reason as AxiosError,
+        ),
+      );
+    }),
+    RTE.map((resp) => resp.data.data),
+    RTE.chain(decodeWith(SecretC)),
     RTE.matchW(mkHttpError, identity),
   );
 }

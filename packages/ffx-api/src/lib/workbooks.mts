@@ -44,6 +44,13 @@ export const WorkbookC = t.intersection([
   }),
 ]);
 
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
 const CreateWorkbookInputC = t.exact(
   t.intersection([
     t.type({
@@ -87,7 +94,17 @@ export function createWorkbook(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/workbooks`, input),
+          () => {
+            return axios.post(`/workbooks`, {
+              actions: input.actions,
+              environmentId: input.environmentId,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              sheets: input.sheets,
+              spaceId: input.spaceId,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -185,7 +202,17 @@ export function updateWorkbook(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/workbooks/${workbookId}`, input),
+          () => {
+            return axios.patch(`/workbooks/${workbookId}`, {
+              actions: input.actions,
+              environmentId: input.environmentId,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              sheets: input.sheets,
+              spaceId: input.spaceId,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

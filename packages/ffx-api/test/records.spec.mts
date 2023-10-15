@@ -18,7 +18,15 @@ import { Records } from "../src/lib/records.mjs";
 
 function _mkMockRecords(): IO.IO<Records> {
   return IO.of({
-    success: oneOf([false, true]),
+    counts: maybePresent(() => ({
+      error: faker.number.int(),
+      errorsByField: maybePresent(() => ({
+        property1: faker.number.int(),
+        property2: faker.number.int(),
+      })),
+      total: faker.number.int(),
+      valid: faker.number.int(),
+    })),
     records: [
       {
         id: mkRecordId()(),
@@ -40,16 +48,20 @@ function _mkMockRecords(): IO.IO<Records> {
         ]),
         metadata: maybePresent(() => ({})),
         valid: maybePresent(() => oneOf([false, true])),
-        values: {},
+        values: {
+          property1: {
+            layer: faker.lorem.word(),
+            links: [],
+            messages: [],
+            updatedAt: faker.date.past(),
+            valid: oneOf([false, true]),
+            value: oneOf([faker.date.past(), false, true, faker.number.int(), faker.lorem.word()]),
+          },
+        },
         versionId: maybePresent(() => mkVersionId()()),
       },
     ],
-    count: maybePresent(() => ({
-      error: faker.number.int(),
-      errorsByField: maybePresent(() => ({})),
-      total: faker.number.int(),
-      valid: faker.number.int(),
-    })),
+    success: oneOf([false, true]),
     versionId: maybePresent(() => mkVersionId()()),
   });
 }

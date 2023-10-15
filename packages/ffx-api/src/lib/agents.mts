@@ -27,13 +27,18 @@ const AgentC = t.type({
   topics: t.array(EventTopicC),
 });
 
-const CreateAgentInputC = t.exact(
-  t.type({
-    compiler: t.literal("js"),
-    source: t.string,
-    topics: t.array(EventTopicC),
-  }),
-);
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
+const CreateAgentInputC = t.strict({
+  compiler: t.literal("js"),
+  source: t.string,
+  topics: t.array(EventTopicC),
+});
 
 // ==================
 //       Types
@@ -62,11 +67,19 @@ export function createAgent(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            return axios.post(`/agents`, input, {
-              params: {
-                environmentId,
+            return axios.post(
+              `/agents`,
+              {
+                compiler: input.compiler,
+                source: input.source,
+                topics: input.topics,
               },
-            });
+              {
+                params: {
+                  environmentId,
+                },
+              },
+            );
           },
           (reason: unknown) => reason as AxiosError,
         ),
