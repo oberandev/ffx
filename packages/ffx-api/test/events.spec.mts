@@ -116,7 +116,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -150,7 +150,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -183,7 +183,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -214,7 +214,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/events`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -257,7 +257,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/events`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -302,7 +302,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/events`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockEvent }));
       }),
     ];
@@ -335,7 +335,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -369,7 +369,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -405,7 +405,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -432,7 +432,7 @@ describe("events", () => {
   it("[Mock] should handle failure when fetching all Events", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/events`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/events`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -466,7 +466,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/events`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -504,7 +504,7 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/events`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({

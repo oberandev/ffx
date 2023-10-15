@@ -27,7 +27,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/environments`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -68,7 +68,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/environments`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -111,7 +111,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/environments`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/environments`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -147,7 +147,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -181,7 +181,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -214,7 +214,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -245,7 +245,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -279,7 +279,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -315,7 +315,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -342,7 +342,7 @@ describe("environments", () => {
   it("[Mocks] should handle failure when fetching all Environments", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/environments`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -376,7 +376,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/environments`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -414,7 +414,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/environments`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -443,7 +443,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -484,7 +484,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -527,7 +527,7 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({

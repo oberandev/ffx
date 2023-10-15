@@ -1,5 +1,5 @@
 import pkgJson from "../package.json"; // eslint-disable-line import/no-relative-parent-imports
-import mkLogger from "../src/lib/logger.mjs";
+import { mkLogger } from "../src/lib/logger.mjs";
 
 describe("logger", () => {
   const logger = mkLogger(pkgJson.name);

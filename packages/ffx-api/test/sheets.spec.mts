@@ -13,6 +13,7 @@ import {
   multipleOf,
   oneOf,
 } from "./helpers.mjs";
+import { WorkbookId } from "../src/lib/ids.mjs";
 import { Sheet, Sheets } from "../src/lib/sheets.mjs";
 
 function _mkMockSheet(): IO.IO<Sheet> {
@@ -96,7 +97,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -130,7 +131,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -163,7 +164,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -194,7 +195,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -228,7 +229,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -264,7 +265,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -291,7 +292,7 @@ describe("sheets", () => {
   it("[Mocks] should handle failure when fetching all Sheets", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -310,7 +311,8 @@ describe("sheets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.sheets.list();
+    const workbookId: WorkbookId = mkWorkbookId()();
+    const resp = await client.sheets.list(workbookId);
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -325,7 +327,7 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -339,7 +341,8 @@ describe("sheets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.sheets.list();
+    const workbookId: WorkbookId = mkWorkbookId()();
+    const resp = await client.sheets.list(workbookId);
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -358,7 +361,7 @@ describe("sheets", () => {
     const mockSheets: Sheets = Array.from({ length: 2 }, () => _mkMockSheet()());
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -372,7 +375,8 @@ describe("sheets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.sheets.list();
+    const workbookId: WorkbookId = mkWorkbookId()();
+    const resp = await client.sheets.list(workbookId);
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSheets))
