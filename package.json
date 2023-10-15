@@ -54,7 +54,7 @@
     "nx": "16.10.0",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2",
-    "verdaccio": "^5.0.4",
+    "verdaccio": "^5.27.0",
     "vite": "^4.4.11",
     "vitest": "^0.34.6"
   },

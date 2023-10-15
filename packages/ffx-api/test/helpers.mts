@@ -39,7 +39,7 @@ import {
   isoWorkbookId,
 } from "../src/lib/ids.mjs";
 
-export const client = mkApiClient("secret", mkEnvironmentId()());
+export const client = mkApiClient("secret");
 export const baseUrl: string = "https://platform.flatfile.com/api/v1";
 
 export const maybePresent = faker.helpers.maybe;

@@ -4,6 +4,7 @@ import * as RT from "fp-ts/ReaderTask";
 import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
+import { DateFromISOString } from "io-ts-types";
 
 import {
   ApiReader,
@@ -25,26 +26,55 @@ import {
 //   Runtime codecs
 // ==================
 
+const ValidationMessageC = t.partial({
+  message: t.string,
+  source: t.union([
+    t.literal("custom-logic"),
+    t.literal("invalid-option"),
+    t.literal("is-artifact"),
+    t.literal("required-constraint"),
+    t.literal("unique-constraint"),
+    t.literal("unlinked"),
+  ]),
+  type: t.union([t.literal("error"), t.literal("info"), t.literal("warn")]),
+});
+
+const CellC = t.partial({
+  layer: t.string,
+  messages: t.array(ValidationMessageC),
+  updatedAt: DateFromISOString,
+  valid: t.boolean,
+  value: t.union([DateFromISOString, t.boolean, t.number, t.string]),
+});
+
 const RecordC = t.intersection([
   t.type({
     id: RecordIdFromString,
-    values: t.UnknownRecord,
+    values: t.record(t.string, CellC),
   }),
   t.partial({
-    messages: t.array(
-      t.partial({
-        message: t.string,
-        source: t.union([
-          t.literal("custom-logic"),
-          t.literal("invalid-option"),
-          t.literal("is-artifact"),
-          t.literal("required-constraint"),
-          t.literal("unique-constraint"),
-          t.literal("unlinked"),
-        ]),
-        type: t.union([t.literal("error"), t.literal("info"), t.literal("warn")]),
-      }),
+    messages: t.array(ValidationMessageC),
+    metadata: t.UnknownRecord,
+    valid: t.boolean,
+    versionId: VersionIdFromString,
+  }),
+]);
+
+const RecordWithLinksC = t.intersection([
+  t.type({
+    id: RecordIdFromString,
+    values: t.record(
+      t.string,
+      t.intersection([
+        CellC,
+        t.partial({
+          links: t.array(RecordC),
+        }),
+      ]),
     ),
+  }),
+  t.partial({
+    messages: t.array(ValidationMessageC),
     metadata: t.UnknownRecord,
     valid: t.boolean,
     versionId: VersionIdFromString,
@@ -53,23 +83,30 @@ const RecordC = t.intersection([
 
 export const RecordsWithMetaC = t.intersection([
   t.type({
-    records: t.array(RecordC),
+    records: t.array(RecordWithLinksC),
     success: t.boolean,
   }),
   t.partial({
-    count: t.intersection([
+    counts: t.intersection([
       t.type({
         error: t.number,
         total: t.number,
         valid: t.number,
       }),
       t.partial({
-        errorsByField: t.UnknownRecord,
+        errorsByField: t.record(t.string, t.number),
       }),
     ]),
     versionId: VersionIdFromString,
   }),
 ]);
+
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
 
 const ListRecordsQueryParamsC = t.exact(
   t.partial({
@@ -102,7 +139,7 @@ const UpdateRecordsQueryParamsC = t.exact(
 //       Types
 // ==================
 
-export type Record = Readonly<t.TypeOf<typeof RecordC>>;
+export type RecordWithLinks = Readonly<t.TypeOf<typeof RecordWithLinksC>>;
 export type Records = Readonly<t.TypeOf<typeof RecordsWithMetaC>>;
 
 export type ListRecordsQueryParams = Readonly<t.TypeOf<typeof ListRecordsQueryParamsC>>;
@@ -150,7 +187,7 @@ export function deleteRecords(
  */
 export function insertRecords(
   sheetId: SheetId,
-  input: ReadonlyArray<Record>,
+  input: ReadonlyArray<RecordWithLinks>,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Records>> {
   return pipe(
     RTE.ask<ApiReader>(),
@@ -204,7 +241,7 @@ export function listRecords(
  */
 export function updateRecords(
   sheetId: SheetId,
-  input: ReadonlyArray<Record>,
+  input: ReadonlyArray<RecordWithLinks>,
   queryParams?: UpdateRecordsQueryParams,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Records>> {
   return pipe(

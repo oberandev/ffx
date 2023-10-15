@@ -20,6 +20,7 @@ import {
   SpaceId,
   SpaceIdFromString,
 } from "./ids.mjs";
+import { CustomActionC } from "./sheets.mjs";
 
 // ==================
 //   Runtime codecs
@@ -34,9 +35,17 @@ export const DocumentC = t.intersection([
     title: t.string,
   }),
   t.partial({
+    actions: t.array(CustomActionC),
     treatments: t.array(t.string),
   }),
 ]);
+
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
 
 const CreateDocumentInputC = t.exact(
   t.intersection([
@@ -45,6 +54,7 @@ const CreateDocumentInputC = t.exact(
       title: t.string,
     }),
     t.partial({
+      actions: t.array(CustomActionC),
       treatments: t.array(t.string),
     }),
   ]),
@@ -78,7 +88,14 @@ export function createDocument(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/spaces/${spaceId}/documents`, input),
+          () => {
+            return axios.post(`/spaces/${spaceId}/documents`, {
+              actions: input.actions,
+              body: input.body,
+              title: input.title,
+              treatments: input.treatments,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -178,7 +195,14 @@ export function updateDocument(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/spaces/${spaceId}/documents/${documentId}`),
+          () => {
+            return axios.patch(`/spaces/${spaceId}/documents/${documentId}`, {
+              actions: input.actions,
+              body: input.body,
+              title: input.title,
+              treatments: input.treatments,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

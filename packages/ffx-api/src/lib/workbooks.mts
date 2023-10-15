@@ -44,6 +44,13 @@ export const WorkbookC = t.intersection([
   }),
 ]);
 
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
 const CreateWorkbookInputC = t.exact(
   t.intersection([
     t.type({
@@ -60,6 +67,13 @@ const CreateWorkbookInputC = t.exact(
   ]),
 );
 
+const ListWorkbooksQueryParamsC = t.exact(
+  t.partial({
+    includeCounts: t.boolean,
+    spaceId: SpaceIdFromString,
+  }),
+);
+
 // ==================
 //       Types
 // ==================
@@ -68,6 +82,7 @@ export type Workbook = Readonly<t.TypeOf<typeof WorkbookC>>;
 export type Workbooks = ReadonlyArray<Workbook>;
 
 export type CreateWorkbookInput = Readonly<t.TypeOf<typeof CreateWorkbookInputC>>;
+export type ListWorkbooksQueryParams = Readonly<t.TypeOf<typeof ListWorkbooksQueryParamsC>>;
 export type UpdateWorkbookInput = Partial<CreateWorkbookInput>;
 
 // ==================
@@ -87,7 +102,17 @@ export function createWorkbook(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/workbooks`, input),
+          () => {
+            return axios.post(`/workbooks`, {
+              actions: input.actions,
+              environmentId: input.environmentId,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              sheets: input.sheets,
+              spaceId: input.spaceId,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -151,16 +176,15 @@ export function getWorkbook(
  *
  * @since 0.1.0
  */
-export function listWorkbooks(): RT.ReaderTask<
-  ApiReader,
-  DecoderErrors | HttpError | Successful<Workbooks>
-> {
+export function listWorkbooks(
+  queryParams?: ListWorkbooksQueryParams,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Workbooks>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.get(`/workbooks`),
+          () => axios.get(`/workbooks`, { params: queryParams }),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -185,7 +209,17 @@ export function updateWorkbook(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/workbooks/${workbookId}`, input),
+          () => {
+            return axios.patch(`/workbooks/${workbookId}`, {
+              actions: input.actions,
+              environmentId: input.environmentId,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              sheets: input.sheets,
+              spaceId: input.spaceId,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

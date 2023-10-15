@@ -18,7 +18,15 @@ import { Records } from "../src/lib/records.mjs";
 
 function _mkMockRecords(): IO.IO<Records> {
   return IO.of({
-    success: oneOf([false, true]),
+    counts: maybePresent(() => ({
+      error: faker.number.int(),
+      errorsByField: maybePresent(() => ({
+        property1: faker.number.int(),
+        property2: faker.number.int(),
+      })),
+      total: faker.number.int(),
+      valid: faker.number.int(),
+    })),
     records: [
       {
         id: mkRecordId()(),
@@ -40,16 +48,20 @@ function _mkMockRecords(): IO.IO<Records> {
         ]),
         metadata: maybePresent(() => ({})),
         valid: maybePresent(() => oneOf([false, true])),
-        values: {},
+        values: {
+          property1: {
+            layer: faker.lorem.word(),
+            links: [],
+            messages: [],
+            updatedAt: faker.date.past(),
+            valid: oneOf([false, true]),
+            value: oneOf([faker.date.past(), false, true, faker.number.int(), faker.lorem.word()]),
+          },
+        },
         versionId: maybePresent(() => mkVersionId()()),
       },
     ],
-    count: maybePresent(() => ({
-      error: faker.number.int(),
-      errorsByField: maybePresent(() => ({})),
-      total: faker.number.int(),
-      valid: faker.number.int(),
-    })),
+    success: oneOf([false, true]),
     versionId: maybePresent(() => mkVersionId()()),
   });
 }
@@ -61,7 +73,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -96,7 +108,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -130,7 +142,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -162,7 +174,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -197,7 +209,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -232,7 +244,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockRecords }));
       }),
     ];
@@ -256,7 +268,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -291,7 +303,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -326,7 +338,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -356,7 +368,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -391,7 +403,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -426,7 +438,7 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_req, res, ctx) => {
+      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({

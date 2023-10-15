@@ -115,7 +115,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -136,7 +136,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.ack(mockJob.id, {
       estimatedCompletionAt: new Date(),
-      reason: mockJob.info,
+      info: mockJob.info,
       progress: mockJob.progress,
     });
 
@@ -153,7 +153,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -172,7 +172,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.ack(mockJob.id, {
       estimatedCompletionAt: new Date(),
-      reason: mockJob.info,
+      info: mockJob.info,
       progress: mockJob.progress,
     });
 
@@ -191,7 +191,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -207,7 +207,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.ack(mockJob.id, {
       estimatedCompletionAt: new Date(),
-      reason: mockJob.info,
+      info: mockJob.info,
       progress: mockJob.progress,
     });
 
@@ -224,7 +224,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -258,7 +258,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -292,7 +292,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -321,7 +321,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -341,7 +341,7 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.cancel(mockJob.id, {
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -357,7 +357,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -375,7 +375,7 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.cancel(mockJob.id, {
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -393,7 +393,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -408,7 +408,7 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.cancel(mockJob.id, {
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -424,7 +424,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -444,8 +444,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.complete(mockJob.id, {
+      info: mockJob.info,
       outcome: mockJob.outcome,
-      reason: mockJob.info,
     });
 
     match(resp)
@@ -461,7 +461,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -479,8 +479,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.complete(mockJob.id, {
+      info: mockJob.info,
       outcome: mockJob.outcome,
-      reason: mockJob.info,
     });
 
     match(resp)
@@ -498,7 +498,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -513,8 +513,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.complete(mockJob.id, {
+      info: mockJob.info,
       outcome: mockJob.outcome,
-      reason: mockJob.info,
     });
 
     match(resp)
@@ -530,7 +530,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -550,8 +550,22 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.create({
+      config: mockJob.config,
+      destination: mockJob.destination,
+      environmentId: mockJob.environmentId,
+      fileId: mockJob.fileId,
+      fromAction: mockJob.fromAction,
+      info: mockJob.info,
+      input: mockJob.input,
+      managed: mockJob.managed,
+      mode: mockJob.mode,
       operation: mockJob.operation,
+      outcome: mockJob.outcome,
+      progress: mockJob.progress,
       source: mockJob.source,
+      status: mockJob.status,
+      subject: mockJob.subject,
+      trigger: mockJob.trigger,
       type: mockJob.type,
     });
 
@@ -568,7 +582,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -586,8 +600,22 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.create({
+      config: mockJob.config,
+      destination: mockJob.destination,
+      environmentId: mockJob.environmentId,
+      fileId: mockJob.fileId,
+      fromAction: mockJob.fromAction,
+      info: mockJob.info,
+      input: mockJob.input,
+      managed: mockJob.managed,
+      mode: mockJob.mode,
       operation: mockJob.operation,
+      outcome: mockJob.outcome,
+      progress: mockJob.progress,
       source: mockJob.source,
+      status: mockJob.status,
+      subject: mockJob.subject,
+      trigger: mockJob.trigger,
       type: mockJob.type,
     });
 
@@ -608,7 +636,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockJob }));
       }),
     ];
@@ -618,8 +646,22 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.create({
+      config: mockJob.config,
+      destination: mockJob.destination,
+      environmentId: mockJob.environmentId,
+      fileId: mockJob.fileId,
+      fromAction: mockJob.fromAction,
+      info: mockJob.info,
+      input: mockJob.input,
+      managed: mockJob.managed,
+      mode: mockJob.mode,
       operation: mockJob.operation,
+      outcome: mockJob.outcome,
+      progress: mockJob.progress,
       source: mockJob.source,
+      status: mockJob.status,
+      subject: mockJob.subject,
+      trigger: mockJob.trigger,
       type: mockJob.type,
     });
 
@@ -636,7 +678,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -670,7 +712,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -703,7 +745,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -734,7 +776,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -768,7 +810,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -801,7 +843,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -832,7 +874,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -866,7 +908,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -885,7 +927,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.fail(mockJob.id, {
       outcome: mockJob.outcome,
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -903,7 +945,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -919,7 +961,7 @@ describe("jobs", () => {
     // test
     const resp = await client.jobs.fail(mockJob.id, {
       outcome: mockJob.outcome,
-      reason: mockJob.info,
+      info: mockJob.info,
     });
 
     match(resp)
@@ -935,7 +977,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -969,7 +1011,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1003,7 +1045,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1030,7 +1072,7 @@ describe("jobs", () => {
   it("[Mock] should handle failure when fetching all Jobs", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -1064,7 +1106,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1102,7 +1144,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1131,7 +1173,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -1151,6 +1193,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.update(mockJob.id, {
+      config: mockJob.config,
+      outcomeAcknowledgedAt: new Date(),
       progress: mockJob.progress,
       status: mockJob.status,
     });
@@ -1168,7 +1212,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -1186,6 +1230,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.update(mockJob.id, {
+      config: mockJob.config,
+      outcomeAcknowledgedAt: new Date(),
       progress: mockJob.progress,
       status: mockJob.status,
     });
@@ -1207,7 +1253,7 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockJob }));
       }),
     ];
@@ -1217,6 +1263,8 @@ describe("jobs", () => {
 
     // test
     const resp = await client.jobs.update(mockJob.id, {
+      config: mockJob.config,
+      outcomeAcknowledgedAt: new Date(),
       progress: mockJob.progress,
       status: mockJob.status,
     });

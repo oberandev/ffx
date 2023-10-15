@@ -14,7 +14,7 @@ import {
   decodeWith,
   mkHttpError,
 } from "./http.mjs";
-import { SheetId, SheetIdFromString, WorkbookIdFromString } from "./ids.mjs";
+import { SheetId, SheetIdFromString, WorkbookId, WorkbookIdFromString } from "./ids.mjs";
 
 // ==================
 //   Runtime codecs
@@ -210,16 +210,21 @@ export function getSheet(
  *
  * @since 0.1.0
  */
-export function listSheets(): RT.ReaderTask<
-  ApiReader,
-  DecoderErrors | HttpError | Successful<Sheets>
-> {
+export function listSheets(
+  workbookId: WorkbookId,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Sheets>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.get(`/sheets`),
+          () => {
+            return axios.get(`/sheets`, {
+              params: {
+                workbookId,
+              },
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

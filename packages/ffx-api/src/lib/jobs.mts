@@ -20,6 +20,7 @@ import {
   JobId,
   JobIdFromString,
   SheetIdFromString,
+  SpaceIdFromString,
   VersionIdFromString,
   WorkbookIdFromString,
 } from "./ids.mjs";
@@ -222,28 +223,30 @@ export const JobC = t.intersection([
 ]);
 
 /*
- * Since Typescript doesn't have an Exact<T> type, we'll use the io-ts `t.exact`
- * to ensure our inputs don't break the API by passing extra data.
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
  */
 
 const AcknowledgeJobInputC = t.exact(
   t.partial({
     estimatedCompletionAt: date,
+    info: t.string,
     progress: t.number,
-    reason: t.string,
   }),
 );
 
 const CancelJobInputC = t.exact(
   t.partial({
-    reason: t.string,
+    info: t.string,
   }),
 );
 
 const CompleteJobInputC = t.exact(
   t.partial({
+    info: t.string,
     outcome: JobOutcomeC,
-    reason: t.string,
   }),
 );
 
@@ -480,6 +483,18 @@ const UpdateJobInputC = t.exact(
   }),
 );
 
+const ListJobsQueryParamsC = t.exact(
+  t.partial({
+    environmentId: EnvironmentIdFromString,
+    fileId: FileIdFromString,
+    pageNumber: t.number,
+    pageSize: t.number,
+    sortDirection: t.union([t.literal("asc"), t.literal("desc")]),
+    spaceId: SpaceIdFromString,
+    workbookId: WorkbookIdFromString,
+  }),
+);
+
 // ==================
 //       Types
 // ==================
@@ -491,7 +506,8 @@ export type AcknowledgeJobInput = Readonly<t.TypeOf<typeof AcknowledgeJobInputC>
 export type CancelJobInput = Readonly<t.TypeOf<typeof CancelJobInputC>>;
 export type CompleteJobInput = Readonly<t.TypeOf<typeof CompleteJobInputC>>;
 export type CreateJobInput = Readonly<t.TypeOf<typeof CreateJobInputC>>;
-export type FailJobInput = t.TypeOf<typeof CompleteJobInputC>;
+export type FailJobInput = Readonly<t.TypeOf<typeof CompleteJobInputC>>;
+export type ListJobsQueryParams = Readonly<t.TypeOf<typeof ListJobsQueryParamsC>>;
 export type UpdateJobInput = Readonly<t.TypeOf<typeof UpdateJobInputC>>;
 
 // ==================
@@ -514,9 +530,9 @@ export function acknowledgeJob(
         TE.tryCatch(
           () => {
             return axios.post(`/jobs/${jobId}/ack`, {
-              info: input?.reason,
-              progress: input?.progress,
               estimatedCompletionAt: input?.estimatedCompletionAt?.toISOString(),
+              info: input?.info,
+              progress: input?.progress,
             });
           },
           (reason: unknown) => reason as AxiosError,
@@ -569,7 +585,7 @@ export function cancelJob(
         TE.tryCatch(
           () => {
             return axios.post(`/jobs/${jobId}/cancel`, {
-              info: input?.reason,
+              info: input?.info,
             });
           },
           (reason: unknown) => reason as AxiosError,
@@ -598,7 +614,7 @@ export function completeJob(
         TE.tryCatch(
           () => {
             return axios.post(`/jobs/${jobId}/complete`, {
-              info: input?.reason,
+              info: input?.info,
               outcome: input?.outcome,
             });
           },
@@ -625,7 +641,27 @@ export function createJob(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/jobs`, input),
+          () => {
+            return axios.post(`/jobs`, {
+              config: input.config,
+              destination: input.destination,
+              environmentId: input.environmentId,
+              fileId: input.fileId,
+              fromAction: input.fromAction,
+              info: input.info,
+              input: input.input,
+              managed: input.managed,
+              mode: input.mode,
+              operation: input.operation,
+              outcome: input.outcome,
+              progress: input.progress,
+              source: input.source,
+              status: input.status,
+              subject: input.subject,
+              trigger: input.trigger,
+              type: input.type,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -646,16 +682,10 @@ export function deleteJob(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<{ success: boolean }>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.delete(`/jobs/${jobId}`, {
-              params: {
-                environmentId,
-              },
-            });
-          },
+          () => axios.delete(`/jobs/${jobId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -706,7 +736,7 @@ export function failJob(
         TE.tryCatch(
           () => {
             return axios.post(`/jobs/${jobId}/fail`, {
-              info: input?.reason,
+              info: input?.info,
               outcome: input?.outcome,
             });
           },
@@ -730,16 +760,10 @@ export function getJob(
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Job>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`/jobs/${jobId}`, {
-              params: {
-                environmentId,
-              },
-            });
-          },
+          () => axios.get(`/jobs/${jobId}`),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -755,19 +779,15 @@ export function getJob(
  *
  * @since 0.1.0
  */
-export function listJobs(): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Jobs>> {
+export function listJobs(
+  queryParams?: ListJobsQueryParams,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Jobs>> {
   return pipe(
     RTE.ask<ApiReader>(),
-    RTE.chain(({ axios, environmentId }) => {
+    RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => {
-            return axios.get(`/jobs`, {
-              params: {
-                environmentId,
-              },
-            });
-          },
+          () => axios.get(`/jobs`, { params: queryParams }),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -792,7 +812,14 @@ export function updateJob(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/jobs/${jobId}`, input),
+          () => {
+            return axios.patch(`/jobs/${jobId}`, {
+              config: input.config,
+              outcomeAcknowledgedAt: input.outcomeAcknowledgedAt?.toISOString(),
+              progress: input.progress,
+              status: input.status,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

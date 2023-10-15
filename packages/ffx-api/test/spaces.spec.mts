@@ -58,7 +58,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -92,7 +92,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -125,7 +125,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -156,7 +156,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -203,7 +203,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -252,7 +252,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces`, (_req, res, ctx) => {
+      rest.post(`${baseUrl}/spaces`, (_, res, ctx) => {
         return res(ctx.status(200), ctx.json({ data: mockSpace }));
       }),
     ];
@@ -289,7 +289,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -323,7 +323,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -356,7 +356,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -387,7 +387,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -421,7 +421,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -457,7 +457,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -484,7 +484,7 @@ describe("spaces", () => {
   it("[Mocks] should handle failure when fetching all Space", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -518,7 +518,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -556,7 +556,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces`, (_req, res, ctx) => {
+      rest.get(`${baseUrl}/spaces`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -585,7 +585,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(400),
           ctx.json({
@@ -632,7 +632,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
@@ -681,7 +681,7 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_req, res, ctx) => {
+      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({
