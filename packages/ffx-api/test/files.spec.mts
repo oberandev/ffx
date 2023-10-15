@@ -8,15 +8,16 @@ import {
   baseUrl,
   client,
   maybePresent,
+  mkEnvironmentId,
   mkFileId,
   mkSheetId,
   mkSpaceId,
   mkWorkbookId,
   oneOf,
 } from "./helpers.mjs";
-import { File } from "../src/lib/files.mjs";
+import { File_ } from "../src/lib/files.mjs";
 
-function _mkMockFile(): IO.IO<File> {
+function _mkMockFile(): IO.IO<File_> {
   return IO.of({
     id: mkFileId()(),
     actions: maybePresent(() => []),
@@ -39,7 +40,7 @@ function _mkMockFile(): IO.IO<File> {
 describe("files", () => {
   it("[Mock] should handle failure when deleting a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.delete(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -73,7 +74,7 @@ describe("files", () => {
 
   it("[Mock] should handle decoder errors when deleting a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.delete(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -106,7 +107,7 @@ describe("files", () => {
 
   it("[Mock] should handle successfully deleting a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.delete(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -137,7 +138,7 @@ describe("files", () => {
 
   it("[Mock] should handle failure when downloading a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files/${mockFile.id}/download`, (_req, res, ctx) => {
@@ -171,7 +172,7 @@ describe("files", () => {
 
   it("[Mock] should handle decoder errors when downloading a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files/${mockFile.id}/download`, (_req, res, ctx) => {
@@ -197,7 +198,7 @@ describe("files", () => {
 
   it("[Mock] should handle successfully downloading a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files/${mockFile.id}/download`, (_req, res, ctx) => {
@@ -221,7 +222,7 @@ describe("files", () => {
 
   it("[Mock] should handle failure when fetching a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -255,7 +256,7 @@ describe("files", () => {
 
   it("[Mock] should handle decoder errors when fetching a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -289,7 +290,7 @@ describe("files", () => {
 
   it("[Mock] should handle successfully fetching a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -350,7 +351,7 @@ describe("files", () => {
 
   it("[Mock] should handle decoder errors when fetching all Files", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files`, (_req, res, ctx) => {
@@ -388,7 +389,7 @@ describe("files", () => {
 
   it("[Mock] should handle successfully fetching all Files", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.get(`${baseUrl}/files`, (_req, res, ctx) => {
@@ -417,7 +418,7 @@ describe("files", () => {
 
   it("[Mock] should handle failure when updating a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.patch(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -439,7 +440,13 @@ describe("files", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.files.update(mockFile.id, mockFile);
+    const resp = await client.files.update(mockFile.id, {
+      actions: mockFile.actions,
+      mode: mockFile.mode,
+      name: mockFile.name,
+      status: mockFile.status,
+      workbookId: mockFile.workbookId,
+    });
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -451,7 +458,7 @@ describe("files", () => {
 
   it("[Mock] should handle decoder errors when updating a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.patch(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -471,7 +478,13 @@ describe("files", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.files.update(mockFile.id, mockFile);
+    const resp = await client.files.update(mockFile.id, {
+      actions: mockFile.actions,
+      mode: mockFile.mode,
+      name: mockFile.name,
+      status: mockFile.status,
+      workbookId: mockFile.workbookId,
+    });
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -485,7 +498,7 @@ describe("files", () => {
 
   it("[Mock] should handle successfully updating a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.patch(`${baseUrl}/files/${mockFile.id}`, (_req, res, ctx) => {
@@ -502,7 +515,13 @@ describe("files", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.files.update(mockFile.id, mockFile);
+    const resp = await client.files.update(mockFile.id, {
+      actions: mockFile.actions,
+      mode: mockFile.mode,
+      name: mockFile.name,
+      status: mockFile.status,
+      workbookId: mockFile.workbookId,
+    });
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockFile))
@@ -514,7 +533,7 @@ describe("files", () => {
 
   it("[Mock] should handle failure when uploading a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.post(`${baseUrl}/files`, (_req, res, ctx) => {
@@ -536,8 +555,12 @@ describe("files", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.files.upload({
+    const emptyFile: File = new File([""], "filename");
+    const resp = await client.files.upload(emptyFile, {
+      actions: mockFile.actions,
+      environmentId: mkEnvironmentId()(),
       mode: mockFile.mode,
+      spaceId: mockFile.spaceId,
     });
 
     match(resp)
@@ -550,7 +573,7 @@ describe("files", () => {
 
   it("[Mock] should handle decoder errors when uploading a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.post(`${baseUrl}/files`, (_req, res, ctx) => {
@@ -570,8 +593,12 @@ describe("files", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.files.upload({
+    const emptyFile: File = new File([""], "filename");
+    const resp = await client.files.upload(emptyFile, {
+      actions: mockFile.actions,
+      environmentId: mkEnvironmentId()(),
       mode: mockFile.mode,
+      spaceId: mockFile.spaceId,
     });
 
     match(resp)
@@ -588,7 +615,7 @@ describe("files", () => {
 
   it("[Mock] should handle successfully uploading a File", async () => {
     // setup
-    const mockFile: File = _mkMockFile()();
+    const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
       rest.post(`${baseUrl}/files`, (_req, res, ctx) => {
@@ -600,7 +627,13 @@ describe("files", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.files.upload(mockFile);
+    const emptyFile: File = new File([""], "filename");
+    const resp = await client.files.upload(emptyFile, {
+      actions: mockFile.actions,
+      environmentId: mkEnvironmentId()(),
+      mode: mockFile.mode,
+      spaceId: mockFile.spaceId,
+    });
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockFile))

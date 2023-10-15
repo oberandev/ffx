@@ -65,6 +65,13 @@ export const SpaceC = t.intersection([
   }),
 ]);
 
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
+
 const CreateSpaceInputC = t.exact(
   t.partial({
     access: t.array(PermissionC),
@@ -82,6 +89,26 @@ const CreateSpaceInputC = t.exact(
   }),
 );
 
+const ListSpacesQueryParamsC = t.exact(
+  t.partial({
+    archived: t.boolean,
+    environmentId: EnvironmentIdFromString,
+    isCollaborative: t.boolean,
+    pageNumber: t.number,
+    pageSize: t.number,
+    search: t.string,
+    sortDirection: t.union([t.literal("asc"), t.literal("desc")]),
+    sortField: t.union([
+      t.literal("createdAt"),
+      t.literal("createdByUserName"),
+      t.literal("environmentId"),
+      t.literal("filesCount"),
+      t.literal("name"),
+      t.literal("workbooksCount"),
+    ]),
+  }),
+);
+
 // ==================
 //       Types
 // ==================
@@ -90,6 +117,7 @@ export type Space = Readonly<t.TypeOf<typeof SpaceC>>;
 export type Spaces = ReadonlyArray<Space>;
 
 export type CreateSpaceInput = Readonly<t.TypeOf<typeof CreateSpaceInputC>>;
+export type ListSpacesQueryParams = Readonly<t.TypeOf<typeof ListSpacesQueryParamsC>>;
 export type UpdateSpaceInput = CreateSpaceInput;
 
 // ==================
@@ -133,7 +161,22 @@ export function createSpace(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/spaces`, input),
+          () => {
+            return axios.post(`/spaces`, {
+              access: input.access,
+              actions: input.actions,
+              autoConfigure: input.autoConfigure,
+              displayOrder: input.displayOrder,
+              environmentId: input.environmentId,
+              guestAuthentication: input.guestAuthentication,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              namespace: input.namespace,
+              primaryWorkbookId: input.primaryWorkbookId,
+              translationsPath: input.translationsPath,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -197,16 +240,15 @@ export function getSpace(
  *
  * @since 0.1.0
  */
-export function listSpaces(): RT.ReaderTask<
-  ApiReader,
-  DecoderErrors | HttpError | Successful<Spaces>
-> {
+export function listSpaces(
+  queryParams?: ListSpacesQueryParams,
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<Spaces>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.get(`/spaces`),
+          () => axios.get(`/spaces`, { params: queryParams }),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -231,7 +273,22 @@ export function updateSpace(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/spaces/${spaceId}`, input),
+          () => {
+            return axios.patch(`/spaces/${spaceId}`, {
+              access: input.access,
+              actions: input.actions,
+              autoConfigure: input.autoConfigure,
+              displayOrder: input.displayOrder,
+              environmentId: input.environmentId,
+              guestAuthentication: input.guestAuthentication,
+              labels: input.labels,
+              metadata: input.metadata,
+              name: input.name,
+              namespace: input.namespace,
+              primaryWorkbookId: input.primaryWorkbookId,
+              translationsPath: input.translationsPath,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );

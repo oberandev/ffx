@@ -13,6 +13,7 @@ import {
   multipleOf,
   oneOf,
 } from "./helpers.mjs";
+import { WorkbookId } from "../src/lib/ids.mjs";
 import { Sheet, Sheets } from "../src/lib/sheets.mjs";
 
 function _mkMockSheet(): IO.IO<Sheet> {
@@ -310,7 +311,8 @@ describe("sheets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.sheets.list();
+    const workbookId: WorkbookId = mkWorkbookId()();
+    const resp = await client.sheets.list(workbookId);
 
     match(resp)
       .with({ _tag: "http_error" }, (httpError) => expect(httpError.statusCode).toEqual(400))
@@ -339,7 +341,8 @@ describe("sheets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.sheets.list();
+    const workbookId: WorkbookId = mkWorkbookId()();
+    const resp = await client.sheets.list(workbookId);
 
     match(resp)
       .with({ _tag: "decoder_errors" }, ({ reasons }) =>
@@ -372,7 +375,8 @@ describe("sheets", () => {
     server.listen({ onUnhandledRequest: "error" });
 
     // test
-    const resp = await client.sheets.list();
+    const workbookId: WorkbookId = mkWorkbookId()();
+    const resp = await client.sheets.list(workbookId);
 
     match(resp)
       .with({ _tag: "successful" }, ({ data }) => expect(data).toEqual(mockSheets))

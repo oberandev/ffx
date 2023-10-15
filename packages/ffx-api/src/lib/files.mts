@@ -5,6 +5,7 @@ import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { DateFromISOString } from "io-ts-types";
+import { ReadStream } from "node:fs";
 
 import {
   ApiReader,
@@ -60,23 +61,35 @@ export const FileC = t.intersection([
   }),
 ]);
 
-const UpdateFileInputC = t.partial({
-  actions: t.array(CustomActionC),
-  mode: ModeC,
-  name: t.string,
-  status: StatusC,
-  workbookId: WorkbookIdFromString,
-});
+/*
+ * Typescript doesn't offer an Exact<T> type, so we'll use `t.exact` & `t.strict`
+ * to strip addtional properites. Sadly the compiler can't enfore this, so the input
+ * must be separated into its constituent parts when contstructing the HTTP call
+ * to ensure user inputs don't break the API by passing extra data.
+ */
 
-const FileContentsC = t.string;
+const UpdateFileInputC = t.exact(
+  t.partial({
+    actions: t.array(CustomActionC),
+    mode: ModeC,
+    name: t.string,
+    status: StatusC,
+    workbookId: WorkbookIdFromString,
+  }),
+);
 
-const UploadFileInputC = t.partial({
-  actions: t.array(CustomActionC),
-  environmentId: EnvironmentIdFromString,
-  file: FileContentsC,
-  mode: ModeC,
-  spaceId: SpaceIdFromString,
-});
+const UploadFileInputC = t.exact(
+  t.intersection([
+    t.type({
+      environmentId: EnvironmentIdFromString,
+      spaceId: SpaceIdFromString,
+    }),
+    t.partial({
+      actions: t.array(CustomActionC),
+      mode: ModeC,
+    }),
+  ]),
+);
 
 const ListFilesQueryParamsC = t.exact(
   t.partial({
@@ -91,9 +104,9 @@ const ListFilesQueryParamsC = t.exact(
 //       Types
 // ==================
 
-export type File = Readonly<t.TypeOf<typeof FileC>>;
-export type Files = ReadonlyArray<File>;
-export type FileContents = Readonly<t.TypeOf<typeof FileContentsC>>;
+export type File_ = Readonly<t.TypeOf<typeof FileC>>;
+export type Files = ReadonlyArray<File_>;
+export type FileContents = Readonly<string>;
 
 export type UpdateFileInput = Readonly<t.TypeOf<typeof UpdateFileInputC>>;
 export type UploadFileInput = Readonly<t.TypeOf<typeof UploadFileInputC>>;
@@ -158,7 +171,7 @@ export function downloadFile(
  */
 export function getFile(
   fileId: FileId,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File>> {
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File_>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
@@ -211,13 +224,21 @@ export function listFiles(
 export function updateFile(
   fileId: FileId,
   input: UpdateFileInput,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File>> {
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File_>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.patch(`/files/${fileId}`, input),
+          () => {
+            return axios.patch(`/files/${fileId}`, {
+              actions: input.actions,
+              mode: input.mode,
+              name: input.name,
+              status: input.status,
+              workbookId: input.workbookId,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -234,14 +255,23 @@ export function updateFile(
  * @since 0.1.0
  */
 export function uploadFile(
+  file: File | ReadStream,
   input: UploadFileInput,
-): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File>> {
+): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File_>> {
   return pipe(
     RTE.ask<ApiReader>(),
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.post(`/files`, input),
+          () => {
+            return axios.postForm(`/files`, {
+              actions: input.actions,
+              environmentId: input.environmentId,
+              file,
+              mode: input.mode,
+              spaceId: input.spaceId,
+            });
+          },
           (reason: unknown) => reason as AxiosError,
         ),
       );
