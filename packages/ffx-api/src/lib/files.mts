@@ -256,7 +256,7 @@ export function updateFile(
  * @since 0.1.0
  */
 export function uploadFile(
-  stream: ReadStream,
+  readable: ReadStream,
   input: UploadFileInput,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File_>> {
   return pipe(
@@ -265,27 +265,22 @@ export function uploadFile(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
-            const chunks: Array<any> = [];
+            let chunks: Array<any> = [];
 
-            stream.pause();
-
-            stream.on("data", (chunk) => {
-              console.log(`Received ${chunk.length} bytes of data.`);
-            });
-
-            stream.on("readable", () => {
+            readable.on("readable", () => {
               let chunk;
 
-              while ((chunk = stream.read()) !== null) {
+              while ((chunk = readable.read()) !== null) {
+                console.log(`Read ${chunk.length} bytes of data...`);
                 console.log("chunk:", chunk);
                 chunks.push(chunk);
               }
             });
 
-            stream.on("end", () => {
+            readable.on("end", () => {
               console.log("Reached end of stream.");
-              stream.removeAllListeners();
-              stream.destroy();
+              readable.removeAllListeners();
+              readable.destroy();
             });
 
             console.log("chunks:", chunks);
