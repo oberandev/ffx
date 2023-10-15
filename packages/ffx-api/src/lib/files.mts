@@ -5,6 +5,7 @@ import * as RTE from "fp-ts/ReaderTaskEither";
 import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import { DateFromISOString } from "io-ts-types";
+import { Buffer } from "node:buffer";
 import { ReadStream } from "node:fs";
 
 import {
@@ -153,7 +154,7 @@ export function downloadFile(
     RTE.chain(({ axios }) => {
       return RTE.fromTaskEither(
         TE.tryCatch(
-          () => axios.get(`/files/${fileId}/download`),
+          () => axios.get(`/files/${fileId}/download`, { responseType: "stream" }),
           (reason: unknown) => reason as AxiosError,
         ),
       );
@@ -255,7 +256,7 @@ export function updateFile(
  * @since 0.1.0
  */
 export function uploadFile(
-  file: File | ReadStream,
+  stream: ReadStream,
   input: UploadFileInput,
 ): RT.ReaderTask<ApiReader, DecoderErrors | HttpError | Successful<File_>> {
   return pipe(
@@ -264,10 +265,38 @@ export function uploadFile(
       return RTE.fromTaskEither(
         TE.tryCatch(
           () => {
+            const chunks: Array<any> = [];
+
+            stream.pause();
+
+            stream.on("data", (chunk) => {
+              console.log(`Received ${chunk.length} bytes of data.`);
+            });
+
+            stream.on("readable", () => {
+              let chunk;
+
+              while ((chunk = stream.read()) !== null) {
+                console.log("chunk:", chunk);
+                chunks.push(chunk);
+              }
+            });
+
+            stream.on("end", () => {
+              console.log("Reached end of stream.");
+              stream.removeAllListeners();
+              stream.destroy();
+            });
+
+            console.log("chunks:", chunks);
+
+            const buffer = Buffer.from(chunks);
+
             return axios.postForm(`/files`, {
               actions: input.actions,
               environmentId: input.environmentId,
-              file,
+              // file: Buffer.from([0x62, 0x75, 0x66, 0x66, 0x65, 0x72]),
+              file: buffer.join(""),
               mode: input.mode,
               spaceId: input.spaceId,
             });

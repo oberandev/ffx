@@ -219,7 +219,7 @@ interface ApiClient {
       input: UpdateFileInput,
     ) => Promise<DecoderErrors | HttpError | Successful<File_>>;
     upload: (
-      file: File | ReadStream,
+      stream: ReadStream,
       input: UploadFileInput,
     ) => Promise<DecoderErrors | HttpError | Successful<File_>>;
   };
@@ -423,7 +423,7 @@ export default function mkApiClient(
       get: (fileId) => getFile(fileId)(reader)(),
       list: (queryParams) => listFiles(queryParams)(reader)(),
       update: (fileId, input) => updateFile(fileId, input)(reader)(),
-      upload: (file, input) => uploadFile(file, input)(reader)(),
+      upload: (stream, input) => uploadFile(stream, input)(reader)(),
     },
     jobs: {
       ack: (jobId, input) => acknowledgeJob(jobId, input)(reader)(),
