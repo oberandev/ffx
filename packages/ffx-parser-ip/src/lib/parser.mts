@@ -1,3 +1,3 @@
-export function ffxParserIp(): string {
+export function parse(): string {
   return "ffx-parser-ip";
 }

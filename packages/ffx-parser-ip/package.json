@@ -1,10 +1,10 @@
 {
   "name": "@oberan/ffx-parser-ip",
-  "description": "Change me!!",
-  "version": "0.1.0",
+  "description": "Parse a string into a possible IPv4 / IPv6 address.",
+  "version": "0.0.0",
   "license": "BSD-3-Clause",
   "keywords": [
-    "change me"
+    "flatfile"
   ],
   "author": "Oberan (https://oberan.dev)",
   "homepage": "https://github.com/oberandev/ffx#readme",
@@ -12,7 +12,7 @@
     "url": "https://github.com/oberandev/ffx/issues"
   },
   "engines": {
-    "node": ">= 18"
+    "node": ">=18"
   },
   "type": "module",
   "main": "./src/index.mts",

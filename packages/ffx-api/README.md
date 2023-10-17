@@ -1,4 +1,4 @@
-# ffx-api
+# @oberan/ffx-api
 
 Making software design tradeoffs is never easy and they ultimately either positvely or negatively affect one's perception about said software. `@oberan/ffx-api` was designed with an attempt to balance functional programming concepts (i.e. monads) with writing clean code that requires a low cognitive overhead for those with an OOP background. Maybe we inspire you to learn a little category theory — maybe not. Lastly, this library may not be for you and that is ok.
 
@@ -6,16 +6,36 @@ Making software design tradeoffs is never easy and they ultimately either positv
 
 `@flatfile/api`
 
-- Takes the traditional approach with errors by using `throw` whenever something bad happens
-- Minimal error message context
-- Auto-genereated by [Fern Definitions](https://www.buildwithfern.com/docs/definition)
+- Takes the traditional approach with errors by using `throw` whenever something bad happens.
+- Minimal error message context.
+- Auto-genereated by [Fern Definitions](https://www.buildwithfern.com/docs/definition).
 
 `@oberan/ffx-api`
 
-- Errors are returned as "data" rather than throwing
-- Uses response decoders at runtime to elegantly catch the unexpected — trust but verify
-- Response type informs you with _exactly_ what you are getting
-- Handcrafted rather than auto-generated
+- Errors are returned as "data" rather than throwing.
+- Uses response decoders at runtime to elegantly catch the unexpected — trust but verify.
+- Response type informs you with _exactly_ what you are getting.
+- Handcrafted rather than auto-generated.
+
+## Installing
+
+Using npm:
+
+```bash
+npm install @oberan/ffx-api
+```
+
+Using pnpm:
+
+```bash
+pnpm add @oberan/ffx-api
+```
+
+Using yarn:
+
+```bash
+yarn add @oberan/ffx-api
+```
 
 ## Usage
 

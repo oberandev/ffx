@@ -1,11 +1,31 @@
-# ffx-guards
+# @oberan/ffx-guards
 
-This library was generated with [Nx](https://nx.dev).
+A small library of Typescript type guards helpful in writing clean, type-safe and readable Flatfile configuration code.
 
-## Building
+## Installing
 
-Run `nx build ffx-guards` to build the library.
+Using npm:
 
-## Running unit tests
+```bash
+npm install @oberan/ffx-guards
+```
 
-Run `nx test ffx-guards` to execute the unit tests via [Vitest](https://vitest.dev/).
+Using pnpm:
+
+```bash
+pnpm add @oberan/ffx-guards
+```
+
+Using yarn:
+
+```bash
+yarn add @oberan/ffx-guards
+```
+
+## Usage
+
+```ts
+import * as G from "@oberan/ffx-guards";
+
+G.isNil(x);
+```
