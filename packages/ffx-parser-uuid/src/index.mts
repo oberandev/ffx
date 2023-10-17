@@ -1,1 +1,1 @@
-export { UUID, format, isMax, isNil, parse } from "./lib/parser.mjs";
+export { UUID, format, isMax, isNil, parse, unwrap } from "./lib/parser.mjs";

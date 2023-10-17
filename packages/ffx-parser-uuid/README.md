@@ -1,6 +1,6 @@
-# ffx-parser-uuid
+# @oberan/ffx-parser-uuid
 
-A small, yet helpful library to parse UUID's.
+Parse a string into a possible UUID.
 
 ## Installing
 
@@ -24,27 +24,29 @@ yarn add @oberan/ffx-parser-uuid
 
 ## Usage
 
-A common programming practice is to define a type whose representation is identical to an existing one but which has a separate identity in the type system. This library does so with the `UUID` type.
+A common programming practice is to define a type whose representation is identical to an existing one but which has a separate identity in the type system. This library does so with the `UUID` type which is equivalent to a `string` at runtime.
 
 ### Example
 
 ```ts
 import * as Uuid from "@oberan/ffx-parser-uuid";
+import { match } from "ts-pattern";
 
-Uuid.parse(
-  (errors: string) => {
-    // handle failure
-  },
-  (wrapped: Uuid.UUID) => {
-    // handle success
-    // don't forget to unwrap value with `Uuid.unwrap(wrapped)`
-  },
-)("23d57c30-afe7-11e4-ab7d-12e3f512a338");
+const eitherUuid = Uuid.parse("23d57c30-afe7-11e4-ab7d-12e3f512a338");
+
+match(eitherUuid)
+  .with({ _tag: "Left" }, ({ left: error }) => {
+    // do something with the error
+  })
+  .with({ _tag: "Right" }, ({ right: uuid }) => {
+    // do something with the uuid
+  })
+  .exhaustive();
 ```
 
 ### Operations on the `UUID` type
 
-Since `UUID` is a wrapped type that can only be created after a successful parse, we provide convenience functions (see below) to operate on the type. This affords the internal "core" functions a high level of confidence since they don't always need to validate the incoming string value is a proper `UUID`.
+A `UUID` is a _wrapped_ type that can only be created after a successful parse. This affords the internal "core" functions a high level of confidence since they don't always need to re-validate the incoming string value is a valid `UUID`.
 
 ```ts
 format(uuid: UUID): UUID

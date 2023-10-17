@@ -1,11 +1,41 @@
-# ffx-parser-boolean
+# @oberan/ffx-parser-boolean
 
-This library was generated with [Nx](https://nx.dev).
+Parse a string into a possible boolean value.
 
-## Building
+## Installing
 
-Run `nx build ffx-parser-boolean` to build the library.
+Using npm:
 
-## Running unit tests
+```bash
+npm install @oberan/ffx-parser-boolean
+```
 
-Run `nx test ffx-parser-boolean` to execute the unit tests via [Jest](https://jestjs.io).
+Using pnpm:
+
+```bash
+pnpm add @oberan/ffx-parser-boolean
+```
+
+Using yarn:
+
+```bash
+yarn add @oberan/ffx-parser-boolean
+```
+
+## Usage
+
+```ts
+import * as Bool from "@oberan/ffx-parser-boolean";
+import { match } from "ts-pattern";
+
+const eitherBoolean = Bool.parse("true");
+
+match(eitherBoolean)
+  .with({ _tag: "Left" }, ({ left: error }) => {
+    // do something with the error
+  })
+  .with({ _tag: "Right" }, ({ right: bool }) => {
+    // do something with the boolean value
+  })
+  .exhaustive();
+```
