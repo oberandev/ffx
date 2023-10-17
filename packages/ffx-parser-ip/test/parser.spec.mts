@@ -1,7 +1,7 @@
-import { ffxParserIp } from "../src/lib/parser.mjs";
+import { parse } from "../src/lib/parser.mjs";
 
-describe("ffxParserIp", () => {
+describe("parse", () => {
   it("should work", () => {
-    expect(ffxParserIp()).toEqual("ffx-parser-ip");
+    expect(parse()).toEqual("ffx-parser-ip");
   });
 });
