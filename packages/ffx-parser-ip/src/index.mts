@@ -1,1 +1,1 @@
-export * from "./lib/parser.mjs";
+export { parse } from "./lib/parser.mjs";

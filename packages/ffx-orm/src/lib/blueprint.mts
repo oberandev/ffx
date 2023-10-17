@@ -3,7 +3,7 @@ import * as RA from "fp-ts/ReadonlyArray";
 
 import { Sheet, eqSheet } from "./sheet.mjs";
 
-interface Blueprint {
+export interface Blueprint {
   readonly name: string;
   readonly primary: boolean;
   readonly sheets: ReadonlyArray<Sheet>;

@@ -7,7 +7,7 @@ import * as Str from "fp-ts/string";
 import { CustomAction, eqCustomAction } from "./custom_action.mjs";
 import { Sheet, eqSheet } from "./sheet.mjs";
 
-interface Workbook {
+export interface Workbook {
   readonly actions?: ReadonlyArray<CustomAction>;
   readonly environmentId?: string;
   readonly labels?: ReadonlyArray<string>;

@@ -14,17 +14,17 @@ import { match } from "ts-pattern";
 //       Types
 // ==================
 
-interface ISBN10 {
+export interface ISBN10 {
   readonly _tag: "isbn10";
   readonly value: string;
 }
 
-interface ISBN13 {
+export interface ISBN13 {
   readonly _tag: "isbn13";
   readonly value: string;
 }
 
-type ISBN = ISBN10 | ISBN13;
+export type ISBN = ISBN10 | ISBN13;
 
 // ==================
 //       Main

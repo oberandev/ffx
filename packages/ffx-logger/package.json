@@ -1,11 +1,11 @@
 {
   "name": "@oberan/ffx-logger",
   "description": "Change me!!",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "license": "BSD-3-Clause",
   "private": true,
   "keywords": [
-    "change me"
+    "flatfile"
   ],
   "author": "Oberan (https://oberan.dev)",
   "homepage": "https://github.com/oberandev/ffx#readme",
@@ -13,7 +13,7 @@
     "url": "https://github.com/oberandev/ffx/issues"
   },
   "engines": {
-    "node": ">= 18"
+    "node": ">=18"
   },
   "type": "module",
   "main": "./src/index.mts",

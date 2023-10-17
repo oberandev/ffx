@@ -1,11 +1,41 @@
-# ffx-parser-ip
+# @oberan/ffx-parser-ip
 
-This library was generated with [Nx](https://nx.dev).
+Parse a string into a possible IPv4 / IPv6 address.
 
-## Building
+## Installing
 
-Run `nx build ffx-parser-ip` to build the library.
+Using npm:
 
-## Running unit tests
+```bash
+npm install @oberan/ffx-parser-ip
+```
 
-Run `nx test ffx-parser-ip` to execute the unit tests via [Jest](https://jestjs.io).
+Using pnpm:
+
+```bash
+pnpm add @oberan/ffx-parser-ip
+```
+
+Using yarn:
+
+```bash
+yarn add @oberan/ffx-parser-ip
+```
+
+## Usage
+
+```ts
+import * as Ip from "@oberan/ffx-parser-ip";
+import { match } from "ts-pattern";
+
+const eitherIp = Ip.parse("192.168.1.1");
+
+match(eitherIp)
+  .with({ _tag: "Left" }, ({ left: error }) => {
+    // do something with the error
+  })
+  .with({ _tag: "Right" }, ({ right: addr }) => {
+    // do something with the IPv4 / IPv6 ip addr
+  })
+  .exhaustive();
+```

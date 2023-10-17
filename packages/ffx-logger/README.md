@@ -1,11 +1,6 @@
-# ffx-logger
+# @oberan/ffx-logger
 
-This library was generated with [Nx](https://nx.dev).
+> [!NOTE]
+> This is an internal monorepo package that is not published.
 
-## Building
-
-Run `nx build logger` to build the library.
-
-## Running unit tests
-
-Run `nx test logger` to execute the unit tests via [Vitest](https://vitest.dev/).
+A custom logger for pretty-printing useful information to the terminal.
