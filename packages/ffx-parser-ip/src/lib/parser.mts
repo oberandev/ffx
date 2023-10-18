@@ -27,24 +27,55 @@ export type IP = IPv4 | IPv6;
 //       Main
 // ==================
 
+/**
+ * Matches the 'end of file' but with user-friendly error message.
+ *
+ * @category lexers
+ */
 const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
 
+/**
+ * Matches a dot '.' character.
+ *
+ * @category lexers
+ */
+const dot: P.Parser<string, string> = C.char(".");
+
+/**
+ * Matches a digit (0-9) character.
+ *
+ * @category lexers
+ */
+const digit: P.Parser<string, string> = C.digit;
+
+/**
+ * Matches a non-zero digit (1-9) character.
+ *
+ * @category lexers
+ */
+const nzDigit: P.Parser<string, string> = P.expected(C.oneOf("123456789"), "non-zero digit");
+
+/**
+ * Attempts to parse a 3-digit octet where the first digit can never be a '0'.
+ *
+ * @category parsers
+ */
 const threeDigitOctet: P.Parser<string, string> = pipe(
-  C.digit,
+  digit,
   P.bindTo("d1"),
-  P.bind("d2", () => C.digit),
-  P.bind("d3", () => C.digit),
+  P.bind("d2", () => digit),
+  P.bind("d3", () => digit),
   P.map((ds) => Object.values(ds).join("")),
 );
 
 const twoDigitOctet: P.Parser<string, string> = pipe(
-  C.digit,
+  digit,
   P.bindTo("d1"),
-  P.bind("d2", () => C.digit),
+  P.bind("d2", () => digit),
   P.map((ds) => Object.values(ds).join("")),
 );
 
-const oneDigitOctet: P.Parser<string, string> = C.digit;
+const oneDigitOctet: P.Parser<string, string> = digit;
 
 const octet: P.Parser<string, string> = P.expected(
   pipe(
@@ -55,24 +86,22 @@ const octet: P.Parser<string, string> = P.expected(
   "octet to be 1-3 digit(s)",
 );
 
-const nzDigit: P.Parser<string, string> = P.cut(P.expected(C.oneOf("123456789"), "non-zero digit"));
-
 const nzThreeDigitOctet: P.Parser<string, string> = pipe(
-  nzDigit,
+  P.cut(nzDigit),
   P.bindTo("d1"),
-  P.bind("d2", () => C.digit),
-  P.bind("d3", () => C.digit),
+  P.bind("d2", () => digit),
+  P.bind("d3", () => digit),
   P.map((ds) => Object.values(ds).join("")),
 );
 
 const nzTwoDigitOctet: P.Parser<string, string> = pipe(
-  nzDigit,
+  P.cut(nzDigit),
   P.bindTo("d1"),
-  P.bind("d2", () => C.digit),
+  P.bind("d2", () => digit),
   P.map((ds) => Object.values(ds).join("")),
 );
 
-const nzOneDigitOctet: P.Parser<string, string> = nzDigit;
+const nzOneDigitOctet: P.Parser<string, string> = P.cut(nzDigit);
 
 const nzOctet: P.Parser<string, string> = pipe(
   nzThreeDigitOctet,
@@ -80,15 +109,18 @@ const nzOctet: P.Parser<string, string> = pipe(
   P.alt(() => nzOneDigitOctet),
 );
 
+/*
+ * Attempts to parse a quad-dotted IPv4 address.
+ */
 export function runParser(input: string): ParseResult<string, string> {
   const parser = pipe(
     nzOctet,
     P.bindTo("o1"),
-    P.apFirst(C.char(".")),
+    P.apFirst(dot),
     P.bind("o2", () => octet),
-    P.apFirst(C.char(".")),
+    P.apFirst(dot),
     P.bind("o3", () => octet),
-    P.apFirst(C.char(".")),
+    P.apFirst(dot),
     P.bind("o4", () => octet),
     P.apFirst(eof),
     P.map((octets) => pipe(Object.values(octets), RA.intercalate(Str.Monoid)("."))),
