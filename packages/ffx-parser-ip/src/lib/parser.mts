@@ -75,7 +75,7 @@ const twoDigitOctet: P.Parser<string, string> = S.fold([nzDigit, digit]);
 const oneDigitOctet: P.Parser<string, string> = digit;
 
 /**
- * Attempts to parse a 1-3 digit(s) octet.
+ * Attempts to parse a 1-3 digit octet.
  *
  * @category combinators
  */
