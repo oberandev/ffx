@@ -251,16 +251,14 @@ export function runParser(input: string): ParseResult<string, MacAddr> {
 export function parse(input: string): E.Either<string, MacAddr> {
   return pipe(
     runParser(input),
-    E.matchW(
-      ({ expected, input }) => {
-        const customErrorMsg: string = `Expected ${expected[input.cursor % 2]} at position ${
-          input.cursor + 1
-        } but found "${input.buffer[input.cursor]}"`;
+    E.map(({ value }) => value),
+    E.mapLeft(({ expected, input }) => {
+      const customErrorMsg: string = `Expected ${expected[input.cursor % 2]} at position ${
+        input.cursor + 1
+      } but found "${input.buffer[input.cursor]}"`;
 
-        return E.left(customErrorMsg);
-      },
-      ({ value }) => E.right(value),
-    ),
+      return customErrorMsg;
+    }),
   );
 }
 
