@@ -29,6 +29,7 @@ export type IP = IPv4 | IPv6;
  * Matches the 'end of file' but with user-friendly error message.
  *
  * @category lexers
+ * @internal
  */
 const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
 
@@ -36,6 +37,7 @@ const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
  * Matches a dot '.' character.
  *
  * @category lexers
+ * @internal
  */
 const dot: P.Parser<string, string> = C.char(".");
 
@@ -43,6 +45,7 @@ const dot: P.Parser<string, string> = C.char(".");
  * Matches a digit (0-9) character.
  *
  * @category lexers
+ * @internal
  */
 const digit: P.Parser<string, string> = C.digit;
 
@@ -50,6 +53,7 @@ const digit: P.Parser<string, string> = C.digit;
  * Matches a non-zero digit (1-9) character.
  *
  * @category lexers
+ * @internal
  */
 const nzDigit: P.Parser<string, string> = P.expected(C.oneOf("123456789"), "non-zero digit");
 
@@ -57,6 +61,7 @@ const nzDigit: P.Parser<string, string> = P.expected(C.oneOf("123456789"), "non-
  * Attempts to parse a 3-digit octet where the first digit can never be a '0'.
  *
  * @category combinators
+ * @internal
  */
 const threeDigitOctet: P.Parser<string, string> = S.fold([nzDigit, digit, digit]);
 
@@ -64,6 +69,7 @@ const threeDigitOctet: P.Parser<string, string> = S.fold([nzDigit, digit, digit]
  * Attempts to parse a 2-digit octet where the first digit can never be a '0'.
  *
  * @category combinators
+ * @internal
  */
 const twoDigitOctet: P.Parser<string, string> = S.fold([nzDigit, digit]);
 
@@ -71,6 +77,7 @@ const twoDigitOctet: P.Parser<string, string> = S.fold([nzDigit, digit]);
  * Attempts to parse a 1-digit octet where the digit can never be a '0'.
  *
  * @category combinators
+ * @internal
  */
 const oneDigitOctet: P.Parser<string, string> = digit;
 
@@ -78,6 +85,7 @@ const oneDigitOctet: P.Parser<string, string> = digit;
  * Attempts to parse a 1-3 digit octet.
  *
  * @category combinators
+ * @internal
  */
 const octet: P.Parser<string, string> = P.expected(
   pipe(
@@ -88,12 +96,21 @@ const octet: P.Parser<string, string> = P.expected(
   "octet to be 1-3 digit(s)",
 );
 
-/*
+/**
  * Attempts to parse a quad-dotted IPv4 address.
+ *
+ * @internal
  */
-export function runParser(input: string): ParseResult<string, string> {
-  const parser = pipe(S.fold([octet, dot, octet, dot, octet, dot, octet]), P.apFirst(eof));
+const parser: P.Parser<string, IPv4> = pipe(
+  S.fold([octet, dot, octet, dot, octet, dot, octet]),
+  P.apFirst(eof),
+  P.map((addr) => ({
+    _tag: "ipv4",
+    value: addr,
+  })),
+);
 
+function runParser(input: string): ParseResult<string, IP> {
   return S.run(input)(parser);
 }
 
@@ -113,20 +130,13 @@ export function runParser(input: string): ParseResult<string, string> {
 export function parse(input: string): E.Either<string, IP> {
   return pipe(
     runParser(input),
-    E.matchW(
-      ({ expected, input }) => {
-        const customErrorMsg: string = `Expected ${expected.join(" ")} at position ${
-          input.cursor + 1
-        } but found "${input.buffer[input.cursor]}"`;
+    E.map(({ value }) => value),
+    E.mapLeft(({ expected, input }) => {
+      const customErrorMsg: string = `Expected ${expected.join(" ")} at position ${
+        input.cursor + 1
+      } but found "${input.buffer[input.cursor]}"`;
 
-        return E.left(customErrorMsg);
-      },
-      ({ value }) => {
-        return E.right({
-          _tag: "ipv4",
-          value,
-        });
-      },
-    ),
+      return customErrorMsg;
+    }),
   );
 }
