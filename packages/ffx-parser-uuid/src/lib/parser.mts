@@ -73,16 +73,14 @@ export function runParser(input: string): ParseResult<string, UUID> {
 export function parse(input: string): E.Either<string, UUID> {
   return pipe(
     runParser(input),
-    E.matchW(
-      ({ expected, input }) => {
-        const customErrorMsg: string = `Expected ${expected.join(" ")} at position ${
-          input.cursor + 1
-        } but found "${input.buffer[input.cursor]}"`;
+    E.map(({ value }) => value),
+    E.mapLeft(({ expected, input }) => {
+      const customErrorMsg: string = `Expected ${expected.join(" ")} at position ${
+        input.cursor + 1
+      } but found "${input.buffer[input.cursor]}"`;
 
-        return E.left(customErrorMsg);
-      },
-      ({ value }) => E.right(value),
-    ),
+      return customErrorMsg;
+    }),
   );
 }
 
