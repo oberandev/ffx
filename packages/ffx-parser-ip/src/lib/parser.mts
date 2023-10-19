@@ -42,6 +42,14 @@ const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
 const dot: P.Parser<string, string> = C.char(".");
 
 /**
+ * Matches a colon ':' character.
+ *
+ * @category lexers
+ * @internal
+ */
+const colon: P.Parser<string, string> = C.char(":");
+
+/**
  * Matches a digit (0-9) character.
  *
  * @category lexers
@@ -56,6 +64,18 @@ const digit: P.Parser<string, string> = C.digit;
  * @internal
  */
 const nzDigit: P.Parser<string, string> = P.expected(C.oneOf("123456789"), "non-zero digit");
+
+function isHexDigit(c: C.Char): boolean {
+  return "0123456789abcdef".indexOf(c.toLowerCase()) !== -1;
+}
+
+/**
+ * Matches a hexadecimal digit character.
+ *
+ * @category lexers
+ * @internal
+ */
+const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
 
 /**
  * Attempts to parse a 3-digit octet where the first digit can never be a '0'.
@@ -97,11 +117,12 @@ const octet: P.Parser<string, string> = P.expected(
 );
 
 /**
- * Attempts to parse a quad-dotted IPv4 address.
+ * Attempts to match a quad-dotted IPv4 address.
  *
+ * @category combinators
  * @internal
  */
-const parser: P.Parser<string, IPv4> = pipe(
+export const ipv4: P.Parser<string, IP> = pipe(
   S.fold([octet, dot, octet, dot, octet, dot, octet]),
   P.apFirst(eof),
   P.map((addr) => ({
@@ -110,8 +131,88 @@ const parser: P.Parser<string, IPv4> = pipe(
   })),
 );
 
+/**
+ * to match four hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
+const fourHexDigits: P.Parser<string, string> = S.fold([hexDigit, hexDigit, hexDigit, hexDigit]);
+
+/**
+ * Attempts to match three hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
+const threeHexDigits: P.Parser<string, string> = S.fold([hexDigit, hexDigit, hexDigit]);
+
+/**
+ * Attempts to match two hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
+const twoHexDigits: P.Parser<string, string> = S.fold([hexDigit, hexDigit]);
+
+/**
+ * Attempts to match one hexadecimal digit.
+ *
+ * @category combinators
+ * @internal
+ */
+const oneHexDigit: P.Parser<string, string> = hexDigit;
+
+/**
+ * Attempts to match a valid group of hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
+const group: P.Parser<string, string> = P.expected(
+  pipe(
+    fourHexDigits,
+    P.alt(() => threeHexDigits),
+    P.alt(() => twoHexDigits),
+    P.alt(() => oneHexDigit),
+  ),
+  "group to be 1-4 hexdigit(s)",
+);
+
+/**
+ * Attempts to match an IPv6 variant.
+ *
+ * @category combinators
+ * @internal
+ */
+export const ipv6: P.Parser<string, IP> = pipe(
+  S.fold([
+    group,
+    colon,
+    group,
+    colon,
+    group,
+    colon,
+    group,
+    colon,
+    group,
+    colon,
+    group,
+    colon,
+    group,
+    colon,
+    group,
+  ]),
+  P.apFirst(eof),
+  P.map((addr) => ({
+    _tag: "ipv6",
+    value: addr,
+  })),
+);
+
 function runParser(input: string): ParseResult<string, IP> {
-  return S.run(input)(parser);
+  // return S.run(input)(P.either(ipv4, () => ipv6));
+  return S.run(input)(ipv4);
 }
 
 /**

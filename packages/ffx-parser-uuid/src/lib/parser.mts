@@ -1,7 +1,6 @@
 import * as E from "fp-ts/Either";
 import * as Eq from "fp-ts/Eq";
 import { pipe } from "fp-ts/function";
-import * as RA from "fp-ts/ReadonlyArray";
 import * as Str from "fp-ts/string";
 import { Iso } from "monocle-ts";
 import * as N from "newtype-ts";
@@ -24,34 +23,66 @@ const eqUUID: Eq.Eq<UUID> = N.getEq<UUID>(Str.Eq);
 //       Main
 // ==================
 
+/**
+ * Matches the 'end of file' but with user-friendly error message.
+ *
+ * @category lexers
+ * @internal
+ */
+const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
+
 function isHexDigit(c: C.Char): boolean {
   return "0123456789abcdef".indexOf(c.toLowerCase()) !== -1;
 }
 
+/**
+ * Matches a hexadecimal digit character.
+ *
+ * @category lexers
+ * @internal
+ */
 const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
 
+/**
+ * Matches a hyphen '-' character.
+ *
+ * @category lexers
+ * @internal
+ */
 const hyphen: P.Parser<string, string> = C.char("-");
 
 const chunkN = (length: number): P.Parser<string, string> =>
   S.fold(Array.from({ length }, () => hexDigit));
+
+/**
+ * Attempts to match a chunk size of 4 hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
 const chunk4 = chunkN(4);
+
+/**
+ * Attempts to match a chunk size of 8 hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
 const chunk8 = chunkN(8);
+
+/**
+ * Attempts to match a chunk size of 12 hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
 const chunk12 = chunkN(12);
 
 export function runParser(input: string): ParseResult<string, UUID> {
   const parser = pipe(
-    chunk8,
-    P.bindTo("c1"),
-    P.apFirst(hyphen),
-    P.bind("c2", () => chunk4),
-    P.apFirst(hyphen),
-    P.bind("c3", () => chunk4),
-    P.apFirst(hyphen),
-    P.bind("c4", () => chunk4),
-    P.apFirst(hyphen),
-    P.bind("c5", () => chunk12),
-    P.apFirst(P.eof()),
-    P.map((chunks) => pipe(Object.values(chunks), RA.intercalate(Str.Monoid)("-"), isoUUID.wrap)),
+    S.fold([chunk8, hyphen, chunk4, hyphen, chunk4, hyphen, chunk4, hyphen, chunk12]),
+    P.apFirst(eof),
+    P.map(isoUUID.wrap),
   );
 
   return S.run(input)(parser);

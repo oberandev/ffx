@@ -1,6 +1,5 @@
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
-import * as RA from "fp-ts/ReadonlyArray";
 import * as Str from "fp-ts/string";
 import { Lens } from "monocle-ts";
 import * as C from "parser-ts/char";
@@ -63,174 +62,225 @@ interface FourGroupsByDot {
 //       Main
 // ==================
 
+/**
+ * Matches the 'end of file' but with user-friendly error message.
+ *
+ * @category lexers
+ * @internal
+ */
+const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
+
 function isHexDigit(c: C.Char): boolean {
   return "0123456789abcdef".indexOf(c.toLowerCase()) !== -1;
 }
 
+/**
+ * Matches a hexadecimal digit character.
+ *
+ * @category lexers
+ * @internal
+ */
 const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
 
+/**
+ * Matches a hyphen '-' character.
+ *
+ * @category lexers
+ * @internal
+ */
 const hyphen: P.Parser<string, string> = C.char("-");
 
+/**
+ * Matches a dot '.' character.
+ *
+ * @category lexers
+ * @internal
+ */
 const dot: P.Parser<string, string> = C.char(".");
 
+/**
+ * Matches a colon ':' character.
+ *
+ * @category lexers
+ * @internal
+ */
 const colon: P.Parser<string, string> = C.char(":");
 
 const groupN = (length: number): P.Parser<string, string> =>
   S.fold(Array.from({ length }, () => hexDigit));
 
+/**
+ * Attempts to match a chunk size of 2 hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
 const group2 = groupN(2);
+
+/**
+ * Attempts to match a chunk size of 4 hexadecimal digits.
+ *
+ * @category combinators
+ * @internal
+ */
 const group4 = groupN(4);
 
-const pSixGroupsByColon: P.Parser<string, Eui48> = pipe(
-  group2,
-  P.bindTo("g1"),
-  P.apFirst(colon),
-  P.bind("g2", () => group2),
-  P.apFirst(colon),
-  P.bind("g3", () => group2),
-  P.apFirst(colon),
-  P.bind("g4", () => group2),
-  P.apFirst(colon),
-  P.bind("g5", () => group2),
-  P.apFirst(colon),
-  P.bind("g6", () => group2),
-  P.apFirst(P.expected(P.eof(), "end of string")),
-  P.map((groups) => ({
+/**
+ * Attempts to match six groups of hexadecimal digits separated by a colon.
+ *
+ * @category combinators
+ * @internal
+ */
+const sixGroupsByColon: P.Parser<string, Eui48> = pipe(
+  S.fold([group2, colon, group2, colon, group2, colon, group2, colon, group2, colon, group2]),
+  P.apFirst(eof),
+  P.map((addr) => ({
     _tag: "six_groups_by_colon",
-    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
+    value: addr,
   })),
 );
 
-const pSixGroupsByHyphen: P.Parser<string, Eui48> = pipe(
-  group2,
-  P.bindTo("g1"),
-  P.apFirst(hyphen),
-  P.bind("g2", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g3", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g4", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g5", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g6", () => group2),
-  P.apFirst(P.expected(P.eof(), "end of string")),
-  P.map((groups) => ({
+/**
+ * Attempts to match six groups of hexadecimal digits separated by a hyphen.
+ *
+ * @category combinators
+ * @internal
+ */
+const sixGroupsByHyphen: P.Parser<string, Eui48> = pipe(
+  S.fold([group2, hyphen, group2, hyphen, group2, hyphen, group2, hyphen, group2, hyphen, group2]),
+  P.apFirst(eof),
+  P.map((addr) => ({
     _tag: "six_groups_by_hyphen",
-    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
+    value: addr,
   })),
 );
 
-const pThreeGroupsByDot: P.Parser<string, Eui48> = pipe(
-  group4,
-  P.bindTo("g1"),
-  P.apFirst(dot),
-  P.bind("g2", () => group4),
-  P.apFirst(dot),
-  P.bind("g3", () => group4),
-  P.apFirst(P.expected(P.eof(), "end of string")),
-  P.map((groups) => ({
+/**
+ * Attempts to match three groups of hexadecimal digits separated by a dot.
+ *
+ * @category combinators
+ * @internal
+ */
+const threeGroupsByDot: P.Parser<string, Eui48> = pipe(
+  S.fold([group4, dot, group4, dot, group4]),
+  P.apFirst(eof),
+  P.map((addr) => ({
     _tag: "three_groups_by_dot",
-    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
+    value: addr,
   })),
 );
 
-const pEui48: P.Parser<string, Eui48> = pipe(
-  pSixGroupsByColon,
-  P.alt(() => pSixGroupsByHyphen),
-  P.alt(() => pThreeGroupsByDot),
-);
-
-const pIPv4: P.Parser<string, MacAddr> = pipe(
-  pEui48,
-  P.map((value) => ({
+/**
+ * Attempts to match an EUI48 variant.
+ *
+ * @category combinators
+ * @internal
+ */
+const ipv4: P.Parser<string, MacAddr> = pipe(
+  sixGroupsByColon,
+  P.alt(() => sixGroupsByHyphen),
+  P.alt(() => threeGroupsByDot),
+  P.map((addr) => ({
     _tag: "ip_v4",
-    value: value,
+    value: addr,
   })),
 );
 
-const pEightGroupsByColon: P.Parser<string, Eui64> = pipe(
-  group2,
-  P.bindTo("g1"),
-  P.apFirst(colon),
-  P.bind("g2", () => group2),
-  P.apFirst(colon),
-  P.bind("g3", () => group2),
-  P.apFirst(colon),
-  P.bind("g4", () => group2),
-  P.apFirst(colon),
-  P.bind("g5", () => group2),
-  P.apFirst(colon),
-  P.bind("g6", () => group2),
-  P.apFirst(colon),
-  P.bind("g7", () => group2),
-  P.apFirst(colon),
-  P.bind("g8", () => group2),
-  P.apFirst(P.expected(P.eof(), "end of string")),
-  P.map((groups) => ({
+/**
+ * Attempts to match eight groups of hexadecimal digits separated by a colon.
+ *
+ * @category combinators
+ * @internal
+ */
+const eightGroupsByColon: P.Parser<string, Eui64> = pipe(
+  S.fold([
+    group2,
+    colon,
+    group2,
+    colon,
+    group2,
+    colon,
+    group2,
+    colon,
+    group2,
+    colon,
+    group2,
+    colon,
+    group2,
+    colon,
+    group2,
+  ]),
+  P.apFirst(eof),
+  P.map((addr) => ({
     _tag: "eight_groups_by_colon",
-    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(":")),
+    value: addr,
   })),
 );
 
-const pEightGroupsByHyphen: P.Parser<string, Eui64> = pipe(
-  group2,
-  P.bindTo("g1"),
-  P.apFirst(hyphen),
-  P.bind("g2", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g3", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g4", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g5", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g6", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g7", () => group2),
-  P.apFirst(hyphen),
-  P.bind("g8", () => group2),
-  P.apFirst(P.expected(P.eof(), "end of string")),
-  P.map((groups) => ({
+/**
+ * Attempts to match eight groups of hexadecimal digits separated by a hyphen.
+ *
+ * @category combinators
+ * @internal
+ */
+const eightGroupsByHyphen: P.Parser<string, Eui64> = pipe(
+  S.fold([
+    group2,
+    hyphen,
+    group2,
+    hyphen,
+    group2,
+    hyphen,
+    group2,
+    hyphen,
+    group2,
+    hyphen,
+    group2,
+    hyphen,
+    group2,
+    hyphen,
+    group2,
+  ]),
+  P.apFirst(eof),
+  P.map((addr) => ({
     _tag: "eight_groups_by_hyphen",
-    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)("-")),
+    value: addr,
   })),
 );
 
-const pFourGroupsByDot: P.Parser<string, Eui64> = pipe(
-  group4,
-  P.bindTo("g1"),
-  P.apFirst(dot),
-  P.bind("g2", () => group4),
-  P.apFirst(dot),
-  P.bind("g3", () => group4),
-  P.apFirst(dot),
-  P.bind("g4", () => group4),
-  P.apFirst(P.expected(P.eof(), "end of string")),
-  P.map((groups) => ({
+/**
+ * Attempts to match four groups of hexadecimal digits separated by a dot.
+ *
+ * @category combinators
+ * @internal
+ */
+const fourGroupsByDot: P.Parser<string, Eui64> = pipe(
+  S.fold([group4, dot, group4, dot, group4, dot, group4]),
+  P.apFirst(eof),
+  P.map((addr) => ({
     _tag: "four_groups_by_dot",
-    value: pipe(Object.values(groups), RA.intercalate(Str.Monoid)(".")),
+    value: addr,
   })),
 );
 
-const pEui64: P.Parser<string, Eui64> = pipe(
-  pEightGroupsByColon,
-  P.alt(() => pEightGroupsByHyphen),
-  P.alt(() => pFourGroupsByDot),
-);
-
-const pIPv6: P.Parser<string, MacAddr> = pipe(
-  pEui64,
-  P.map((value) => ({
+/**
+ * Attempts to match an EUI64 variant.
+ *
+ * @category combinators
+ * @internal
+ */
+const ipv6: P.Parser<string, MacAddr> = pipe(
+  eightGroupsByColon,
+  P.alt(() => eightGroupsByHyphen),
+  P.alt(() => fourGroupsByDot),
+  P.map((addr) => ({
     _tag: "ip_v6",
-    value: value,
+    value: addr,
   })),
 );
-
-const addrL = Lens.fromPath<MacAddr>()(["value", "value"]);
 
 export function runParser(input: string): ParseResult<string, MacAddr> {
-  const parser = pipe(P.either(pIPv4, () => pIPv6));
+  const parser = pipe(P.either(ipv4, () => ipv6));
 
   return S.run(input)(parser);
 }
@@ -266,6 +316,8 @@ export function parse(input: string): E.Either<string, MacAddr> {
 //      Helpers
 // ==================
 
+const addrL = Lens.fromPath<MacAddr>()(["value", "value"]);
+
 /**
  *  Opinionated format - convert to uppercase.
  *
@@ -280,7 +332,7 @@ export function parse(input: string): E.Either<string, MacAddr> {
  * @since 0.1.0
  */
 export function format(macAddr: MacAddr): MacAddr {
-  return addrL.modify(Str.toUpperCase)(macAddr);
+  return pipe(macAddr, addrL.modify(Str.toUpperCase));
 }
 
 /**
@@ -298,29 +350,29 @@ export function format(macAddr: MacAddr): MacAddr {
  */
 export function isBroadcast(macAddr: MacAddr): boolean {
   return match(format(macAddr))
-    .with({ _tag: "ip_v4" }, ({ value: mac }) => {
-      return match(mac)
+    .with({ _tag: "ip_v4" }, ({ value: addr }) => {
+      return match(addr)
         .with({ _tag: "six_groups_by_colon" }, () => {
-          return Str.Eq.equals(mac.value, "FF:FF:FF:FF:FF:FF");
+          return Str.Eq.equals(addr.value, "FF:FF:FF:FF:FF:FF");
         })
         .with({ _tag: "six_groups_by_hyphen" }, () => {
-          return Str.Eq.equals(mac.value, "FF-FF-FF-FF-FF-FF");
+          return Str.Eq.equals(addr.value, "FF-FF-FF-FF-FF-FF");
         })
         .with({ _tag: "three_groups_by_dot" }, () => {
-          return Str.Eq.equals(mac.value, "FFFF.FFFF.FFFF");
+          return Str.Eq.equals(addr.value, "FFFF.FFFF.FFFF");
         })
         .exhaustive();
     })
-    .with({ _tag: "ip_v6" }, ({ value: mac }) => {
-      return match(mac)
+    .with({ _tag: "ip_v6" }, ({ value: addr }) => {
+      return match(addr)
         .with({ _tag: "eight_groups_by_colon" }, () => {
-          return Str.Eq.equals(mac.value, "FF:FF:FF:FF:FF:FF:FF:FF");
+          return Str.Eq.equals(addr.value, "FF:FF:FF:FF:FF:FF:FF:FF");
         })
         .with({ _tag: "eight_groups_by_hyphen" }, () => {
-          return Str.Eq.equals(mac.value, "FF-FF-FF-FF-FF-FF-FF-FF");
+          return Str.Eq.equals(addr.value, "FF-FF-FF-FF-FF-FF-FF-FF");
         })
         .with({ _tag: "four_groups_by_dot" }, () => {
-          return Str.Eq.equals(mac.value, "FFFF.FFFF.FFFF.FFFF");
+          return Str.Eq.equals(addr.value, "FFFF.FFFF.FFFF.FFFF");
         })
         .exhaustive();
     })
