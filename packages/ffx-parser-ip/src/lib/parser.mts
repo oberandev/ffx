@@ -1,7 +1,5 @@
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
-import * as RA from "fp-ts/ReadonlyArray";
-import * as Str from "fp-ts/string";
 import * as C from "parser-ts/char";
 import * as P from "parser-ts/Parser";
 import { ParseResult } from "parser-ts/ParseResult";
