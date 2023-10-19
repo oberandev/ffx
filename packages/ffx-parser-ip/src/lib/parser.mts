@@ -58,25 +58,29 @@ const nzDigit: P.Parser<string, string> = P.expected(C.oneOf("123456789"), "non-
 /**
  * Attempts to parse a 3-digit octet where the first digit can never be a '0'.
  *
- * @category parsers
+ * @category combinators
  */
-const threeDigitOctet: P.Parser<string, string> = pipe(
-  digit,
-  P.bindTo("d1"),
-  P.bind("d2", () => digit),
-  P.bind("d3", () => digit),
-  P.map((ds) => Object.values(ds).join("")),
-);
+const threeDigitOctet: P.Parser<string, string> = S.fold([nzDigit, digit, digit]);
 
-const twoDigitOctet: P.Parser<string, string> = pipe(
-  digit,
-  P.bindTo("d1"),
-  P.bind("d2", () => digit),
-  P.map((ds) => Object.values(ds).join("")),
-);
+/**
+ * Attempts to parse a 2-digit octet where the first digit can never be a '0'.
+ *
+ * @category combinators
+ */
+const twoDigitOctet: P.Parser<string, string> = S.fold([nzDigit, digit]);
 
+/**
+ * Attempts to parse a 1-digit octet where the digit can never be a '0'.
+ *
+ * @category combinators
+ */
 const oneDigitOctet: P.Parser<string, string> = digit;
 
+/**
+ * Attempts to parse a 1-3 digit(s) octet.
+ *
+ * @category combinators
+ */
 const octet: P.Parser<string, string> = P.expected(
   pipe(
     threeDigitOctet,
@@ -86,45 +90,11 @@ const octet: P.Parser<string, string> = P.expected(
   "octet to be 1-3 digit(s)",
 );
 
-const nzThreeDigitOctet: P.Parser<string, string> = pipe(
-  P.cut(nzDigit),
-  P.bindTo("d1"),
-  P.bind("d2", () => digit),
-  P.bind("d3", () => digit),
-  P.map((ds) => Object.values(ds).join("")),
-);
-
-const nzTwoDigitOctet: P.Parser<string, string> = pipe(
-  P.cut(nzDigit),
-  P.bindTo("d1"),
-  P.bind("d2", () => digit),
-  P.map((ds) => Object.values(ds).join("")),
-);
-
-const nzOneDigitOctet: P.Parser<string, string> = P.cut(nzDigit);
-
-const nzOctet: P.Parser<string, string> = pipe(
-  nzThreeDigitOctet,
-  P.alt(() => nzTwoDigitOctet),
-  P.alt(() => nzOneDigitOctet),
-);
-
 /*
  * Attempts to parse a quad-dotted IPv4 address.
  */
 export function runParser(input: string): ParseResult<string, string> {
-  const parser = pipe(
-    nzOctet,
-    P.bindTo("o1"),
-    P.apFirst(dot),
-    P.bind("o2", () => octet),
-    P.apFirst(dot),
-    P.bind("o3", () => octet),
-    P.apFirst(dot),
-    P.bind("o4", () => octet),
-    P.apFirst(eof),
-    P.map((octets) => pipe(Object.values(octets), RA.intercalate(Str.Monoid)("."))),
-  );
+  const parser = pipe(S.fold([octet, dot, octet, dot, octet, dot, octet]), P.apFirst(eof));
 
   return S.run(input)(parser);
 }

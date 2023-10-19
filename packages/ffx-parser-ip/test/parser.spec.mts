@@ -7,7 +7,7 @@ describe("parse", () => {
   it("should handle all possible valid values", () => {
     fc.assert(
       fc.property(
-        fc.integer({ min: 1, max: 255 }),
+        fc.integer({ min: 0, max: 255 }),
         fc.integer({ min: 0, max: 255 }),
         fc.integer({ min: 0, max: 255 }),
         fc.integer({ min: 0, max: 255 }),
@@ -28,19 +28,27 @@ describe("parse", () => {
 
   it("should handle all non-zero invalid values", () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 0, max: 255 }),
-        fc.integer({ min: 0, max: 255 }),
-        fc.integer({ min: 0, max: 255 }),
-        (o2, o3, o4) => {
-          const possibleIp: string = `0.${o2}.${o3}.${o4}`;
+      fc.property(fc.integer({ min: 1, max: 9 }), (short) => {
+        expect(parse(`0${short}.0.0.0`)).toStrictEqual({
+          _tag: "Left",
+          left: `Expected "." at position 2 but found "${short}"`,
+        });
 
-          expect(parse(possibleIp)).toStrictEqual({
-            _tag: "Left",
-            left: `Expected non-zero digit at position 1 but found "0"`,
-          });
-        },
-      ),
+        expect(parse(`0.0${short}.0.0`)).toStrictEqual({
+          _tag: "Left",
+          left: `Expected "." at position 4 but found "${short}"`,
+        });
+
+        expect(parse(`0.0.0${short}.0`)).toStrictEqual({
+          _tag: "Left",
+          left: `Expected "." at position 6 but found "${short}"`,
+        });
+
+        expect(parse(`0.0.0.0${short}`)).toStrictEqual({
+          _tag: "Left",
+          left: `Expected end of string at position 8 but found "${short}"`,
+        });
+      }),
     );
   });
 
@@ -54,7 +62,7 @@ describe("parse", () => {
         (o1, o2, o3, o4) => {
           expect(parse(`.${o2}.${o3}.${o4}`)).toStrictEqual({
             _tag: "Left",
-            left: `Expected non-zero digit at position 1 but found "."`,
+            left: `Expected octet to be 1-3 digit(s) at position 1 but found "."`,
           });
 
           expect(parse(`${o1}..${o3}.${o4}`)).toStrictEqual({
