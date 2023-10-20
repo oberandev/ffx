@@ -17,7 +17,7 @@
   "type": "module",
   "module": "./src/index.mts",
   "main": "./src/index.mts",
-  "typings": "./src/index.d.mts",
+  "types": "./src/index.d.mts",
   "exports": {
     "./package.json": "./package.json",
     ".": "./src/index.mts"
