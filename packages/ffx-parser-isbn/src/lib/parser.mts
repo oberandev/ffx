@@ -1,5 +1,5 @@
 import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
+import { identity, pipe } from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as RA from "fp-ts/ReadonlyArray";
 import * as RNEA from "fp-ts/ReadonlyNonEmptyArray";
@@ -30,18 +30,32 @@ export type ISBN = ISBN10 | ISBN13;
 //       Main
 // ==================
 
+/**
+ * Matches the 'end of file' but with user-friendly error message.
+ *
+ * @category lexers
+ * @internal
+ */
+const eof: P.Parser<string, void> = P.expected(P.eof(), "end of string");
+
+/**
+ * Matches the a digit.
+ *
+ * @category lexers
+ * @internal
+ */
 const digit = C.digit;
 
+/**
+ * Matches a digit or hyphen.
+ *
+ * @category lexers
+ * @internal
+ */
 const digitOrHyphen = C.oneOf("0123456789-");
 
 export function runParser(input: string): ParseResult<string, string> {
-  const parser = pipe(
-    digit,
-    P.bindTo("d1"),
-    P.bind("rest", () => S.many1(digitOrHyphen)),
-    P.apFirst(P.eof()),
-    P.map((ds) => pipe(Object.values(ds).join(""))),
-  );
+  const parser = pipe(S.fold([digit, S.many1(digitOrHyphen)]), P.apFirst(eof), P.map(identity));
 
   return S.run(input)(parser);
 }

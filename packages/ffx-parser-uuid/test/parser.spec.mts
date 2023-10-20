@@ -1,13 +1,26 @@
+import * as fc from "fast-check";
+
 import { UUID, format, isMax, isNil, isoUUID, parse, unwrap } from "../src/lib/parser.mjs";
 
 describe("UUID", () => {
   it("should handle a `parse` success", () => {
-    const result = parse("23d57c30-afe7-11e4-ab7d-12e3f512a338");
+    fc.assert(
+      fc.property(
+        fc.hexaString({ minLength: 8, maxLength: 8 }),
+        fc.hexaString({ minLength: 4, maxLength: 4 }),
+        fc.hexaString({ minLength: 4, maxLength: 4 }),
+        fc.hexaString({ minLength: 4, maxLength: 4 }),
+        fc.hexaString({ minLength: 12, maxLength: 12 }),
+        (c1, c2, c3, c4, c5) => {
+          const possibleUuid = `${c1}-${c2}-${c3}-${c4}-${c5}`;
 
-    expect(result).toStrictEqual({
-      _tag: "Right",
-      right: "23d57c30-afe7-11e4-ab7d-12e3f512a338",
-    });
+          expect(parse(possibleUuid)).toStrictEqual({
+            _tag: "Right",
+            right: possibleUuid,
+          });
+        },
+      ),
+    );
   });
 
   it("should handle a `parse` failure", () => {
@@ -28,15 +41,8 @@ describe("UUID", () => {
     });
   });
 
-  it("should handle `format` when all caps", () => {
+  it("should handle `format` with capitalized chars", () => {
     const acutal: UUID = format(isoUUID.wrap("2357C30-AFE7-11E4-AB7D-12E3F512A338"));
-    const expected: UUID = isoUUID.wrap("2357c30-afe7-11e4-ab7d-12e3f512a338");
-
-    expect(acutal).toStrictEqual(expected);
-  });
-
-  it("should handle `format` with random caps", () => {
-    const acutal: UUID = format(isoUUID.wrap("2357C30-afe7-11E4-ab7d-12E3F512A338"));
     const expected: UUID = isoUUID.wrap("2357c30-afe7-11e4-ab7d-12e3f512a338");
 
     expect(acutal).toStrictEqual(expected);
