@@ -15,11 +15,15 @@
     "node": ">=18"
   },
   "type": "module",
-  "main": "./src/index.mts",
-  "typings": "./src/index.d.mts",
   "exports": {
-    "./package.json": "./package.json",
-    ".": "./src/index.mts"
+    "./v4": {
+      "types": "./src/lib/v4.d.mts",
+      "import": "./src/lib/v4.mts"
+    },
+    "./v6": {
+      "types": "./src/lib/v6.d.mts",
+      "import": "./src/lib/v6.mts"
+    }
   },
   "repository": {
     "type": "git",
