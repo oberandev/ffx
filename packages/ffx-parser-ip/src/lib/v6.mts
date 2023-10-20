@@ -47,7 +47,7 @@ function isHexDigit(c: C.Char): boolean {
 const hexDigit: P.Parser<C.Char, C.Char> = P.expected(P.sat(isHexDigit), "a hex digit");
 
 /**
- * to match four hexadecimal digits.
+ * Attempts to match four hexadecimal digits.
  *
  * @category combinators
  * @internal
@@ -71,7 +71,7 @@ const threeHexDigits: P.Parser<string, string> = S.fold([hexDigit, hexDigit, hex
 const twoHexDigits: P.Parser<string, string> = S.fold([hexDigit, hexDigit]);
 
 /**
- * Attempts to match one hexadecimal digit.
+ * Attempts to match a single hexadecimal digit.
  *
  * @category combinators
  * @internal
