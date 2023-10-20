@@ -25,17 +25,17 @@ yarn add @oberan/ffx-parser-ip
 ## Usage
 
 ```ts
-import * as Ip from "@oberan/ffx-parser-ip";
+import * as IPv4 from "@oberan/ffx-parser-ip/v4";
 import { match } from "ts-pattern";
 
-const eitherIp = Ip.parse("192.168.1.1");
+const eitherIp = IPv4.parse("192.168.1.1");
 
 match(eitherIp)
   .with({ _tag: "Left" }, ({ left: error }) => {
     // do something with the error
   })
   .with({ _tag: "Right" }, ({ right: addr }) => {
-    // do something with the IPv4 / IPv6 ip addr
+    // do something with the IP addr
   })
   .exhaustive();
 ```
