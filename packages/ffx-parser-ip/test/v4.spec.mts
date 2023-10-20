@@ -1,7 +1,7 @@
 import * as fc from "fast-check";
 import * as Str from "fp-ts/string";
 
-import { parse } from "../src/lib/parser.mjs";
+import { parse } from "../src/lib/v4.mjs";
 
 describe("parse", () => {
   it("should handle all possible valid values", () => {
@@ -111,14 +111,4 @@ describe("parse", () => {
       left: `Expected end of string at position 14 but found "1"`,
     });
   });
-
-  // it("should handle IPv6", () => {
-  //   expect(parse("2001:0db8:0000:0000:0000:8a2e:0370:7334")).toStrictEqual({
-  //     _tag: "Right",
-  //     right: {
-  //       _tag: "ipv6",
-  //       value: "2001:0db8:0000:0000:0000:8a2e:0370:7334",
-  //     },
-  //   });
-  // });
 });
