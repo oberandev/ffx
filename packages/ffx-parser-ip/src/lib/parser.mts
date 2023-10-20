@@ -10,12 +10,12 @@ import * as S from "parser-ts/string";
 // ==================
 
 export interface IPv4 {
-  readonly _tag: "ipv4";
+  readonly _tag: "ip_v4";
   readonly value: string;
 }
 
 export interface IPv6 {
-  readonly _tag: "ipv6";
+  readonly _tag: "ip_v6";
   readonly value: string;
 }
 
@@ -125,10 +125,12 @@ const octet: P.Parser<string, string> = P.expected(
 export const ipv4: P.Parser<string, IP> = pipe(
   S.fold([octet, dot, octet, dot, octet, dot, octet]),
   P.apFirst(eof),
-  P.map((addr) => ({
-    _tag: "ipv4",
-    value: addr,
-  })),
+  P.map(
+    (addr): IPv4 => ({
+      _tag: "ip_v4",
+      value: addr,
+    }),
+  ),
 );
 
 /**
@@ -204,10 +206,12 @@ export const ipv6: P.Parser<string, IP> = pipe(
     group,
   ]),
   P.apFirst(eof),
-  P.map((addr) => ({
-    _tag: "ipv6",
-    value: addr,
-  })),
+  P.map(
+    (addr): IPv6 => ({
+      _tag: "ip_v6",
+      value: addr,
+    }),
+  ),
 );
 
 function runParser(input: string): ParseResult<string, IP> {

@@ -8,5 +8,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*.mts"],
-  "exclude": ["test/**/*.spec.mts"]
+  "exclude": ["vite.config.ts", "test/**/*.spec.mts"]
 }

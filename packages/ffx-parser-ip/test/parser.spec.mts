@@ -17,7 +17,7 @@ describe("parse", () => {
           expect(parse(possibleIp)).toStrictEqual({
             _tag: "Right",
             right: {
-              _tag: "ipv4",
+              _tag: "ip_v4",
               value: possibleIp,
             },
           });
