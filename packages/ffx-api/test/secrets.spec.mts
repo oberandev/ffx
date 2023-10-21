@@ -126,8 +126,6 @@ describe("secrets", () => {
 
   it("[Mocks] should handle failure when fetching all Secrets", async () => {
     // setup
-    const mockSecret: Secret = _mkMockSecret()();
-
     const restHandlers = [
       rest.get(`${baseUrl}/secrets`, (_, res, ctx) => {
         return res(

@@ -35,7 +35,7 @@ const falseLongform = pipe(
   P.map(() => false),
 );
 
-export function runParser(input: string): ParseResult<string, boolean> {
+function runParser(input: string): ParseResult<string, boolean> {
   const parser = pipe(
     P.either(trueLongform, () => falseLongform),
     P.alt(() => P.either(trueShortform, () => falseShortform)),

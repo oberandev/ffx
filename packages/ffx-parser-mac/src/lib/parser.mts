@@ -279,7 +279,7 @@ const ipv6: P.Parser<string, MacAddr> = pipe(
   })),
 );
 
-export function runParser(input: string): ParseResult<string, MacAddr> {
+function runParser(input: string): ParseResult<string, MacAddr> {
   const parser = pipe(P.either(ipv4, () => ipv6));
 
   return S.run(input)(parser);
@@ -319,7 +319,7 @@ export function parse(input: string): E.Either<string, MacAddr> {
 const addrL = Lens.fromPath<MacAddr>()(["value", "value"]);
 
 /**
- *  Opinionated format - convert to uppercase.
+ *  Opinionated format — convert to uppercase.
  *
  * @example
  *
