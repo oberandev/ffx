@@ -36,6 +36,7 @@ module.exports = [
           },
         },
       ],
+      "no-unused-vars": ["error", { vars: "all", args: "none" }],
       "@nx/enforce-module-boundaries": [
         "error",
         {

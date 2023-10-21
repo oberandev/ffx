@@ -7,7 +7,6 @@ import * as TE from "fp-ts/TaskEither";
 import * as t from "io-ts";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
-import { URL } from "node:url";
 import { match } from "ts-pattern";
 
 export const ProjectCodec = t.type({
@@ -32,23 +31,23 @@ export function createProjectDirectory(): RTE.ReaderTaskEither<Project, string, 
   );
 }
 
-export function copyOverTemplate(): RTE.ReaderTaskEither<Project, string, void> {
-  // const src: URL = new URL(
-  //   "/template",
-  //   "https://github.com/facebook/create-react-app/tree/main/packages/cra-template-typescript/",
-  // );
+// export function copyOverTemplate(): RTE.ReaderTaskEither<Project, string, void> {
+//   // const src: URL = new URL(
+//   //   "/template",
+//   //   "https://github.com/facebook/create-react-app/tree/main/packages/cra-template-typescript/",
+//   // );
 
-  return pipe(
-    RTE.ask<Project>(),
-    RTE.chainTaskEitherK((project) => {
-      return TE.tryCatch(
-        () => fs.cp(`./templates/${project.template}`, `.${project.name}`, { recursive: true }),
-        (err: unknown) => JSON.stringify(err), // {"code":"ERR_FS_CP_NON_DIR_TO_DIR","info":{"message":"cannot overwrite non-directory eslint.config.js with directory ./unicorns","path":"./unicorns","syscall":"cp","errno":20,"code":"ENOTDIR"},"errno":20,"syscall":"cp","path":"./unicorns"}
-      );
-    }),
-    // remove `.template` from all filenames
-  );
-}
+//   return pipe(
+//     RTE.ask<Project>(),
+//     RTE.chainTaskEitherK((project) => {
+//       return TE.tryCatch(
+//         () => fs.cp(`./templates/${project.template}`, `.${project.name}`, { recursive: true }),
+//         (err: unknown) => JSON.stringify(err), // {"code":"ERR_FS_CP_NON_DIR_TO_DIR","info":{"message":"cannot overwrite non-directory eslint.config.js with directory ./unicorns","path":"./unicorns","syscall":"cp","errno":20,"code":"ENOTDIR"},"errno":20,"syscall":"cp","path":"./unicorns"}
+//       );
+//     }),
+//     // remove `.template` from all filenames
+//   );
+// }
 
 export function createPackageJson(): RTE.ReaderTaskEither<Project, string, void> {
   return pipe(
