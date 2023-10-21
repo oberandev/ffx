@@ -150,7 +150,7 @@ export function format(uuid: UUID): UUID {
  * @since 0.1.0
  */
 export function isMax(uuid: UUID): boolean {
-  return eqUUID.equals(uuid, isoUUID.wrap("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"));
+  return eqUUID.equals(format(uuid), format(isoUUID.wrap("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")));
 }
 
 /**
