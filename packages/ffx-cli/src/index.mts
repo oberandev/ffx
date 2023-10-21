@@ -8,7 +8,7 @@ import * as Str from "fp-ts/string";
 
 import {
   ProjectCodec,
-  copyOverTemplate,
+  // copyOverTemplate,
   createProjectDirectory,
   createPackageJson,
   installDependencies,

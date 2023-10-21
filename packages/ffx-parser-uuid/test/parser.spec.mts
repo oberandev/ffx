@@ -1,9 +1,11 @@
 import * as fc from "fast-check";
+import * as E from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
 
-import { UUID, format, isMax, isNil, isoUUID, parse, unwrap } from "../src/lib/parser.mjs";
+import { format, isMax, isNil, parse, unwrap } from "../src/lib/parser.mjs";
 
 describe("UUID", () => {
-  it("should handle a `parse` success", () => {
+  it("should handle all possible valid values", () => {
     fc.assert(
       fc.property(
         fc.hexaString({ minLength: 8, maxLength: 8 }),
@@ -42,44 +44,56 @@ describe("UUID", () => {
   });
 
   it("should handle `format` with capitalized chars", () => {
-    const acutal: UUID = format(isoUUID.wrap("2357C30-AFE7-11E4-AB7D-12E3F512A338"));
-    const expected: UUID = isoUUID.wrap("2357c30-afe7-11e4-ab7d-12e3f512a338");
+    const result = pipe(parse("23D57C30-AFE7-11E4-AB7D-12E3F512A338"), E.map(format));
 
-    expect(acutal).toStrictEqual(expected);
+    expect(result).toStrictEqual({
+      _tag: "Right",
+      right: "23d57c30-afe7-11e4-ab7d-12e3f512a338",
+    });
   });
 
   it("should handle `isMax` success", () => {
-    const actual: UUID = isoUUID.wrap("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
-    const expected: boolean = true;
+    const result = pipe(parse("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"), E.map(isMax));
 
-    expect(isMax(actual)).toBe(expected);
+    expect(result).toStrictEqual({
+      _tag: "Right",
+      right: true,
+    });
   });
 
   it("should handle `isMax` failure", () => {
-    const actual: UUID = isoUUID.wrap("123e4567-e89b-12d3-a456-426614174000");
-    const expected: boolean = false;
+    const result = pipe(parse("123e4567-e89b-12d3-a456-426614174000"), E.map(isMax));
 
-    expect(isMax(actual)).toBe(expected);
+    expect(result).toStrictEqual({
+      _tag: "Right",
+      right: false,
+    });
   });
 
   it("should handle `isNil` success", () => {
-    const actual: UUID = isoUUID.wrap("00000000-0000-0000-0000-000000000000");
-    const expected: boolean = true;
+    const result = pipe(parse("00000000-0000-0000-0000-000000000000"), E.map(isNil));
 
-    expect(isNil(actual)).toBe(expected);
+    expect(result).toStrictEqual({
+      _tag: "Right",
+      right: true,
+    });
   });
 
   it("should handle `isNil` failure", () => {
-    const actual: UUID = isoUUID.wrap("123e4567-e89b-12d3-a456-426614174000");
-    const expected: boolean = false;
+    const result = pipe(parse("123e4567-e89b-12d3-a456-426614174000"), E.map(isNil));
 
-    expect(isNil(actual)).toBe(expected);
+    expect(result).toStrictEqual({
+      _tag: "Right",
+      right: false,
+    });
   });
 
   it("should handle `unwrap`", () => {
-    const actual: UUID = isoUUID.wrap("23d57c30-afe7-11e4-ab7d-12e3f512a338");
-    const expected: string = "23d57c30-afe7-11e4-ab7d-12e3f512a338";
+    const result = pipe(parse("23d57c30-afe7-11e4-ab7d-12e3f512a338"), E.map(unwrap));
 
-    expect(unwrap(actual)).toStrictEqual(expected);
+    expect(result).toStrictEqual({
+      _tag: "Right",
+      right: "23d57c30-afe7-11e4-ab7d-12e3f512a338",
+    });
   });
 });

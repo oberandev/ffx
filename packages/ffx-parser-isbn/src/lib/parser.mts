@@ -54,7 +54,7 @@ const digit = C.digit;
  */
 const digitOrHyphen = C.oneOf("0123456789-");
 
-export function runParser(input: string): ParseResult<string, string> {
+function runParser(input: string): ParseResult<string, string> {
   const parser = pipe(S.fold([digit, S.many1(digitOrHyphen)]), P.apFirst(eof), P.map(identity));
 
   return S.run(input)(parser);
