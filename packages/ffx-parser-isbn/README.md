@@ -1,4 +1,4 @@
-# ffx-parser-isbn
+# @oberan/ffx-parser-isbn
 
 Parse a string into a possible ISBN10 / ISBN13.
 
