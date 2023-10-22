@@ -24,6 +24,8 @@ global_job_config:
       - cache restore node-$(checksum pnpm-lock.yaml)
 blocks:
   - name: "\U0001F4E6 Install dependencies"
+    skip:
+      when: "branch =~ '^changeset-release/*'"
     task:
       jobs:
         - name: pnpm install
@@ -32,6 +34,8 @@ blocks:
             - cache store node-$(checksum pnpm-lock.yaml) $(pnpm store path)
 
   - name: "\U0001F50D Static Analysis"
+    skip:
+      when: "branch =~ '^changeset-release/*'"
     task:
       prologue:
         commands:
@@ -47,6 +51,8 @@ blocks:
             - pnpm audit --prod
 
   - name: "\U0001F9EA Unit Tests"
+    skip:
+      when: "branch =~ '^changeset-release/*'"
     task:
       prologue:
         commands:
