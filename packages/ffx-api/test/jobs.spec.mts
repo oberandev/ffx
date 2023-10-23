@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -115,17 +115,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/ack`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -153,15 +153,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/ack`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -191,12 +191,12 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/ack`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/ack`, () => {
+        return HttpResponse.json(
+          {
             data: mockJob,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -224,17 +224,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -258,15 +258,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -292,12 +292,12 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/outcome/ack`, () => {
+        return HttpResponse.json(
+          {
             data: mockJob,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -321,17 +321,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -357,15 +357,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -393,12 +393,12 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/cancel`, () => {
+        return HttpResponse.json(
+          {
             data: mockJob,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -424,17 +424,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/complete`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -461,15 +461,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/complete`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -498,12 +498,12 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/complete`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/complete`, () => {
+        return HttpResponse.json(
+          {
             data: mockJob,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -530,17 +530,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/jobs`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -582,15 +582,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: "bogus_job_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -636,8 +636,13 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockJob }));
+      http.post(`${baseUrl}/jobs`, () => {
+        return HttpResponse.json(
+          {
+            data: mockJob,
+          },
+          { status: 200 },
+        );
       }),
     ];
 
@@ -678,17 +683,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -712,14 +717,14 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -745,14 +750,14 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -776,17 +781,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/execute`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -810,14 +815,14 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/execute`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -843,14 +848,14 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/execute`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/execute`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -874,17 +879,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/fail`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -908,15 +913,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/fail`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -945,12 +950,12 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/jobs/${mockJob.id}/fail`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/jobs/${mockJob.id}/fail`, () => {
+        return HttpResponse.json(
+          {
             data: mockJob,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -977,17 +982,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -1011,15 +1016,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -1045,12 +1050,12 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockJob,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -1072,17 +1077,17 @@ describe("jobs", () => {
   it("[Mock] should handle failure when fetching all Jobs", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/jobs`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -1106,17 +1111,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/jobs`, () => {
+        return HttpResponse.json(
+          {
             data: [
               {
                 ...mockJob,
                 id: null,
               },
             ],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -1144,12 +1149,12 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/jobs`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/jobs`, () => {
+        return HttpResponse.json(
+          {
             data: [mockJob],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -1173,17 +1178,17 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.patch(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -1212,15 +1217,15 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockJob,
               id: "bogus_job_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -1253,8 +1258,13 @@ describe("jobs", () => {
     const mockJob: Job = _mkMockJob()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/jobs/${mockJob.id}`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockJob }));
+      http.patch(`${baseUrl}/jobs/${mockJob.id}`, () => {
+        return HttpResponse.json(
+          {
+            data: mockJob,
+          },
+          { status: 200 },
+        );
       }),
     ];
 

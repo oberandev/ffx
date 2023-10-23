@@ -2,7 +2,7 @@ import * as fc from "fast-check";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 
-import { format, isMax, isNil, parse, unwrap } from "../src/lib/parser.mjs";
+import { format, isMax, isNil, parse, toString } from "../src/lib/parser.mjs";
 
 describe("UUID", () => {
   it("should handle all possible valid values", () => {
@@ -88,8 +88,8 @@ describe("UUID", () => {
     });
   });
 
-  it("should handle `unwrap`", () => {
-    const result = pipe(parse("23d57c30-afe7-11e4-ab7d-12e3f512a338"), E.map(unwrap));
+  it("should handle `toString`", () => {
+    const result = pipe(parse("23d57c30-afe7-11e4-ab7d-12e3f512a338"), E.map(toString));
 
     expect(result).toStrictEqual({
       _tag: "Right",

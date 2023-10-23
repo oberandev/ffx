@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -21,17 +21,17 @@ describe("versions", () => {
     const parentVersionId: VersionId = mkVersionId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/versions`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/versions`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -56,14 +56,14 @@ describe("versions", () => {
     const parentVersionId: VersionId = mkVersionId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/versions`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/versions`, () => {
+        return HttpResponse.json(
+          {
             data: {
               versionId: "bogus_version_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -93,8 +93,13 @@ describe("versions", () => {
     const mockVersion: Version = _mkMockVersion()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/versions`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockVersion }));
+      http.post(`${baseUrl}/versions`, () => {
+        return HttpResponse.json(
+          {
+            data: mockVersion,
+          },
+          { status: 200 },
+        );
       }),
     ];
 

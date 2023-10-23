@@ -3,7 +3,6 @@ let
   pkgs = import sources.nixpkgs { };
 in pkgs.mkShell {
   buildInputs = [
-    pkgs.git
     pkgs.nixfmt
     pkgs.nodejs_20
   ];

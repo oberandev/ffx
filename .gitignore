@@ -9,12 +9,11 @@ tmp
 node_modules
 
 # IDEs and editors
-/.idea
+.idea
 .nova
 .project
 .classpath
 .c9/
-*.launch
 .settings/
 *.sublime-workspace
 
