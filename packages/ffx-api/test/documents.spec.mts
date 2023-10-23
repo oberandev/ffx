@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -32,17 +32,17 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -71,15 +71,15 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockDocument,
               id: "bogus_document_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -112,8 +112,13 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockDocument }));
+      http.post(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, () => {
+        return HttpResponse.json(
+          {
+            data: mockDocument,
+          },
+          { status: 200 },
+        );
       }),
     ];
 
@@ -141,22 +146,19 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.delete(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        },
-      ),
+      http.delete(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          },
+          { status: 400 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -178,19 +180,16 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.delete(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: "foobar",
-              },
-            }),
-          );
-        },
-      ),
+      http.delete(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            data: {
+              success: "foobar",
+            },
+          },
+          { status: 200 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -214,19 +213,16 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.delete(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                success: true,
-              },
-            }),
-          );
-        },
-      ),
+      http.delete(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            data: {
+              success: true,
+            },
+          },
+          { status: 200 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -248,22 +244,19 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        },
-      ),
+      http.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          },
+          { status: 400 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -285,20 +278,17 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockDocument,
-                spaceId: null,
-              },
-            }),
-          );
-        },
-      ),
+      http.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            data: {
+              ...mockDocument,
+              spaceId: null,
+            },
+          },
+          { status: 200 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -324,17 +314,14 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockDocument,
-            }),
-          );
-        },
-      ),
+      http.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            data: mockDocument,
+          },
+          { status: 200 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -356,17 +343,17 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -390,17 +377,17 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, () => {
+        return HttpResponse.json(
+          {
             data: [
               {
                 ...mockDocument,
                 spaceId: null,
               },
             ],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -428,12 +415,12 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/spaces/${mockDocument.spaceId}/documents`, () => {
+        return HttpResponse.json(
+          {
             data: [mockDocument],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -457,22 +444,19 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.patch(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(400),
-            ctx.json({
-              errors: [
-                {
-                  key: faker.lorem.word(),
-                  message: faker.lorem.sentence(),
-                },
-              ],
-            }),
-          );
-        },
-      ),
+      http.patch(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            errors: [
+              {
+                key: faker.lorem.word(),
+                message: faker.lorem.sentence(),
+              },
+            ],
+          },
+          { status: 400 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -499,20 +483,17 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.patch(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: {
-                ...mockDocument,
-                spaceId: null,
-              },
-            }),
-          );
-        },
-      ),
+      http.patch(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            data: {
+              ...mockDocument,
+              spaceId: null,
+            },
+          },
+          { status: 200 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);
@@ -543,17 +524,14 @@ describe("documents", () => {
     const mockDocument: Document = _mkMockDocument()();
 
     const restHandlers = [
-      rest.patch(
-        `${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`,
-        (_, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
-              data: mockDocument,
-            }),
-          );
-        },
-      ),
+      http.patch(`${baseUrl}/spaces/${mockDocument.spaceId}/documents/${mockDocument.id}`, () => {
+        return HttpResponse.json(
+          {
+            data: mockDocument,
+          },
+          { status: 200 },
+        );
+      }),
     ];
 
     const server = setupServer(...restHandlers);

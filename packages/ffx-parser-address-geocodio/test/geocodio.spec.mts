@@ -2,7 +2,7 @@ import { faker, fakerEN_US } from "@faker-js/faker";
 import * as E from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -117,13 +117,13 @@ describe("address-geocodio", () => {
     it("single - should handle an authentication error (mock)", async () => {
       // setup
       const restHandlers = [
-        rest.get(`${baseUrl}/geocode`, (_req, res, ctx) => {
-          return res(
-            ctx.status(403),
-            ctx.json({
+        http.get(`${baseUrl}/geocode`, () => {
+          return HttpResponse.json(
+            {
               error:
                 "This API key does not have permission to access this feature. API key permissions can be changed in the Geocodio dashboard at https://dash.geocod.io/apikey",
-            }),
+            },
+            { status: 403 },
           );
         }),
       ];
@@ -149,16 +149,16 @@ describe("address-geocodio", () => {
       const mockAddressSummary: AddressSummary = _mkAddressSummary()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/geocode`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
+        http.get(`${baseUrl}/geocode`, () => {
+          return HttpResponse.json(
+            {
               input: {
                 address_components: mockAddressSummary.address_components,
                 formatted_address: null,
               },
               results: [mockAddressSummary],
-            }),
+            },
+            { status: 200 },
           );
         }),
       ];
@@ -188,16 +188,16 @@ describe("address-geocodio", () => {
       const mockAddressSummary: AddressSummary = _mkAddressSummary()();
 
       const restHandlers = [
-        rest.get(`${baseUrl}/geocode`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
+        http.get(`${baseUrl}/geocode`, () => {
+          return HttpResponse.json(
+            {
               input: {
                 address_components: mockAddressSummary.address_components,
                 formatted_address: mockAddressSummary.formatted_address,
               },
               results: [mockAddressSummary],
-            }),
+            },
+            { status: 200 },
           );
         }),
       ];
@@ -223,13 +223,13 @@ describe("address-geocodio", () => {
     it("batch - should handle an authentication error (mock)", async () => {
       // setup
       const restHandlers = [
-        rest.post(`${baseUrl}/geocode`, (_req, res, ctx) => {
-          return res(
-            ctx.status(403),
-            ctx.json({
+        http.post(`${baseUrl}/geocode`, () => {
+          return HttpResponse.json(
+            {
               error:
                 "This API key does not have permission to access this feature. API key permissions can be changed in the Geocodio dashboard at https://dash.geocod.io/apikey",
-            }),
+            },
+            { status: 403 },
           );
         }),
       ];
@@ -255,10 +255,9 @@ describe("address-geocodio", () => {
       const mockAddressSummary: AddressSummary = _mkAddressSummary()();
 
       const restHandlers = [
-        rest.post(`${baseUrl}/geocode`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
+        http.post(`${baseUrl}/geocode`, () => {
+          return HttpResponse.json(
+            {
               results: [
                 {
                   query: undefined,
@@ -271,7 +270,8 @@ describe("address-geocodio", () => {
                   },
                 },
               ],
-            }),
+            },
+            { status: 200 },
           );
         }),
       ];
@@ -301,10 +301,9 @@ describe("address-geocodio", () => {
       const mockAddressSummary: AddressSummary = _mkAddressSummary()();
 
       const restHandlers = [
-        rest.post(`${baseUrl}/geocode`, (_req, res, ctx) => {
-          return res(
-            ctx.status(200),
-            ctx.json({
+        http.post(`${baseUrl}/geocode`, () => {
+          return HttpResponse.json(
+            {
               results: [
                 {
                   query: mockAddressSummary.formatted_address,
@@ -317,7 +316,8 @@ describe("address-geocodio", () => {
                   },
                 },
               ],
-            }),
+            },
+            { status: 200 },
           );
         }),
       ];

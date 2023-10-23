@@ -6,6 +6,6 @@
     "outDir": "../../dist/out-tsc",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/index.mts"],
-  "exclude": ["vite.config.ts", "test/**/*.spec.ts"]
+  "include": ["src/**/*.mts"],
+  "exclude": ["vite.config.ts", "test/**/*.spec.mts"]
 }

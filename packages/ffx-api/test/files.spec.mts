@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import * as fs from "node:fs";
 import { match } from "ts-pattern";
@@ -44,17 +44,17 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -78,14 +78,14 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -111,14 +111,14 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -142,17 +142,17 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files/${mockFile.id}/download`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/files/${mockFile.id}/download`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -176,8 +176,8 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files/${mockFile.id}/download`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json(null));
+      http.get(`${baseUrl}/files/${mockFile.id}/download`, () => {
+        return HttpResponse.json(null, { status: 200 });
       }),
     ];
 
@@ -202,8 +202,8 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files/${mockFile.id}/download`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json("fileContents"));
+      http.get(`${baseUrl}/files/${mockFile.id}/download`, () => {
+        return HttpResponse.json("fileContents", { status: 200 });
       }),
     ];
 
@@ -226,17 +226,17 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -260,15 +260,15 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockFile,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -294,12 +294,12 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockFile,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -321,17 +321,17 @@ describe("files", () => {
   it("[Mock] should handle failure when fetching all Files", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/files`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/files`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -355,17 +355,17 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/files`, () => {
+        return HttpResponse.json(
+          {
             data: [
               {
                 ...mockFile,
                 id: null,
               },
             ],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -393,12 +393,12 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/files`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/files`, () => {
+        return HttpResponse.json(
+          {
             data: [mockFile],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -422,17 +422,17 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.patch(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -462,15 +462,15 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockFile,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -502,12 +502,12 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/files/${mockFile.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/files/${mockFile.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockFile,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -537,17 +537,17 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/files`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/files`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -577,15 +577,15 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/files`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/files`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockFile,
               id: "bogus_file_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -619,8 +619,13 @@ describe("files", () => {
     const mockFile: File_ = _mkMockFile()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/files`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockFile }));
+      http.post(`${baseUrl}/files`, () => {
+        return HttpResponse.json(
+          {
+            data: mockFile,
+          },
+          { status: 200 },
+        );
       }),
     ];
 
