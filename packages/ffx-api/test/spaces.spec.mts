@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -58,17 +58,17 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -92,14 +92,14 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -125,14 +125,14 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/spaces/${mockSpace.id}/archive`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -156,17 +156,17 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/spaces`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -203,15 +203,15 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/spaces`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockSpace,
               id: "bogus_space_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -252,8 +252,13 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/spaces`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockSpace }));
+      http.post(`${baseUrl}/spaces`, () => {
+        return HttpResponse.json(
+          {
+            data: mockSpace,
+          },
+          { status: 200 },
+        );
       }),
     ];
 
@@ -289,17 +294,17 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -323,14 +328,14 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -356,14 +361,14 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -387,17 +392,17 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -421,15 +426,15 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockSpace,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -457,12 +462,12 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockSpace,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -484,17 +489,17 @@ describe("spaces", () => {
   it("[Mocks] should handle failure when fetching all Space", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/spaces`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -518,17 +523,17 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/spaces`, () => {
+        return HttpResponse.json(
+          {
             data: [
               {
                 ...mockSpace,
                 id: null,
               },
             ],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -556,12 +561,12 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/spaces`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/spaces`, () => {
+        return HttpResponse.json(
+          {
             data: [mockSpace],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -585,17 +590,17 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.patch(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -632,15 +637,15 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockSpace,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -681,12 +686,12 @@ describe("spaces", () => {
     const mockSpace: Space = _mkMockSpace()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/spaces/${mockSpace.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/spaces/${mockSpace.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockSpace,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];

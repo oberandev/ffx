@@ -1,6 +1,6 @@
 {
   "name": "@oberan/ffx-guards",
-  "description": "A small library of Typescript type guards helpful in writing clean, type-safe and readable Flatfile configuration code.",
+  "description": "A small library of Typescript type guards helpful in writing clean, type-safe and readable code.",
   "version": "0.0.0",
   "license": "BSD-3-Clause",
   "keywords": [

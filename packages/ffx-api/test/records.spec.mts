@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -73,17 +73,17 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -108,14 +108,14 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -142,14 +142,14 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -174,17 +174,17 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -209,15 +209,15 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockRecords,
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -244,8 +244,13 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockRecords }));
+      http.post(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
+            data: mockRecords,
+          },
+          { status: 200 },
+        );
       }),
     ];
 
@@ -268,17 +273,17 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -303,15 +308,15 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockRecords,
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -338,12 +343,12 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             data: mockRecords,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -368,17 +373,17 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.put(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -403,15 +408,15 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.put(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockRecords,
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -438,12 +443,12 @@ describe("records", () => {
     const sheetId: SheetId = mkSheetId()();
 
     const restHandlers = [
-      rest.put(`${baseUrl}/sheets/${sheetId}/records`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.put(`${baseUrl}/sheets/${sheetId}/records`, () => {
+        return HttpResponse.json(
+          {
             data: mockRecords,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];

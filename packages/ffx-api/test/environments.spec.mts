@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -27,17 +27,17 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/environments`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/environments`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -68,15 +68,15 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/environments`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/environments`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockEnvironment,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -111,12 +111,12 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/environments`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/environments`, () => {
+        return HttpResponse.json(
+          {
             data: mockEnvironment,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -147,17 +147,17 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -181,14 +181,14 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -214,14 +214,14 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -245,17 +245,17 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -279,15 +279,15 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockEnvironment,
               accountId: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -315,12 +315,12 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockEnvironment,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -342,17 +342,17 @@ describe("environments", () => {
   it("[Mocks] should handle failure when fetching all Environments", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/environments`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/environments`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -376,17 +376,17 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/environments`, () => {
+        return HttpResponse.json(
+          {
             data: [
               {
                 ...mockEnvironment,
                 id: null,
               },
             ],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -414,12 +414,12 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/environments`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/environments`, () => {
+        return HttpResponse.json(
+          {
             data: [mockEnvironment],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -443,17 +443,17 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.patch(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -484,15 +484,15 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockEnvironment,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -527,12 +527,12 @@ describe("environments", () => {
     const mockEnvironment: Environment = _mkMockEnvironment()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/environments/${mockEnvironment.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/environments/${mockEnvironment.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockEnvironment,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];

@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -97,17 +97,17 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/sheets/${mockSheet.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -131,14 +131,14 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/sheets/${mockSheet.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -164,14 +164,14 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/sheets/${mockSheet.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -195,17 +195,17 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/sheets/${mockSheet.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -229,15 +229,15 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/sheets/${mockSheet.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockSheet,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -265,12 +265,12 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets/${mockSheet.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/sheets/${mockSheet.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockSheet,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -292,17 +292,17 @@ describe("sheets", () => {
   it("[Mocks] should handle failure when fetching all Sheets", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/sheets`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -327,12 +327,12 @@ describe("sheets", () => {
     const mockSheet: Sheet = _mkMockSheet()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/sheets`, () => {
+        return HttpResponse.json(
+          {
             data: [{ ...mockSheet, id: null }],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -361,12 +361,12 @@ describe("sheets", () => {
     const mockSheets: Sheets = Array.from({ length: 2 }, () => _mkMockSheet()());
 
     const restHandlers = [
-      rest.get(`${baseUrl}/sheets`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/sheets`, () => {
+        return HttpResponse.json(
+          {
             data: mockSheets,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
