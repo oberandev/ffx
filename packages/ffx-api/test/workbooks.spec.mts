@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -36,17 +36,17 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/workbooks`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/workbooks`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -78,15 +78,15 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/workbooks`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/workbooks`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockWorkbook,
               name: undefined,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -120,8 +120,13 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/workbooks`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockWorkbook }));
+      http.post(`${baseUrl}/workbooks`, () => {
+        return HttpResponse.json(
+          {
+            data: mockWorkbook,
+          },
+          { status: 200 },
+        );
       }),
     ];
 
@@ -152,17 +157,17 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -186,14 +191,14 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -219,14 +224,14 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -250,17 +255,17 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -284,15 +289,15 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockWorkbook,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -320,12 +325,12 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockWorkbook,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -347,17 +352,17 @@ describe("workbooks", () => {
   it("[Mocks] should handle failure when fetching all Workbooks", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/workbooks`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/workbooks`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -381,12 +386,12 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/workbooks`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/workbooks`, () => {
+        return HttpResponse.json(
+          {
             data: [{ ...mockWorkbook, id: null }],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -414,12 +419,12 @@ describe("workbooks", () => {
     const mockWorkbooks: Workbooks = Array.from({ length: 2 }, () => _mkMockWorkbook()());
 
     const restHandlers = [
-      rest.get(`${baseUrl}/workbooks`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/workbooks`, () => {
+        return HttpResponse.json(
+          {
             data: mockWorkbooks,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -443,17 +448,17 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -485,15 +490,15 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockWorkbook,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -529,12 +534,12 @@ describe("workbooks", () => {
     const mockWorkbook: Workbook = _mkMockWorkbook()();
 
     const restHandlers = [
-      rest.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.patch(`${baseUrl}/workbooks/${mockWorkbook.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockWorkbook,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];

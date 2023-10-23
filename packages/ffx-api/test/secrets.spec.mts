@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -31,17 +31,17 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/secrets/${mockSecret.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -65,14 +65,14 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/secrets/${mockSecret.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -98,14 +98,14 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/secrets/${mockSecret.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/secrets/${mockSecret.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -127,17 +127,17 @@ describe("secrets", () => {
   it("[Mocks] should handle failure when fetching all Secrets", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/secrets`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/secrets`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -163,17 +163,17 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/secrets`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/secrets`, () => {
+        return HttpResponse.json(
+          {
             data: [
               {
                 ...mockSecret,
                 id: null,
               },
             ],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -203,12 +203,12 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/secrets`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/secrets`, () => {
+        return HttpResponse.json(
+          {
             data: [mockSecret],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -234,17 +234,17 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/secrets`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/secrets`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -273,15 +273,15 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/secrets`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/secrets`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockSecret,
               id: "bogus_secret_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -314,8 +314,13 @@ describe("secrets", () => {
     const mockSecret: Secret = _mkMockSecret()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/secrets`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockSecret }));
+      http.post(`${baseUrl}/secrets`, () => {
+        return HttpResponse.json(
+          {
+            data: mockSecret,
+          },
+          { status: 200 },
+        );
       }),
     ];
 

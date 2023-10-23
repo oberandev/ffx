@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -116,17 +116,17 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/events/${mockEvent.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -150,14 +150,14 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/events/${mockEvent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -183,14 +183,14 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/events/${mockEvent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -214,17 +214,17 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/events`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -257,15 +257,15 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/events`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockEvent,
               id: "bogus_event_id",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -302,8 +302,13 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/events`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ data: mockEvent }));
+      http.post(`${baseUrl}/events`, () => {
+        return HttpResponse.json(
+          {
+            data: mockEvent,
+          },
+          { status: 200 },
+        );
       }),
     ];
 
@@ -335,17 +340,17 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/events/${mockEvent.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -369,15 +374,15 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/events/${mockEvent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockEvent,
               id: null,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -405,12 +410,12 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events/${mockEvent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/events/${mockEvent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockEvent,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -432,17 +437,17 @@ describe("events", () => {
   it("[Mock] should handle failure when fetching all Events", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/events`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/events`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -466,17 +471,17 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/events`, () => {
+        return HttpResponse.json(
+          {
             data: [
               {
                 ...mockEvent,
                 id: null,
               },
             ],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -504,12 +509,12 @@ describe("events", () => {
     const mockEvent: Event = _mkMockEvent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/events`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/events`, () => {
+        return HttpResponse.json(
+          {
             data: [mockEvent],
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];

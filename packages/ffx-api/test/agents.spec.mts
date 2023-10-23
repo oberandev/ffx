@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as IO from "fp-ts/IO";
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { match } from "ts-pattern";
 
@@ -58,17 +58,17 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/agents`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.post(`${baseUrl}/agents`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -95,13 +95,13 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/agents`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.post(`${baseUrl}/agents`, () => {
+        return HttpResponse.json(
+          {
             ...mockAgent,
             id: "bogus_agent_id",
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -132,8 +132,8 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.post(`${baseUrl}/agents`, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json(mockAgent));
+      http.post(`${baseUrl}/agents`, () => {
+        return HttpResponse.json(mockAgent, { status: 200 });
       }),
     ];
 
@@ -159,17 +159,17 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.delete(`${baseUrl}/agents/${mockAgent.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -194,14 +194,14 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/agents/${mockAgent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: "foobar",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -228,14 +228,14 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.delete(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.delete(`${baseUrl}/agents/${mockAgent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               success: true,
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -260,17 +260,17 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/agents/${mockAgent.id}`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -295,15 +295,15 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/agents/${mockAgent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: {
               ...mockAgent,
               compiler: "ts",
             },
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -330,12 +330,12 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents/${mockAgent.id}`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/agents/${mockAgent.id}`, () => {
+        return HttpResponse.json(
+          {
             data: mockAgent,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -358,17 +358,17 @@ describe("agents", () => {
   it("[Mock] should handle failure when fetching all Agents", async () => {
     // setup
     const restHandlers = [
-      rest.get(`${baseUrl}/agents`, (_, res, ctx) => {
-        return res(
-          ctx.status(400),
-          ctx.json({
+      http.get(`${baseUrl}/agents`, () => {
+        return HttpResponse.json(
+          {
             errors: [
               {
                 key: faker.lorem.word(),
                 message: faker.lorem.sentence(),
               },
             ],
-          }),
+          },
+          { status: 400 },
         );
       }),
     ];
@@ -393,12 +393,17 @@ describe("agents", () => {
     const mockAgent: Agent = _mkMockAgent()();
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            data: [{ ...mockAgent, source: null }],
-          }),
+      http.get(`${baseUrl}/agents`, () => {
+        return HttpResponse.json(
+          {
+            data: [
+              {
+                ...mockAgent,
+                source: null,
+              },
+            ],
+          },
+          { status: 200 },
         );
       }),
     ];
@@ -425,12 +430,12 @@ describe("agents", () => {
     const mockAgents: Agents = Array.from({ length: 2 }, () => _mkMockAgent()());
 
     const restHandlers = [
-      rest.get(`${baseUrl}/agents`, (_, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
+      http.get(`${baseUrl}/agents`, () => {
+        return HttpResponse.json(
+          {
             data: mockAgents,
-          }),
+          },
+          { status: 200 },
         );
       }),
     ];
