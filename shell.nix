@@ -5,5 +5,6 @@ in pkgs.mkShell {
   buildInputs = [
     pkgs.nixfmt
     pkgs.nodejs_20
+    pkgs.nodePackages.pnpm
   ];
 }
