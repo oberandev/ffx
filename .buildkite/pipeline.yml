@@ -1,0 +1,68 @@
+steps:
+  - label: ":package: Install Dependencies"
+    key: deps
+    command: ".buildkite/scripts/install_deps.sh"
+    # plugins:
+    #   - cache#v0.6.0:
+    #       manifest: pnpm-lock.yaml
+    #       path: node_modules
+    #       restore: pipeline
+    #       save: file
+    if: |
+      !build.pull_request.draft ||
+      build.branch !~ /^changeset-release\//
+
+  - group: ":sleuth_or_spy: Static Analysis"
+    key: static
+    steps:
+      - label: ":prettier: prettier"
+        command: ".buildkite/scripts/format_prettier.sh"
+        # plugins:
+        #   - cache#v0.6.0:
+        #       manifest: pnpm-lock.yaml
+        #       path: node_modules
+        #       restore: file
+      - label: ":eslint: eslint"
+        command: ".buildkite/scripts/lint_eslint.sh"
+        # plugins:
+        #   - cache#v0.6.0:
+        #       manifest: pnpm-lock.yaml
+        #       path: node_modules
+        #       restore: file
+    if: |
+      !build.pull_request.draft ||
+      build.branch !~ /^changeset-release\//
+
+  - group: ":lock_with_ink_pen: Security Audits"
+    key: audits
+    steps:
+      - label: ":pnpm: pnpm audit"
+        command: ".buildkite/scripts/pnpm_audit.sh"
+        # plugins:
+        #   - cache#v0.6.0:
+        #       manifest: pnpm-lock.yaml
+        #       path: node_modules
+        #       restore: file
+    if: |
+      !build.pull_request.draft ||
+      build.branch !~ /^changeset-release\//
+
+  - wait
+
+  - group: ":test_tube: Tests"
+    key: tests
+    steps:
+      - label: ":vitest: Unit Tests"
+        command: ".buildkite/scripts/test_vitest.sh"
+        # plugins:
+        #   - cache#v0.6.0:
+        #       manifest: pnpm-lock.yaml
+        #       path: node_modules
+        #       restore: file
+        env:
+          NODE_ENV: "test"
+    agents:
+      codecov: "true"
+    if: |
+      !build.pull_request.draft ||
+      build.branch !~ /^changeset-release\//
