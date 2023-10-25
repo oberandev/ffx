@@ -47,7 +47,9 @@ steps:
     key: tests
     steps:
       - label: ":vitest: Unit Tests"
-        command: ".buildkite/scripts/test_vitest.sh"
+        commands:
+          - ".buildkite/scripts/test_vitest.sh"
+          - ".buildkite/scripts/test_codecov.sh"
         # plugins:
         #   - cache#v0.6.0:
         #       manifest: pnpm-lock.yaml
@@ -55,6 +57,4 @@ steps:
         #       restore: file
         env:
           NODE_ENV: "test"
-    agents:
-      codecov: "true"
     if: "!build.pull_request.draft"
