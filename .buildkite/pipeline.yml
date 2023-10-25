@@ -8,9 +8,7 @@ steps:
     #       path: node_modules
     #       restore: pipeline
     #       save: file
-    if: |
-      !build.pull_request.draft ||
-      build.branch !~ /^changeset-release\//
+    if: "!build.pull_request.draft"
 
   - group: ":sleuth_or_spy: Static Analysis"
     key: static
@@ -29,9 +27,7 @@ steps:
         #       manifest: pnpm-lock.yaml
         #       path: node_modules
         #       restore: file
-    if: |
-      !build.pull_request.draft ||
-      build.branch !~ /^changeset-release\//
+    if: "!build.pull_request.draft"
 
   - group: ":lock_with_ink_pen: Security Audits"
     key: audits
@@ -43,9 +39,7 @@ steps:
         #       manifest: pnpm-lock.yaml
         #       path: node_modules
         #       restore: file
-    if: |
-      !build.pull_request.draft ||
-      build.branch !~ /^changeset-release\//
+    if: "!build.pull_request.draft"
 
   - wait
 
@@ -63,6 +57,4 @@ steps:
           NODE_ENV: "test"
     agents:
       codecov: "true"
-    if: |
-      !build.pull_request.draft ||
-      build.branch !~ /^changeset-release\//
+    if: "!build.pull_request.draft"
