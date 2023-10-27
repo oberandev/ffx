@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-nix-shell --run "nx run-many -t lint"
+nix-shell --run "pnpm nx run-many -t lint"
