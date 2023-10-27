@@ -17,18 +17,19 @@ steps:
     steps:
       - label: ":prettier: prettier"
         command: ".buildkite/scripts/format_prettier.sh"
-        # plugins:
-        #   - cache#v0.6.0:
-        #       manifest: pnpm-lock.yaml
-        #       path: node_modules
-        #       restore: file
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
+
       - label: ":eslint: eslint"
         command: ".buildkite/scripts/lint_eslint.sh"
-        # plugins:
-        #   - cache#v0.6.0:
-        #       manifest: pnpm-lock.yaml
-        #       path: node_modules
-        #       restore: file
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
     if: "!build.pull_request.draft"
 
   - group: ":lock_with_ink_pen: Security Audits"
@@ -36,11 +37,11 @@ steps:
     steps:
       - label: ":pnpm: pnpm audit"
         command: ".buildkite/scripts/pnpm_audit.sh"
-        # plugins:
-        #   - cache#v0.6.0:
-        #       manifest: pnpm-lock.yaml
-        #       path: node_modules
-        #       restore: file
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
     if: "!build.pull_request.draft"
 
   - wait
@@ -52,11 +53,11 @@ steps:
         commands:
           - ".buildkite/scripts/test_vitest.sh"
           - ".buildkite/scripts/test_codecov.sh"
-        # plugins:
-        #   - cache#v0.6.0:
-        #       manifest: pnpm-lock.yaml
-        #       path: node_modules
-        #       restore: file
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
         env:
           NODE_ENV: "test"
     if: "!build.pull_request.draft"
