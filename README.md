@@ -13,7 +13,7 @@
 <br>
 
 [![codecov](https://codecov.io/gh/oberandev/ffx/graph/badge.svg?token=TLA27SDPAD)](https://codecov.io/gh/oberandev/ffx)
-[![Build Status](https://oberan.semaphoreci.com/badges/ffx/branches/main.svg)](https://oberan.semaphoreci.com/projects/ffx)
+[![Build Status](https://badge.buildkite.com/a04d5ebddf2ee8daa2e56d4a6f9fdf66bd6dff9b47ecb371bb.svg?branch=main)](https://buildkite.com/oberan/ffx)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 ## Why FFX?
