@@ -45,7 +45,7 @@ steps:
       - label: ":pnpm: NPM Audit"
         commands:
           - "scripts/install_deps"
-          - "scripts/pnpm_audit"
+          - "scripts/audit_pnpm"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
