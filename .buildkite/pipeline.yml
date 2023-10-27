@@ -1,7 +1,7 @@
 steps:
   - label: ":package: Install Dependencies"
     key: deps
-    command: ".buildkite/scripts/install_deps.sh"
+    command: "scripts/install_deps"
     plugins:
       - cache#v0.6.0:
           manifest: pnpm-lock.yaml
@@ -18,8 +18,8 @@ steps:
     steps:
       - label: ":prettier: Prettier"
         commands:
-          - ".buildkite/scripts/install_deps.sh"
-          - ".buildkite/scripts/format_prettier.sh"
+          - "scripts/install_deps"
+          - "scripts/format_prettier"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -29,8 +29,8 @@ steps:
 
       - label: ":eslint: ESLint"
         commands:
-          - ".buildkite/scripts/install_deps.sh"
-          - ".buildkite/scripts/lint_eslint.sh"
+          - "scripts/install_deps"
+          - "scripts/lint_eslint"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -44,8 +44,8 @@ steps:
     steps:
       - label: ":pnpm: NPM Audit"
         commands:
-          - ".buildkite/scripts/install_deps.sh"
-          - ".buildkite/scripts/pnpm_audit.sh"
+          - "scripts/install_deps"
+          - "scripts/pnpm_audit"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -61,9 +61,9 @@ steps:
     steps:
       - label: ":vitest: Unit Tests"
         commands:
-          - ".buildkite/scripts/install_deps.sh"
-          - ".buildkite/scripts/test_vitest.sh"
-          - ".buildkite/scripts/test_codecov.sh"
+          - "scripts/install_deps"
+          - "scripts/test_vitest"
+          - "scripts/test_codecov"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
