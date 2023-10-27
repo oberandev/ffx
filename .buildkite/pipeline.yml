@@ -2,6 +2,9 @@ steps:
   - label: ":package: Install Dependencies"
     key: deps
     command: ".buildkite/scripts/install_deps.sh"
+    plugins:
+      - docker#v3.2.0:
+          image: "nixos/nix:latest"
     # plugins:
     #   - cache#v0.6.0:
     #       manifest: pnpm-lock.yaml
@@ -9,6 +12,8 @@ steps:
     #       restore: pipeline
     #       save: file
     if: "!build.pull_request.draft"
+
+  - wait
 
   - group: ":sleuth_or_spy: Static Analysis"
     key: static
