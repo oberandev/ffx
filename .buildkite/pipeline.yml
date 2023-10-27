@@ -5,7 +5,7 @@ steps:
     command: "pwd"
     plugins:
       - docker#v5.9.0:
-        image: "nixos/nix:latest"
+          image: "nixos/nix:latest"
     # plugins:
     #   - cache#v0.6.0:
     #       manifest: pnpm-lock.yaml
