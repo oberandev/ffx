@@ -72,4 +72,5 @@ steps:
               compression: tgz
         env:
           NODE_ENV: "test"
+          # Missing codecov secret & geocodio API key
     if: "!build.pull_request.draft"
