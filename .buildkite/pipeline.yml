@@ -16,7 +16,9 @@ steps:
     key: static
     steps:
       - label: ":prettier: prettier"
-        command: ".buildkite/scripts/format_prettier.sh"
+        commands:
+          - ".buildkite/scripts/install_deps.sh"
+          - ".buildkite/scripts/format_prettier.sh"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -24,7 +26,9 @@ steps:
               restore: file
 
       - label: ":eslint: eslint"
-        command: ".buildkite/scripts/lint_eslint.sh"
+        commands:
+          - ".buildkite/scripts/install_deps.sh"
+          - ".buildkite/scripts/lint_eslint.sh"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -36,7 +40,9 @@ steps:
     key: audits
     steps:
       - label: ":pnpm: pnpm audit"
-        command: ".buildkite/scripts/pnpm_audit.sh"
+        commands:
+          - ".buildkite/scripts/install_deps.sh"
+          - ".buildkite/scripts/pnpm_audit.sh"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -51,6 +57,7 @@ steps:
     steps:
       - label: ":vitest: Unit Tests"
         commands:
+          - ".buildkite/scripts/install_deps.sh"
           - ".buildkite/scripts/test_vitest.sh"
           - ".buildkite/scripts/test_codecov.sh"
         plugins:
