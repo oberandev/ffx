@@ -2,15 +2,12 @@ steps:
   - label: ":package: Install Dependencies"
     key: deps
     command: ".buildkite/scripts/install_deps.sh"
-    # plugins:
-    #   - docker#v5.9.0:
-    #       image: "nixos/nix:latest"
-    # plugins:
-    #   - cache#v0.6.0:
-    #       manifest: pnpm-lock.yaml
-    #       path: node_modules
-    #       restore: pipeline
-    #       save: file
+    plugins:
+      - cache#v0.6.0:
+          manifest: pnpm-lock.yaml
+          path: node_modules
+          restore: pipeline
+          save: file
     if: "!build.pull_request.draft"
 
   - wait
