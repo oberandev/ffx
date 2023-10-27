@@ -3,7 +3,7 @@ steps:
     key: deps
     command: ".buildkite/scripts/install_deps.sh"
     plugins:
-      - docker#v3.2.0:
+      - docker#v5.9.0:
           image: "nixos/nix:latest"
     # plugins:
     #   - cache#v0.6.0:
