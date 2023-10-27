@@ -1,7 +1,7 @@
 steps:
   - label: ":package: Install Dependencies"
     key: deps
-    command: "./.buildkite/scripts/install_deps.sh"
+    command: "nix-shell --run 'pnpm install'"
     plugins:
       - docker#v5.9.0:
           image: "nixos/nix:latest"
