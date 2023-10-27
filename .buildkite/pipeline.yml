@@ -1,8 +1,7 @@
 steps:
   - label: ":package: Install Dependencies"
     key: deps
-    # command: ".buildkite/scripts/install_deps.sh"
-    command: "ls -al"
+    command: ".buildkite/scripts/install_deps.sh"
     plugins:
       - docker#v5.9.0:
           image: "nixos/nix:latest"
