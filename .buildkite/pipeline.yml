@@ -1,7 +1,7 @@
 steps:
   - label: ":package: Install Dependencies"
     key: deps
-    command: nix-shell --run "pnpm install"
+    command: ".buildkite/scripts/install_deps.sh"
     plugins:
       - cache#v0.6.0:
           manifest: pnpm-lock.yaml
@@ -18,8 +18,8 @@ steps:
     steps:
       - label: ":prettier: Prettier"
         commands:
-          - nix-shell --run "pnpm install"
-          - nix-shell --run "pnpm nx run-many -t format:check"
+          - ".buildkite/scripts/install_deps.sh"
+          - ".buildkite/scripts/format_prettier.sh"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -29,8 +29,8 @@ steps:
 
       - label: ":eslint: ESLint"
         commands:
-          - nix-shell --run "pnpm install"
-          - nix-shell --run "pnpm nx run-many -t lint"
+          - ".buildkite/scripts/install_deps.sh"
+          - ".buildkite/scripts/lint_eslint.sh"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -44,8 +44,8 @@ steps:
     steps:
       - label: ":pnpm: NPM Audit"
         commands:
-          - nix-shell --run "pnpm install"
-          - nix-shell --run "pnpm audit --prod"
+          - ".buildkite/scripts/install_deps.sh"
+          - ".buildkite/scripts/pnpm_audit.sh"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
@@ -61,14 +61,9 @@ steps:
     steps:
       - label: ":vitest: Unit Tests"
         commands:
-          - nix-shell --run "pnpm install"
-          - |
-            if [[ "$BUILDKITE_BRANCH" == "main" ]]; then
-              nix-shell --run "pnpm nx affected -t test --base=origin/main~1 --head=origin/main --parallel=5"
-            else
-              nix-shell --run "pnpm nx affected -t test --base=origin/main --head=HEAD --parallel=5"
-            fi
-          - curl -Os https://uploader.codecov.io/latest/linux/codecov; chmod +x codecov; ./codecov
+          - ".buildkite/scripts/install_deps.sh"
+          - ".buildkite/scripts/test_vitest.sh"
+          - ".buildkite/scripts/test_codecov.sh"
         plugins:
           - cache#v0.6.0:
               manifest: pnpm-lock.yaml
