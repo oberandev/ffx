@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -177,8 +181,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       commander:
-        specifier: ^11.0.0
-        version: 11.0.0
+        specifier: ^11.1.0
+        version: 11.1.0
       execa:
         specifier: ^8.0.0
         version: 8.0.1
@@ -4096,11 +4100,6 @@ packages:
     engines: {node: '>= 0.8'}
     dependencies:
       delayed-stream: 1.0.0
-
-  /commander@11.0.0:
-    resolution: {integrity: sha512-9HMlXtt/BNoYr8ooyjjNRdIilOTkVJXB+GhxMTtOKwk0R4j4lS4NpjuqmRxroBfnfTSHQIHQB7wryHhXarNjmQ==}
-    engines: {node: '>=16'}
-    dev: false
 
   /commander@11.1.0:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
@@ -9074,7 +9073,3 @@ packages:
       property-expr: 2.0.6
       toposort: 2.0.2
     dev: true
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
