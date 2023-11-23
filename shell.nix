@@ -2,9 +2,5 @@ let
   sources = import ./nix/sources.nix { };
   pkgs = import sources.nixpkgs { };
 in pkgs.mkShell {
-  buildInputs = [
-    pkgs.nixfmt
-    pkgs.nodejs_20
-    pkgs.nodePackages.pnpm
-  ];
+  buildInputs = [ pkgs.nixfmt pkgs.nodejs_20 pkgs.nodePackages.pnpm ];
 }

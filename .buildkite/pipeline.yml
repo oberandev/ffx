@@ -1,0 +1,76 @@
+steps:
+  - label: ":package: Install Dependencies"
+    key: deps
+    command: "scripts/install_deps"
+    plugins:
+      - cache#v0.6.0:
+          manifest: pnpm-lock.yaml
+          path: node_modules
+          restore: pipeline
+          save: file
+          compression: tgz
+    if: "!build.pull_request.draft"
+
+  - wait
+
+  - group: ":sleuth_or_spy: Static Analysis"
+    key: static
+    steps:
+      - label: ":prettier: Prettier"
+        commands:
+          - "scripts/install_deps"
+          - "scripts/format_prettier"
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
+              compression: tgz
+
+      - label: ":eslint: ESLint"
+        commands:
+          - "scripts/install_deps"
+          - "scripts/lint_eslint"
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
+              compression: tgz
+    if: "!build.pull_request.draft"
+
+  - group: ":lock_with_ink_pen: Security Audits"
+    key: audits
+    steps:
+      - label: ":pnpm: NPM Audit"
+        commands:
+          - "scripts/install_deps"
+          - "scripts/audit_pnpm"
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
+              compression: tgz
+    if: "!build.pull_request.draft"
+
+  - wait
+
+  - group: ":test_tube: Tests"
+    key: tests
+    steps:
+      - label: ":vitest: Unit Tests"
+        commands:
+          - "scripts/install_deps"
+          - "scripts/test_vitest"
+          - "scripts/test_codecov"
+        plugins:
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: file
+              compression: tgz
+        env:
+          NODE_ENV: "test"
+          # Missing codecov secret & geocodio API key
+    if: "!build.pull_request.draft"
