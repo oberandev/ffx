@@ -21,9 +21,6 @@
       "projectNameAndRootFormat": "as-provided"
     }
   },
-  "workspaceLayout": {
-    "projectNameAndRootFormat": "as-provided"
-  },
   "targetDefaults": {
     "lint": {
       "inputs": [
@@ -34,14 +31,11 @@
       ],
       "cache": true
     },
-    "test": {
-      "inputs": ["default", "^default"],
-      "cache": true
-    },
     "build": {
       "cache": true
     },
-    "e2e": {
+    "@nx/vite:test": {
+      "inputs": ["default", "^default"],
       "cache": true
     }
   },
