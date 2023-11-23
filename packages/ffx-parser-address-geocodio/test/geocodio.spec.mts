@@ -365,8 +365,8 @@ describe("address-geocodio", () => {
           },
           formatted_address: "525 University Ave, Toronto, ON M5G",
           location: {
-            lat: 43.65625,
-            lng: -79.38822,
+            lat: 43.656258,
+            lng: -79.388223,
           },
           accuracy: 1,
           accuracy_type: "rooftop",
@@ -400,8 +400,8 @@ describe("address-geocodio", () => {
                 },
                 formatted_address: "525 University Ave, Toronto, ON M5G",
                 location: {
-                  lat: 43.65625,
-                  lng: -79.38822,
+                  lat: 43.656258,
+                  lng: -79.388223,
                 },
                 accuracy: 1,
                 accuracy_type: "rooftop",
